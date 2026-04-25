@@ -261,7 +261,12 @@ async function callClaude(userMsg) {
     })
   });
   const d = await r.json();
-  const text = d.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+  // Debug: show full response
+  const debugStr = JSON.stringify(d).substring(0, 500);
+  alert('RAW: ' + debugStr);
+  const text = d.candidates?.[0]?.content?.parts?.[0]?.text || 
+               d.candidates?.[0]?.content?.parts?.[0]?.text ||
+               d.error?.message || '{}';
   conversationHistory.push({role:'assistant', content: text});
   return text;
 }
