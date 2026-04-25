@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TakeshiUchimi Projects</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a;--bg2:#141414;--bg3:#1c1c1c;
+  --gold:#c9a84c;--gold2:#f0c96e;--red:#c0392b;
+  --text:#e8e0d0;--muted:#666;--muted2:#999;--border:#242424;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Serif JP',serif;min-height:100vh;display:flex;flex-direction:column;}
+
+/* HEADER */
+header{padding:48px 24px 32px;text-align:center;}
+.site-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:6px;color:var(--muted2);text-transform:uppercase;margin-bottom:12px;}
+.site-name{font-size:32px;font-weight:900;color:var(--text);letter-spacing:2px;line-height:1.2;}
+.site-name em{color:var(--gold);font-style:normal;}
+.site-sub{font-size:12px;color:var(--muted2);margin-top:10px;letter-spacing:2px;}
+.divider{width:60px;height:2px;background:linear-gradient(90deg,var(--gold),var(--red));margin:24px auto 0;border-radius:1px;}
+
+/* MAIN */
+main{flex:1;max-width:480px;margin:0 auto;width:100%;padding:32px 16px 60px;}
+
+.section-label{font-size:10px;letter-spacing:4px;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;padding-left:4px;}
+
+/* PROJECT CARD */
+.project{
+  display:flex;align-items:center;gap:16px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:18px 20px;margin-bottom:12px;
+  text-decoration:none;color:inherit;
+  transition:all 0.2s;position:relative;overflow:hidden;
+  cursor:pointer;
+}
+.project::before{
+  content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--gold),var(--red));
+  border-radius:3px 0 0 3px;
+  opacity:0;transition:opacity 0.2s;
+}
+.project:hover{border-color:rgba(201,168,76,0.3);transform:translateX(4px);}
+.project:hover::before{opacity:1;}
+.project.disabled{opacity:0.4;cursor:default;}
+.project.disabled:hover{transform:none;border-color:var(--border);}
+.project.disabled:hover::before{opacity:0;}
+
+.proj-icon{font-size:28px;flex-shrink:0;width:48px;height:48px;background:var(--bg3);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.proj-info{flex:1;min-width:0;}
+.proj-num{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--muted2);margin-bottom:3px;}
+.proj-name{font-size:15px;font-weight:700;color:var(--text);}
+.proj-desc{font-size:11px;color:var(--muted2);margin-top:4px;line-height:1.6;}
+.proj-badge{
+  flex-shrink:0;font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:20px;
+  font-family:'Oswald',sans-serif;text-transform:uppercase;
+}
+.badge-live{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.3);}
+.badge-dev{background:rgba(100,100,100,0.15);color:var(--muted2);border:1px solid var(--border);}
+
+.proj-arrow{color:var(--gold);font-size:18px;flex-shrink:0;opacity:0;transition:opacity 0.2s;}
+.project:hover .proj-arrow{opacity:1;}
+
+/* FOOTER */
+footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2;}
+footer em{color:var(--gold);font-style:normal;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="site-label">Personal Projects</div>
+  <div class="site-name">Takeshi<em>Uchimi</em></div>
+  <div class="site-sub">Works & Tools</div>
+  <div class="divider"></div>
+</header>
+
+<main>
+  <div class="section-label">Projects</div>
+
+  <!-- 1. 呑蔵競馬 -->
+  <a class="project" href="./nomuzo/index.html">
+    <div class="proj-icon">🍶</div>
+    <div class="proj-info">
+      <div class="proj-num">01</div>
+      <div class="proj-name">呑蔵競馬</div>
+      <div class="proj-desc">居酒屋で楽しむAI競馬予想エンジン</div>
+    </div>
+    <div class="proj-badge badge-live">Live</div>
+    <div class="proj-arrow">›</div>
+  </a>
+
+  <!-- 2. 1軍半の選手とは -->
+  <div class="project disabled">
+    <div class="proj-icon">⚾</div>
+    <div class="proj-info">
+      <div class="proj-num">02</div>
+      <div class="proj-name">1軍半の選手とは</div>
+      <div class="proj-desc">プロスポーツの狭間を生きる選手たちの分析</div>
+    </div>
+    <div class="proj-badge badge-dev">Dev</div>
+  </div>
+
+  <!-- 3. 稲盛先生 -->
+  <div class="project disabled">
+    <div class="proj-icon">📖</div>
+    <div class="proj-info">
+      <div class="proj-num">03</div>
+      <div class="proj-name">稲盛先生</div>
+      <div class="proj-desc">稲盛和夫の哲学と経営思想</div>
+    </div>
+    <div class="proj-badge badge-dev">Dev</div>
+  </div>
+
+  <!-- 4. 吹奏楽アルバム -->
+  <div class="project disabled">
+    <div class="proj-icon">🎺</div>
+    <div class="proj-info">
+      <div class="proj-num">04</div>
+      <div class="proj-name">吹奏楽アルバム</div>
+      <div class="proj-desc">思い出の演奏記録とアルバム</div>
+    </div>
+    <div class="proj-badge badge-dev">Dev</div>
+  </div>
+
+</main>
+
+<footer>© <em>TakeshiUchimi</em> · All Projects</footer>
+
+</body>
+</html>
