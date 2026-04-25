@@ -183,62 +183,19 @@ let currentPlayer = null;
 let currentSubCmd = null;
 let conversationHistory = [];
 
-const SYSTEM_PROMPT = `あなたは「内海メソッド」に基づき、日本プロ野球選手を評価・表示するアシスタントです。
+const SYSTEM_PROMPT = `日本プロ野球選手を評価するアシスタントです。必ずJSONのみで返してください。マークダウンやコードブロックは使わないでください。
 
-【基本思想】
-・正確なデータのみ出す
-・推測しない
-・曖昧なら候補を出す
-・面白さは「文脈優先」で作る
-・応援歌は確定データのみ
-・UIはスマホで見やすく短く固定する
+選手が特定できた場合のJSON形式:
+{"type":"player","name":"選手名","entry":"入団経緯(例:楽11年D6)","position":"ポジション","team":"所属球団","rank":"評価(例:1.50軍)","salary":"最高年俸(例:1.2億(2021年))","stats":"成績","awards":"受賞歴","song":"応援歌冒頭2フレーズ+...","retired":false}
 
-【入力処理】
-1. 選手名が明確な場合→その選手を表示する
-2. 曖昧入力の場合→最大9件の候補を出す→表示順は「文脈優先｜内海スコア」
+候補が複数の場合:
+{"type":"candidates","candidates":[{"num":1,"name":"選手名","team":"球団"},{"num":2,"name":"選手名","team":"球団"}]}
 
-【基本表示フォーマット】
-必ずJSONのみで返してください（前置き・コードブロック不要）。
-
-選手が特定できた場合：
-{"type":"player","name":"選手名","entry":"入団経緯（球団略称+年+D順位）","position":"ポジション","team":"所属球団","rank":"評価軍（例:1.50軍）","salary":"最高年俸（例:1.2億(2021年)）","stats":"成績（野手:打率｜本塁打｜打点｜OPS / 投手:防御率｜勝利｜S｜H）","awards":"受賞歴（なければ主要タイトルなし）","song":"応援歌冒頭2フレーズ+...（確定データなければ該当データなし）","retired":false}
-
-候補の場合：
-{"type":"candidates","candidates":[{"num":1,"name":"選手名","team":"球団"},{"num":2,...}]}
-
-【評価スケール】
-1.00軍=1軍基準 / 1.10軍=主力上位 / 1.20軍=主力 / 1.30軍=準レギュラー上位
-1.40軍=準レギュラー / 1.50軍=主力下位・島内基準 / 1.60軍=控え上位
-1.70軍=控え / 1.80軍=1軍半 / 1.90軍=準2軍 / 2.00軍=非主力
-
-【島内特別ルール】
+評価基準:
+1.00軍=1軍基準 / 1.20軍=主力 / 1.50軍=1軍半 / 1.80軍=控え / 2.00軍=非主力
 島内宏明は必ず1.50軍固定。
-
-【引退5年以上】
-rankは"-"、salaryは出さない（nullにする）
-
-JSONのみ返してください。`;
-
-function extractJSON(raw) {
-  // Remove markdown code blocks
-  let s = raw.replace(/```json/gi,'').replace(/```/g,'').trim();
-  // Find first { or [
-  const start = Math.min(
-    s.indexOf('{') >= 0 ? s.indexOf('{') : 99999,
-    s.indexOf('[') >= 0 ? s.indexOf('[') : 99999
-  );
-  if(start === 99999) throw new Error('No JSON found');
-  // Find matching closing bracket
-  const opener = s[start];
-  const closer = opener === '{' ? '}' : ']';
-  let depth = 0, end = -1;
-  for(let i = start; i < s.length; i++) {
-    if(s[i] === opener) depth++;
-    else if(s[i] === closer) { depth--; if(depth === 0){ end = i; break; } }
-  }
-  if(end === -1) throw new Error('Unclosed JSON');
-  return JSON.parse(s.substring(start, end+1));
-}
+引退5年以上はrank="-"、salary=null。
+JSONのみ返すこと。説明不要。`;
 
 async function callClaude(userMsg) {
   conversationHistory.push({role:'user', content: userMsg});
