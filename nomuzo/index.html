@@ -322,7 +322,7 @@ JSONのみ返してください（コードブロック不要）:
     document.getElementById('gobtn').disabled = false;
   } catch(e) {
     setSt('⚠️', fname, `解析エラー: ${e.message}`);
-    // Store raw for debug
+    alert('RAW: ' + raw.substring(0, 400));
     raceData = {horses: null, _raw: raw};
     document.getElementById('gobtn').disabled = true;
   }
