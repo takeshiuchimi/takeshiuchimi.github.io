@@ -303,7 +303,7 @@ JSONのみ返してください（コードブロック不要）:
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1000,
+      max_tokens: 2000,
       messages: [{role:'user', content}]
     })
   });
@@ -313,16 +313,22 @@ JSONのみ返してください（コードブロック不要）:
 
   try {
     // Extract JSON robustly
-    let s = raw.replace(/```json|```/g,'').trim();
+    let s = raw;
+    // Remove code blocks
+    s = s.replace(/```json/gi,'').replace(/```/g,'').trim();
+    // Find JSON boundaries
     const start = s.indexOf('{');
-    const end = s.lastIndexOf('}');
+    let depth = 0, end = -1;
+    for (let i = start; i < s.length; i++) {
+      if (s[i]==='{') depth++;
+      else if (s[i]==='}') { depth--; if(depth===0){end=i;break;} }
+    }
     if (start >= 0 && end > start) s = s.substring(start, end+1);
     raceData = JSON.parse(s);
     setSt('✅', fname, `${raceData.race_name||'レース'} / ${raceData.horses?.length||0}頭 読取完了`);
     document.getElementById('gobtn').disabled = false;
   } catch(e) {
     setSt('⚠️', fname, `解析エラー: ${e.message}`);
-    alert('RAW: ' + raw.substring(0, 400));
     raceData = {horses: null, _raw: raw};
     document.getElementById('gobtn').disabled = true;
   }
