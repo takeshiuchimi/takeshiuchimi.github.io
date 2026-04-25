@@ -312,12 +312,19 @@ JSONのみ返してください（コードブロック不要）:
   const raw = d.content?.map(b=>b.text||'').join('') || '';
 
   try {
-    raceData = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    // Extract JSON robustly
+    let s = raw.replace(/```json|```/g,'').trim();
+    const start = s.indexOf('{');
+    const end = s.lastIndexOf('}');
+    if (start >= 0 && end > start) s = s.substring(start, end+1);
+    raceData = JSON.parse(s);
     setSt('✅', fname, `${raceData.race_name||'レース'} / ${raceData.horses?.length||0}頭 読取完了`);
     document.getElementById('gobtn').disabled = false;
   } catch(e) {
-    setSt('⚠️', fname, 'データ解析完了（一部）');
-    document.getElementById('gobtn').disabled = false;
+    setSt('⚠️', fname, `解析エラー: ${e.message}`);
+    // Store raw for debug
+    raceData = {horses: null, _raw: raw};
+    document.getElementById('gobtn').disabled = true;
   }
   document.getElementById('drop').style.pointerEvents = 'auto';
 }
@@ -394,7 +401,10 @@ function calcScore(horse) {
 
 // ── ANALYZE ──────────────────────────────────
 async function analyze() {
-  if (!raceData.horses) { alert('PDFを読み込んでください'); return; }
+  if (!raceData.horses || raceData.horses.length === 0) {
+    alert('馬柱データが取得できませんでした。\n' + (raceData._raw ? raceData._raw.substring(0,200) : 'PDFを読み込んでください'));
+    return;
+  }
 
   document.getElementById('inp').style.display = 'none';
   document.getElementById('res').style.display = 'none';
