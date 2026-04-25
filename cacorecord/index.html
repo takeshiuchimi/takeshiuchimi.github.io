@@ -27,7 +27,8 @@ header h1 em{color:var(--gold2);font-style:normal;}
 
 .art-wrap{text-align:center;margin-bottom:20px;}
 .art-img{width:200px;height:200px;border-radius:50%;object-fit:cover;border:3px solid rgba(201,168,76,0.4);box-shadow:0 8px 40px rgba(0,0,0,0.6),0 0 30px rgba(201,168,76,0.15);}
-.art-img.spinning{animation:spin 8s linear infinite;}
+.art-img{animation:spin 8s linear infinite;animation-play-state:paused;}
+.art-img.spinning{animation-play-state:running;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 .now-playing{background:var(--bg2);border:1px solid rgba(201,168,76,0.3);border-radius:var(--radius);padding:18px 16px;margin-bottom:14px;position:relative;overflow:hidden;}
