@@ -272,8 +272,8 @@ async function getResult() {
       })
     });
     const d = await r.json();
+    alert('FULL: ' + JSON.stringify(d).substring(0,400));
     const raw = d.content?.map(b=>b.text||'').join('') || '';
-    alert('RAW: ' + raw.substring(0,300));
     const clean = raw.replace(/```json|```/g,'').trim();
     const data = JSON.parse(clean);
     renderResult(data);
