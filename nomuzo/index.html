@@ -287,14 +287,22 @@ async function readPdf(fname) {
 
 ${allText.substring(0, 8000)}
 
-重要ルール：
-- 馬番1番から全頭抽出（省略禁止）
-- corner4：前走の4コーナー通過順位の数字（①=1,②=2,③=3...）。不明なら"0"
-- zenso_result：前走着順の数字。不明なら"0"
-- father：父馬名のみ（母父は不要）
+【重要】PDFの前走データには「③③④⑥」のような丸数字4つが並んでいます。
+これは「1角・2角・3角・4角」の通過順位です。
+corner4は必ず4番目（最後）の丸数字を整数で返してください。
+例：「③③④⑥」→ corner4は6
+例：「⑧⑦⑦⑥」→ corner4は6
+例：「①①①①」→ corner4は1
+丸数字がない場合は"0"
+
+抽出ルール：
+- 馬番1番から全頭抽出（省略禁止・18頭全部）
+- corner4：前走4角通過順位（上記参照）
+- zenso_result：前走着順の数字
+- father：父馬名のみ
 
 JSONのみ返してください（コードブロック不要）：
-{"race_name":"レース名","race_date":"開催日","race_course":"コース(例:東京芝2400m 18頭)","horses":[{"banum":"1","name":"馬名","father":"父馬名","corner4":"3","zenso_class":"クラス","zenso_result":"2"},...全頭]}`;
+{"race_name":"レース名","race_date":"開催日","race_course":"コース(例:東京芝2400m 18頭)","horses":[{"banum":"1","name":"馬名","father":"父馬名","corner4":"6","zenso_class":"クラス","zenso_result":"2"},...全18頭]}`;
 
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -387,23 +395,21 @@ function getTenkai(horses) {
   return {pattern, desc, nige, senkou, top5};
 }
 
-// ── 評価スコア計算 ────────────────────────────
+// ── 評価スコア計算（データベース）────────────
 function calcScore(horse) {
-  // 適性 25-40
-  let tekisei = 32;
-  // 能力 20-35
-  let noryoku = 27;
-  // 実行力 10-25（前走結果ベース）
-  let jikkoryoku = 17;
-
-  const result = parseInt(horse.zenso_result) || 10;
-  if (result === 1) jikkoryoku = 24;
-  else if (result === 2) jikkoryoku = 22;
-  else if (result === 3) jikkoryoku = 20;
-  else if (result <= 5) jikkoryoku = 18;
-  else if (result <= 8) jikkoryoku = 14;
-  else jikkoryoku = 10;
-
+  // 適性：父の血統から（AIが渡した値 or デフォルト）
+  const tekisei = 32;
+  const noryoku = 27;
+  // 実行力：前走着順ベース（減点法）
+  const result = parseInt(horse.zenso_result) || 0;
+  let jikkoryoku;
+  if (result === 1)       jikkoryoku = 24;
+  else if (result === 2)  jikkoryoku = 22;
+  else if (result === 3)  jikkoryoku = 20;
+  else if (result <= 5)   jikkoryoku = 18;
+  else if (result <= 8)   jikkoryoku = 14;
+  else if (result <= 15)  jikkoryoku = 11;
+  else                    jikkoryoku = 10; // 不明・圏外
   const score = Math.round((tekisei * noryoku * jikkoryoku) / 35);
   return {tekisei, noryoku, jikkoryoku, score};
 }
@@ -450,29 +456,28 @@ async function analyze() {
 
 async function callAI(scored, tenkai) {
   const top5 = scored.slice(0, 5);
-  const horseSummary = scored.map(h =>
-    `${h.banum}番 ${h.name}（父:${h.father}）脚質:${h.kq} 前走:${h.zenso_result||'?'}着 スコア:${h.score}`
+
+  const horseList = scored.map(h =>
+    `${h.banum}番 ${h.name} 父:${h.father} 脚質:${h.kq} 前走${h.zenso_result||'?'}着 クラス:${h.zenso_class||'?'}`
   ).join('\n');
 
   const prompt = `あなたは「呑蔵競馬」の予想AIです。以下のデータを分析してください。
 
 レース：${raceData.race_name||''}　コース：${raceData.race_course||''}
+展開パターン：${tenkai.pattern} / ${tenkai.desc}
 
-展開パターン：${tenkai.pattern}
-展開説明：${tenkai.desc}
+全馬データ：
+${horseList}
 
-全馬データ（スコア順）：
-${horseSummary}
-
-【ルール】
-- 0展・1コ・2煽は脚質・役割のみで語る（馬名・馬番禁止）
-- 4全のみ馬名・馬番OK
-- 0展と1コは必ず同じ前提・同じ結論
-- 2煽は否定・揺さぶり
-- 3通はAIの競馬知識（コース傾向・血統）を使って3つ以上
-- 5突はツッコミ＋返し
-- 6言は呑蔵らしい名言・格言風（3つ）
-- 7名は馬名の面白い読み・意味・考察（3つ）
+【出力ルール】
+- 展・コ・煽は脚質・役割のみ（馬名・馬番禁止）
+- 全（ranking）のみ馬名・馬番OK
+- 展と結論は必ず同じ前提・同じ結論
+- 煽は否定・揺さぶり
+- 通はコース傾向・血統の競馬知識で3つ以上（データから読める事実のみ）
+- 突はツッコミ＋返し
+- 言は呑蔵らしい格言3つ
+- 名は馬名の読み・意味・考察3つ
 - 居酒屋トーン・軽く煽る・短文
 
 JSONのみ返してください（コードブロック不要）：
@@ -526,7 +531,7 @@ function render(ai, scored, tenkai) {
   document.getElementById('c6').innerHTML = ul(ai.kotoba);
   document.getElementById('c7').innerHTML = ul(ai.namaae);
 
-  // ランキング
+  // ランキング（データベース計算済み）
   const mx = Math.max(...scored.map(h=>h.score));
   document.getElementById('c4').innerHTML = scored.map((h,i) => {
     const pct = Math.round((h.score/mx)*100);
