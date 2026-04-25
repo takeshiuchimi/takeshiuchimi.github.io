@@ -275,23 +275,18 @@ async function readPdf(fname) {
     content.push({type:'text', text:`競馬ラボ馬柱PDF ${i+1}ページ目です。`});
   });
 
-  content.push({type:'text', text:`この競馬ラボ横型馬柱PDFから以下を抽出してください。
-JSONのみ返してください（コードブロック不要）:
-{
-  "race_name": "レース名",
-  "race_date": "開催日",
-  "race_course": "コース（例:東京芝2400m 18頭）",
-  "horses": [
-    {
-      "banum": "馬番",
-      "name": "馬名",
-      "father": "父馬名",
-      "corner4": "前走4角位置（数字、不明なら0）",
-      "zenso_class": "前走クラス",
-      "zenso_result": "前走着順"
-    }
-  ]
-}`});
+  content.push({type:'text', text:`この競馬ラボ横型馬柱PDFを注意深く読んで、全馬のデータを抽出してください。
+
+重要：
+- 馬番1番から最後の馬番まで全頭抽出すること（省略禁止）
+- corner4は前走の4コーナー通過順位（①②③などの丸数字、または数字）
+- 丸数字①=1、②=2、③=3...として数字で返す
+- 前走データが読み取れない場合は"0"とする
+
+JSONのみ返してください（コードブロック・前置き不要）:
+{"race_name":"レース名","race_date":"開催日","race_course":"コース(例:東京芝2400m 18頭)","horses":[{"banum":"1","name":"馬名","father":"父馬名","corner4":"4","zenso_class":"クラス","zenso_result":"着順"},{"banum":"2",...}]}
+
+全馬を必ず含めること。`});
 
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -303,7 +298,7 @@ JSONのみ返してください（コードブロック不要）:
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2000,
+      max_tokens: 3000,
       messages: [{role:'user', content}]
     })
   });
