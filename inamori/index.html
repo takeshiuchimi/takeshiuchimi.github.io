@@ -195,7 +195,7 @@ footer em{color:var(--gold);font-style:normal;}
 
 <script src="../apikey.js"></script>
 <script>
-const API_KEY = ANTHROPIC_API_KEY;
+
 
 const GENRES = ['仕事','人間関係','お金','リーダーシップ','自己成長','判断','トラブル対応','チーム・組織','挑戦・変化'];
 
@@ -260,7 +260,7 @@ async function getResult() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
+        'x-api-key': ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true'
       },
@@ -272,7 +272,6 @@ async function getResult() {
       })
     });
     const d = await r.json();
-    alert('FULL: ' + JSON.stringify(d).substring(0,400));
     const raw = d.content?.map(b=>b.text||'').join('') || '';
     const clean = raw.replace(/```json|```/g,'').trim();
     const data = JSON.parse(clean);
