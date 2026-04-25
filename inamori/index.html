@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📖 稲盛先生</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f0e0c;--bg2:#1a1914;--bg3:#24221c;--bg4:#2e2b22;
+  --gold:#c9a84c;--gold2:#f0c96e;--red:#8b1a1a;--red2:#c0392b;
+  --text:#ede8dc;--muted:#7a7060;--muted2:#a09070;--border:#2e2b22;
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Shippori Mincho',serif;min-height:100vh;padding-bottom:80px;}
+
+body::before{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(139,26,26,0.08) 0%,transparent 60%);
+  pointer-events:none;z-index:0;}
+
+header{background:linear-gradient(180deg,#080807 0%,#0f0e0c 100%);border-bottom:2px solid rgba(201,168,76,0.3);padding:18px 20px 14px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 30px rgba(0,0,0,0.7);}
+.logo{font-family:'Noto Serif JP',serif;font-size:10px;letter-spacing:5px;color:var(--muted2);text-transform:uppercase;margin-bottom:4px;}
+header h1{font-size:22px;font-weight:900;color:var(--text);letter-spacing:4px;}
+header h1 em{color:var(--gold);font-style:normal;}
+.vbadge{font-size:9px;letter-spacing:2px;color:var(--muted);border:1px solid var(--border);padding:2px 10px;border-radius:20px;margin-top:5px;display:inline-block;}
+.back-btn{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:11px;letter-spacing:1px;text-decoration:none;opacity:0.7;}
+
+.wrap{max-width:480px;margin:0 auto;padding:24px 16px;position:relative;z-index:1;}
+
+/* INTRO */
+.intro{text-align:center;margin-bottom:28px;padding:20px;}
+.intro-icon{font-size:48px;margin-bottom:12px;}
+.intro-name{font-size:20px;font-weight:700;color:var(--gold2);letter-spacing:4px;margin-bottom:6px;}
+.intro-desc{font-size:12px;color:var(--muted2);line-height:2;letter-spacing:1px;}
+.intro-divider{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px auto;}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold),var(--red));}
+.card-title{font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+
+/* GENRE GRID */
+.genre-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.genre-btn{padding:12px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:'Shippori Mincho',serif;font-size:12px;cursor:pointer;text-align:center;transition:all 0.2s;line-height:1.5;}
+.genre-btn:hover{background:var(--bg4);border-color:var(--gold);color:var(--gold);}
+.genre-btn.selected{background:rgba(201,168,76,0.1);border-color:var(--gold);color:var(--gold2);}
+.genre-num{font-size:10px;color:var(--muted);display:block;margin-bottom:2px;}
+
+/* QUESTION CARD */
+.question-card{background:var(--bg2);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius);padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
+.question-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold));}
+.question-text{font-size:14px;line-height:2;color:var(--text);margin-bottom:14px;}
+.question-note{font-size:11px;color:var(--muted2);line-height:1.8;margin-top:8px;padding:10px;background:var(--bg3);border-radius:6px;display:none;}
+.question-note.show{display:block;}
+.yn-row{display:flex;gap:10px;}
+.yn-btn{flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--muted2);font-family:'Shippori Mincho',serif;font-size:13px;cursor:pointer;transition:all 0.15s;text-align:center;}
+.yn-btn:hover{border-color:var(--gold);color:var(--gold);}
+.yn-btn.yes{border-color:var(--gold);background:rgba(201,168,76,0.1);color:var(--gold2);}
+.yn-btn.no{border-color:var(--red2);background:rgba(192,57,43,0.1);color:var(--red2);}
+
+/* INPUT */
+textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Shippori Mincho',serif;font-size:13px;padding:12px;resize:none;line-height:2;transition:border-color 0.2s;}
+textarea:focus{outline:none;border-color:var(--gold);}
+textarea::placeholder{color:var(--muted);font-size:12px;}
+
+/* BTN */
+.btn{width:100%;padding:14px;border:none;border-radius:var(--radius);font-family:'Shippori Mincho',serif;font-weight:700;cursor:pointer;letter-spacing:2px;transition:all 0.15s;font-size:14px;margin-top:10px;}
+.btn-primary{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;}
+.btn-primary:hover{opacity:0.9;transform:translateY(-1px);}
+.btn-secondary{background:transparent;color:var(--muted2);border:1px solid var(--border);font-size:12px;}
+.btn-secondary:hover{color:var(--text);border-color:var(--muted2);}
+
+/* LOADING */
+.loading{display:none;text-align:center;padding:40px 0;}
+.loading.on{display:block;}
+.ring{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ltxt{color:var(--gold);font-size:12px;letter-spacing:3px;animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* RESULT */
+.result-card{background:var(--bg2);border:1px solid rgba(201,168,76,0.25);border-radius:var(--radius);padding:20px;margin-bottom:14px;position:relative;overflow:hidden;}
+.result-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold),var(--red));}
+.result-label{font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:14px;}
+
+/* QUOTE */
+.quote{border-left:3px solid var(--gold);padding:10px 14px;margin-bottom:10px;background:rgba(201,168,76,0.04);border-radius:0 6px 6px 0;}
+.quote-text{font-size:14px;line-height:2;color:var(--text);}
+
+/* ACTION */
+.action-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.action-item:last-child{border-bottom:none;}
+.action-num{font-size:18px;color:var(--gold);font-weight:700;min-width:24px;}
+.action-text{font-size:13px;line-height:1.9;color:var(--text);}
+
+/* SHIME */
+.shime{text-align:center;padding:20px;font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:3px;line-height:2;}
+
+footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2;position:relative;z-index:1;}
+footer em{color:var(--gold);font-style:normal;}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-btn" href="../index.html">‹ TOP</a>
+  <div class="logo">Inamori Philosophy</div>
+  <h1>📖 <em>稲盛</em>先生</h1>
+  <div class="vbadge">稲盛和夫フィロソフィー</div>
+</header>
+
+<div class="wrap">
+
+  <!-- INTRO -->
+  <div class="intro" id="intro">
+    <div class="intro-icon">🪷</div>
+    <div class="intro-name">稲盛先生</div>
+    <div class="intro-divider"></div>
+    <div class="intro-desc">どうしました？<br>差し支えなければ、どのジャンルのご相談か<br>教えていただけますか？</div>
+  </div>
+
+  <!-- STEP 1: GENRE -->
+  <div class="card" id="step-genre">
+    <div class="card-title">ジャンルをお選びください</div>
+    <div class="genre-grid">
+      <button class="genre-btn" onclick="selectGenre(0)"><span class="genre-num">①</span>仕事</button>
+      <button class="genre-btn" onclick="selectGenre(1)"><span class="genre-num">②</span>人間関係</button>
+      <button class="genre-btn" onclick="selectGenre(2)"><span class="genre-num">③</span>お金</button>
+      <button class="genre-btn" onclick="selectGenre(3)"><span class="genre-num">④</span>リーダーシップ</button>
+      <button class="genre-btn" onclick="selectGenre(4)"><span class="genre-num">⑤</span>自己成長</button>
+      <button class="genre-btn" onclick="selectGenre(5)"><span class="genre-num">⑥</span>判断</button>
+      <button class="genre-btn" onclick="selectGenre(6)"><span class="genre-num">⑦</span>トラブル対応</button>
+      <button class="genre-btn" onclick="selectGenre(7)"><span class="genre-num">⑧</span>チーム・組織</button>
+      <button class="genre-btn" onclick="selectGenre(8)"><span class="genre-num">⑨</span>挑戦・変化</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: CONTENT -->
+  <div class="card" id="step-content" style="display:none;">
+    <div class="card-title">ありがとうございます</div>
+    <div style="font-size:13px;color:var(--muted2);margin-bottom:12px;line-height:1.9;">差し支えなければ、内容を一言で教えていただけますか？</div>
+    <textarea id="content-input" rows="4" placeholder="例）部下との関係がうまくいっていません…"></textarea>
+    <button class="btn btn-primary" onclick="startQuestions()">次へ</button>
+  </div>
+
+  <!-- STEP 3: QUESTIONS -->
+  <div id="step-questions" style="display:none;">
+    <div class="question-card" id="q1-card">
+      <div class="card-title">問い ①</div>
+      <div class="question-text">今のあなたの行動は、<br>人として正しい方向に向かっていますか？</div>
+      <div class="question-note" id="q1-note">人として正しいかを外せば、すべては崩れます。<br>では、どうすればイエスにできますか？</div>
+      <div class="yn-row">
+        <button class="yn-btn" id="q1-yes" onclick="answerQ(1,'yes')">① イエス</button>
+        <button class="yn-btn" id="q1-no" onclick="answerQ(1,'no')">② ノー</button>
+      </div>
+    </div>
+    <div class="question-card" id="q2-card" style="display:none;">
+      <div class="card-title">問い ②</div>
+      <div class="question-text">その行動の動機は、<br>誰かのためになるものですか？</div>
+      <div class="question-note" id="q2-note">私心を捨て、動機を磨きなさい。<br>では、どうすればイエスにできますか？</div>
+      <div class="yn-row">
+        <button class="yn-btn" id="q2-yes" onclick="answerQ(2,'yes')">① イエス</button>
+        <button class="yn-btn" id="q2-no" onclick="answerQ(2,'no')">② ノー</button>
+      </div>
+    </div>
+    <div class="question-card" id="q3-card" style="display:none;">
+      <div class="card-title">問い ③</div>
+      <div class="question-text">今のあなたは、<br>出来ることをすべてやり切っていますか？</div>
+      <div class="question-note" id="q3-note">努力を尽くしてこそ、結果は語れます。<br>では、どうすればイエスにできますか？</div>
+      <div class="yn-row">
+        <button class="yn-btn" id="q3-yes" onclick="answerQ(3,'yes')">① イエス</button>
+        <button class="yn-btn" id="q3-no" onclick="answerQ(3,'no')">② ノー</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="ring"></div>
+    <div class="ltxt">稲盛先生 思索中…</div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result" style="display:none;"></div>
+
+  <!-- RESET -->
+  <div id="reset-wrap" style="display:none;">
+    <button class="btn btn-secondary" onclick="resetAll()">最初から相談する</button>
+  </div>
+
+</div>
+
+<footer>📖 <em>稲盛先生</em> — 稲盛和夫フィロソフィーに基づく対話システム</footer>
+
+<script src="../apikey.js"></script>
+<script>
+const API_KEY = ANTHROPIC_API_KEY;
+
+const GENRES = ['仕事','人間関係','お金','リーダーシップ','自己成長','判断','トラブル対応','チーム・組織','挑戦・変化'];
+
+let selectedGenre = '';
+let userContent = '';
+let answers = {};
+let qStep = 1;
+
+function selectGenre(i) {
+  selectedGenre = GENRES[i];
+  document.querySelectorAll('.genre-btn').forEach((b,j) => b.classList.toggle('selected', i===j));
+  document.getElementById('step-content').style.display = 'block';
+  document.getElementById('step-content').scrollIntoView({behavior:'smooth'});
+}
+
+function startQuestions() {
+  userContent = document.getElementById('content-input').value.trim();
+  if (!userContent) { alert('内容を入力してください'); return; }
+  document.getElementById('step-content').style.display = 'none';
+  document.getElementById('step-questions').style.display = 'block';
+  document.getElementById('q1-card').scrollIntoView({behavior:'smooth'});
+}
+
+function answerQ(q, ans) {
+  answers[q] = ans;
+  const yBtn = document.getElementById(`q${q}-yes`);
+  const nBtn = document.getElementById(`q${q}-no`);
+  yBtn.classList.toggle('yes', ans==='yes');
+  nBtn.classList.toggle('no', ans==='no');
+  yBtn.disabled = true; nBtn.disabled = true;
+
+  if (ans === 'no') {
+    document.getElementById(`q${q}-note`).classList.add('show');
+  }
+
+  setTimeout(() => {
+    if (q < 3) {
+      document.getElementById(`q${q+1}-card`).style.display = 'block';
+      document.getElementById(`q${q+1}-card`).scrollIntoView({behavior:'smooth'});
+    } else {
+      getResult();
+    }
+  }, ans==='no' ? 1200 : 400);
+}
+
+async function getResult() {
+  document.getElementById('step-questions').style.display = 'none';
+  document.getElementById('loading').classList.add('on');
+
+  const prompt = `ユーザーの相談内容：「${userContent}」
+選択ジャンル：${selectedGenre}
+３問の回答：
+①人として正しい方向か → ${answers[1]==='yes'?'イエス':'ノー'}
+②動機は誰かのためか → ${answers[2]==='yes'?'イエス':'ノー'}
+③出来ることをやり切っているか → ${answers[3]==='yes'?'イエス':'ノー'}
+
+以下の仕様で出力してください：
+1. 内容からAIがジャンルを判定し、そのジャンルの語録を先に出す（ジャンル名は表示しない）
+2. ユーザー選択ジャンルの語録を後に出す（ジャンル名は表示しない）
+3. 語録は混在させず、必ずこの順番で
+4. 行動提案を3つ出す
+5. 最後に必ず「正しいことを、やり切るだけです。」で締める
+
+JSONのみで返してください（前置き・コードブロック不要）：
+{"quotes":["語録1","語録2","語録3","語録4"],"actions":["行動1","行動2","行動3"],"shime":"正しいことを、やり切るだけです。"}`;
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
+        system: '稲盛和夫フィロソフィーに基づき、簡潔で断定的、温かく厳しい言葉で語りなさい。JSONのみ返すこと。',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const d = await r.json();
+    const raw = d.content?.map(b=>b.text||'').join('') || '';
+    const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    renderResult(data);
+  } catch(e) {
+    document.getElementById('result').innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);">エラー：${e.message}</div>`;
+    document.getElementById('result').style.display = 'block';
+  } finally {
+    document.getElementById('loading').classList.remove('on');
+  }
+}
+
+function renderResult(data) {
+  let html = `
+    <div class="result-card">
+      <div class="result-label">◆ 語録</div>
+      ${data.quotes.map(q=>`<div class="quote"><div class="quote-text">「${q}」</div></div>`).join('')}
+    </div>
+    <div class="result-card">
+      <div class="result-label">◆ 次に取る行動のヒントです</div>
+      ${data.actions.map((a,i)=>`<div class="action-item"><div class="action-num">・</div><div class="action-text">${a}</div></div>`).join('')}
+      <div style="margin-top:12px;font-size:12px;color:var(--muted2);">この中から、まず1つ実行してみてください。</div>
+    </div>
+    <div class="shime">${data.shime}</div>`;
+
+  document.getElementById('result').innerHTML = html;
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('reset-wrap').style.display = 'block';
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+}
+
+function resetAll() {
+  selectedGenre=''; userContent=''; answers={}; qStep=1;
+  document.getElementById('step-content').style.display='none';
+  document.getElementById('step-questions').style.display='none';
+  document.getElementById('result').style.display='none';
+  document.getElementById('reset-wrap').style.display='none';
+  document.getElementById('q2-card').style.display='none';
+  document.getElementById('q3-card').style.display='none';
+  ['q1','q2','q3'].forEach(q=>{
+    document.getElementById(`${q}-note`).classList.remove('show');
+    document.getElementById(`${q}-yes`).className='yn-btn';
+    document.getElementById(`${q}-no`).className='yn-btn';
+    document.getElementById(`${q}-yes`).disabled=false;
+    document.getElementById(`${q}-no`).disabled=false;
+  });
+  document.querySelectorAll('.genre-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('content-input').value='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
