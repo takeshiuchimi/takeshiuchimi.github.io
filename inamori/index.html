@@ -273,7 +273,9 @@ async function getResult() {
     });
     const d = await r.json();
     const raw = d.content?.map(b=>b.text||'').join('') || '';
-    const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    alert('RAW: ' + raw.substring(0,300));
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const data = JSON.parse(clean);
     renderResult(data);
   } catch(e) {
     document.getElementById('result').innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);">エラー：${e.message}</div>`;
