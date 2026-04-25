@@ -218,15 +218,15 @@ footer em{color:var(--gold);font-style:normal;}
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-let pages = [], raceData = {};
+let pages = [], raceData = {}, currentFile = null;
 
 function onDrop(e) {
   e.preventDefault();
   document.getElementById('drop').classList.remove('drag');
   const f = e.dataTransfer.files[0];
-  if (f && f.type === 'application/pdf') procPdf(f);
+  if (f && f.type === 'application/pdf') { currentFile = f; procPdf(f); }
 }
-function onSel(e) { const f = e.target.files[0]; if (f) procPdf(f); }
+function onSel(e) { const f = e.target.files[0]; if (f) { currentFile = f; procPdf(f); } }
 
 async function procPdf(file) {
   setSt('⏳', file.name, 'PDFを読み込んでいます…');
@@ -269,24 +269,32 @@ async function procPdf(file) {
 }
 
 async function readPdf(fname) {
-  const content = [];
-  pages.slice(0, Math.min(5, pages.length)).forEach((b64, i) => {
-    content.push({type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}});
-    content.push({type:'text', text:`競馬ラボ馬柱PDF ${i+1}ページ目です。`});
-  });
+  // Use text extraction from PDF.js instead of vision
+  setSt('📄', fname, 'テキスト抽出中…');
+  
+  const pdf = await pdfjsLib.getDocument({data: await (await fetch(URL.createObjectURL(currentFile))).arrayBuffer()}).promise;
+  let allText = '';
+  for (let i = 1; i <= Math.min(pdf.numPages, 3); i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items.map(item => item.str).join(' ');
+    allText += `\n=== ${i}ページ ===\n` + pageText;
+  }
 
-  content.push({type:'text', text:`この競馬ラボ横型馬柱PDFを注意深く読んで、全馬のデータを抽出してください。
+  setSt('🤖', fname, 'AIが馬柱を解析中…');
 
-重要：
-- 馬番1番から最後の馬番まで全頭抽出すること（省略禁止）
-- corner4は前走の4コーナー通過順位（①②③などの丸数字、または数字）
-- 丸数字①=1、②=2、③=3...として数字で返す
-- 前走データが読み取れない場合は"0"とする
+  const prompt = `以下は競馬ラボ横型馬柱PDFのテキストです。全馬のデータを抽出してください。
 
-JSONのみ返してください（コードブロック・前置き不要）:
-{"race_name":"レース名","race_date":"開催日","race_course":"コース(例:東京芝2400m 18頭)","horses":[{"banum":"1","name":"馬名","father":"父馬名","corner4":"4","zenso_class":"クラス","zenso_result":"着順"},{"banum":"2",...}]}
+${allText.substring(0, 8000)}
 
-全馬を必ず含めること。`});
+重要ルール：
+- 馬番1番から全頭抽出（省略禁止）
+- corner4：前走の4コーナー通過順位の数字（①=1,②=2,③=3...）。不明なら"0"
+- zenso_result：前走着順の数字。不明なら"0"
+- father：父馬名のみ（母父は不要）
+
+JSONのみ返してください（コードブロック不要）：
+{"race_name":"レース名","race_date":"開催日","race_course":"コース(例:東京芝2400m 18頭)","horses":[{"banum":"1","name":"馬名","father":"父馬名","corner4":"3","zenso_class":"クラス","zenso_result":"2"},...全頭]}`;
 
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -299,7 +307,7 @@ JSONのみ返してください（コードブロック・前置き不要）:
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 3000,
-      messages: [{role:'user', content}]
+      messages: [{role:'user', content: prompt}]
     })
   });
   const d = await r.json();
@@ -559,7 +567,7 @@ function setLoad(on, txt, sub) {
 }
 
 function resetAll() {
-  pages = []; raceData = {};
+  pages = []; raceData = {}; currentFile = null;
   document.getElementById('pfile').value = '';
   document.getElementById('pst').classList.remove('on');
   document.getElementById('twrap').style.display = 'none';
