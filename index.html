@@ -92,16 +92,17 @@ footer em{color:var(--gold);font-style:normal;}
     <div class="proj-arrow">›</div>
   </a>
 
-  <!-- 2. 1軍半の選手とは -->
-  <div class="project disabled">
+  <!-- 2. 呑蔵野球 -->
+  <a class="project" href="./nomuzoyakyu/index.html">
     <div class="proj-icon">⚾</div>
     <div class="proj-info">
       <div class="proj-num">02</div>
-      <div class="proj-name">1軍半の選手とは</div>
-      <div class="proj-desc">プロスポーツの狭間を生きる選手たちの分析</div>
+      <div class="proj-name">呑蔵野球</div>
+      <div class="proj-desc">内海メソッドによる選手評価エンジン</div>
     </div>
-    <div class="proj-badge badge-dev">Dev</div>
-  </div>
+    <div class="proj-badge badge-live">Live</div>
+    <div class="proj-arrow">›</div>
+  </a>
 
   <!-- 3. 稲盛先生 -->
   <div class="project disabled">
@@ -125,10 +126,44 @@ footer em{color:var(--gold);font-style:normal;}
     <div class="proj-badge badge-live">Live</div>
     <div class="proj-arrow">›</div>
   </a>
+  <!-- QR CODE -->
+  <div style="margin-top:32px;text-align:center;">
+    <div style="font-size:10px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;margin-bottom:12px;">Share</div>
+    <div style="display:inline-block;background:#fff;padding:12px;border-radius:12px;">
+      <canvas id="qr" width="140" height="140"></canvas>
+    </div>
+    <div style="font-size:11px;color:var(--muted2);margin-top:10px;letter-spacing:2px;">Takeshi Uchimi Projects</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:4px;">takeshiuchimi.github.io</div>
+  </div>
 
 </main>
 
 <footer>© <em>TakeshiUchimi</em> · All Projects</footer>
 
+<script>
+// QR Code generator (pure JS, no library)
+(function(){
+  const url = 'https://takeshiuchimi.github.io/';
+  const canvas = document.getElementById('qr');
+  const ctx = canvas.getContext('2d');
+
+  // Use Google Charts QR API as img fallback
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function(){
+    ctx.drawImage(img, 0, 0, 140, 140);
+  };
+  img.onerror = function(){
+    // Fallback: show URL text
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0,0,140,140);
+    ctx.fillStyle = '#000';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('takeshiuchimi', 10, 70);
+    ctx.fillText('.github.io', 20, 85);
+  };
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=' + encodeURIComponent(url);
+})();
+</script>
 </body>
 </html>
