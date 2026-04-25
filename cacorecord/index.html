@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🎵 Ca&co レコード</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
 <style>
 :root{
   --bg:#1a1008;--bg2:#241508;--bg3:#2e1c0a;--bg4:#3a2510;
@@ -13,8 +14,8 @@
   --radius:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Noto Serif JP',serif;min-height:100vh;padding-bottom:60px;}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(201,168,76,0.06) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(232,160,32,0.04) 0%,transparent 60%);pointer-events:none;z-index:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Serif JP',serif;min-height:100vh;padding-bottom:80px;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(201,168,76,0.06) 0%,transparent 60%);pointer-events:none;z-index:0;}
 
 header{background:linear-gradient(180deg,#0e0804,#1a1008);border-bottom:2px solid rgba(201,168,76,0.4);padding:16px 20px 12px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.6);}
 .logo{font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:5px;color:var(--muted2);text-transform:uppercase;margin-bottom:3px;font-style:italic;}
@@ -23,18 +24,20 @@ header h1 em{color:var(--gold2);font-style:normal;}
 .vbadge{font-size:9px;letter-spacing:2px;color:var(--muted);border:1px solid var(--border);padding:2px 10px;border-radius:20px;margin-top:5px;display:inline-block;}
 .back-btn{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:11px;letter-spacing:1px;text-decoration:none;opacity:0.7;}
 
-.wrap{max-width:480px;margin:0 auto;padding:24px 16px;position:relative;z-index:1;}
+.wrap{max-width:480px;margin:0 auto;padding:20px 16px;position:relative;z-index:1;}
 
-.label-area{text-align:center;margin-bottom:24px;}
-.label-name{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:var(--gold2);letter-spacing:3px;}
-.label-sub{font-size:11px;color:var(--muted2);letter-spacing:4px;text-transform:uppercase;margin-top:4px;font-family:'Cormorant Garamond',serif;font-style:italic;}
-.label-divider{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:10px auto;}
+.art-wrap{text-align:center;margin-bottom:20px;}
+.art-img{width:200px;height:200px;border-radius:50%;object-fit:cover;border:3px solid rgba(201,168,76,0.4);box-shadow:0 8px 40px rgba(0,0,0,0.6),0 0 30px rgba(201,168,76,0.15);}
+.art-img.spinning{animation:spin 8s linear infinite;}
+.art-default{width:200px;height:200px;border-radius:50%;background:linear-gradient(135deg,var(--bg3),var(--bg4));border:3px solid rgba(201,168,76,0.4);display:flex;align-items:center;justify-content:center;font-size:60px;margin:0 auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
+.art-default.spinning{animation:spin 8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-.now-playing{background:var(--bg2);border:1px solid rgba(201,168,76,0.3);border-radius:var(--radius);padding:20px 16px;margin-bottom:16px;position:relative;overflow:hidden;}
+.now-playing{background:var(--bg2);border:1px solid rgba(201,168,76,0.3);border-radius:var(--radius);padding:18px 16px;margin-bottom:14px;position:relative;overflow:hidden;}
 .now-playing::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--amber),var(--gold));}
-.np-label{font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:10px;font-family:'Cormorant Garamond',serif;}
-.np-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:3px;line-height:1.4;}
-.np-artist{font-size:12px;color:var(--muted2);font-family:'Cormorant Garamond',serif;font-style:italic;margin-bottom:16px;}
+.np-label{font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;font-family:'Cormorant Garamond',serif;}
+.np-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:3px;line-height:1.4;}
+.np-artist{font-size:12px;color:var(--muted2);font-family:'Cormorant Garamond',serif;font-style:italic;margin-bottom:14px;}
 
 .progress-wrap{margin-bottom:14px;}
 .progress-bar{width:100%;height:4px;background:var(--bg4);border-radius:2px;cursor:pointer;position:relative;}
@@ -46,33 +49,38 @@ header h1 em{color:var(--gold2);font-style:normal;}
 .ctrl-btn{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:22px;padding:8px;transition:color 0.15s;}
 .ctrl-btn:hover{color:var(--gold2);}
 .ctrl-play{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--amber));border:none;color:#1a1008;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 4px 16px rgba(201,168,76,0.4);}
-.ctrl-play:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(201,168,76,0.6);}
+.ctrl-play:hover{transform:scale(1.05);}
 
 .volume-row{display:flex;align-items:center;gap:10px;}
 .vol-icon{font-size:13px;color:var(--muted);}
 input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:var(--bg4);border-radius:2px;outline:none;}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--gold);cursor:pointer;}
 
+.lyrics-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.lyrics-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:var(--bg3);border-bottom:1px solid var(--border);cursor:pointer;}
+.lyrics-label{font-size:10px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;font-family:'Cormorant Garamond',serif;}
+.lyrics-arrow{color:var(--gold);font-size:13px;transition:transform 0.3s;}
+.lyrics-arrow.open{transform:rotate(180deg);}
+.lyrics-body{display:none;padding:16px;max-height:320px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.lyrics-body.open{display:block;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.lyrics-text{font-size:13px;line-height:2.3;color:var(--text);white-space:pre-wrap;}
+.lyrics-empty{font-size:12px;color:var(--muted);text-align:center;padding:8px 0;}
+
 .playlist{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;}
 .playlist-header{padding:10px 16px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:10px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;font-family:'Cormorant Garamond',serif;}
-
-.track{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.2s;}
+.track{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.2s;}
 .track:last-child{border-bottom:none;}
 .track:hover{background:rgba(201,168,76,0.05);}
 .track.active{background:rgba(201,168,76,0.08);}
-
-.track-num{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--muted);min-width:24px;text-align:center;}
+.track-art{width:42px;height:42px;border-radius:6px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;}
+.track-art-def{width:42px;height:42px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.track-num{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--muted);min-width:20px;text-align:center;}
 .track.active .track-num{color:var(--gold2);}
-
-.track-disc{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--bg4),var(--bg3));border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:all 0.3s;}
-.track.active .track-disc{border-color:var(--gold);box-shadow:0 0 12px rgba(201,168,76,0.3);}
-.spinning{animation:spin 4s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-
 .track-info{flex:1;min-width:0;}
-.track-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:2px;}
+.track-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .track.active .track-title{color:var(--gold2);}
-.track-artist{font-size:11px;color:var(--muted2);font-family:'Cormorant Garamond',serif;font-style:italic;}
+.track-sub{font-size:11px;color:var(--muted2);font-family:'Cormorant Garamond',serif;font-style:italic;}
 .track-dur{font-family:'Cormorant Garamond',serif;font-size:12px;color:var(--muted);flex-shrink:0;}
 
 footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2;position:relative;z-index:1;}
@@ -89,10 +97,10 @@ footer em{color:var(--gold);font-style:normal;}
 </header>
 
 <div class="wrap">
-  <div class="label-area">
-    <div class="label-name">Ca&amp;co</div>
-    <div class="label-sub">Original Songs</div>
-    <div class="label-divider"></div>
+
+  <div class="art-wrap">
+    <div class="art-default" id="art-default">🎵</div>
+    <img class="art-img" id="art-img" style="display:none;" alt="album art">
   </div>
 
   <div class="now-playing">
@@ -121,32 +129,43 @@ footer em{color:var(--gold);font-style:normal;}
     </div>
   </div>
 
+  <div class="lyrics-card">
+    <div class="lyrics-header" onclick="toggleLyrics()">
+      <span class="lyrics-label">📝 歌詞</span>
+      <span class="lyrics-arrow" id="lyrics-arrow">▼</span>
+    </div>
+    <div class="lyrics-body" id="lyrics-body">
+      <div class="lyrics-empty" id="lyrics-empty">曲を選ぶと歌詞が表示されます</div>
+      <div class="lyrics-text" id="lyrics-text" style="display:none;"></div>
+    </div>
+  </div>
+
   <div class="playlist">
     <div class="playlist-header">Playlist — 3 Tracks</div>
     <div class="track" id="track0" onclick="selectTrack(0)">
       <div class="track-num">1</div>
-      <div class="track-disc" id="disc0">🎵</div>
+      <div class="track-art-def" id="thumb0">🎵</div>
       <div class="track-info">
-        <div class="track-title">Ca&amp;coの歌</div>
-        <div class="track-artist">Ca&amp;co Snack Bar</div>
+        <div class="track-title" id="ttitle0">Ca&amp;coの歌</div>
+        <div class="track-sub">Ca&amp;co Snack Bar</div>
       </div>
       <div class="track-dur" id="dur0">—</div>
     </div>
     <div class="track" id="track1" onclick="selectTrack(1)">
       <div class="track-num">2</div>
-      <div class="track-disc" id="disc1">🎵</div>
+      <div class="track-art-def" id="thumb1">🎵</div>
       <div class="track-info">
-        <div class="track-title">つゆこと私のハッピーアワー</div>
-        <div class="track-artist">Ca&amp;co Snack Bar</div>
+        <div class="track-title" id="ttitle1">つゆこと私のハッピーアワー</div>
+        <div class="track-sub">Ca&amp;co Snack Bar</div>
       </div>
       <div class="track-dur" id="dur1">—</div>
     </div>
     <div class="track" id="track2" onclick="selectTrack(2)">
       <div class="track-num">3</div>
-      <div class="track-disc" id="disc2">🎵</div>
+      <div class="track-art-def" id="thumb2">🎵</div>
       <div class="track-info">
-        <div class="track-title">つゆことあきこの止まらない夜</div>
-        <div class="track-artist">Ca&amp;co Snack Bar</div>
+        <div class="track-title" id="ttitle2">つゆことあきこの止まらない夜</div>
+        <div class="track-sub">Ca&amp;co Snack Bar</div>
       </div>
       <div class="track-dur" id="dur2">—</div>
     </div>
@@ -157,20 +176,40 @@ footer em{color:var(--gold);font-style:normal;}
 
 <script>
 const tracks = [
-  {title:'Ca&coの歌',       artist:'Ca&co Snack Bar', src:'./music/caco.mp3'},
-  {title:'つゆこと私のハッピーアワー', artist:'Ca&co Snack Bar', src:'./music/happy.mp3'},
-  {title:'つゆことあきこの止まらない夜',artist:'Ca&co Snack Bar', src:'./music/tomaranai.mp3'},
+  {title:'Ca&coの歌',            artist:'Ca&co Snack Bar', src:'./music/caco.mp3'},
+  {title:'つゆこと私のハッピーアワー',  artist:'Ca&co Snack Bar', src:'./music/happy.mp3'},
+  {title:'つゆことあきこの止まらない夜', artist:'Ca&co Snack Bar', src:'./music/tomaranai.mp3'},
 ];
 
+const tagCache = {};
 let cur=-1, playing=false;
 const audio = new Audio();
 audio.volume = 0.8;
 
-// Load durations
-tracks.forEach((t,i) => {
+// Load durations + ID3 tags
+tracks.forEach((t, i) => {
   const a = new Audio(t.src);
   a.addEventListener('loadedmetadata', () => {
     document.getElementById(`dur${i}`).textContent = fmt(a.duration);
+  });
+
+  jsmediatags.read(t.src, {
+    onSuccess(tag) {
+      const tags = tag.tags;
+      tagCache[i] = tags;
+      if (tags.title) {
+        tracks[i].title = tags.title;
+        document.getElementById(`ttitle${i}`).textContent = tags.title;
+      }
+      if (tags.picture) {
+        const pic = tags.picture;
+        const b64 = btoa(String.fromCharCode(...new Uint8Array(pic.data)));
+        const src = `data:${pic.format};base64,${b64}`;
+        const el = document.getElementById(`thumb${i}`);
+        el.outerHTML = `<img class="track-art" id="thumb${i}" src="${src}">`;
+      }
+    },
+    onError(e) { console.log('ID3 error:', e); }
   });
 });
 
@@ -182,10 +221,53 @@ function selectTrack(n) {
   audio.src = tracks[n].src;
   audio.play();
   playing = true;
+  updateTagDisplay(n);
   updateUI();
   audio.addEventListener('loadedmetadata', () => {
     document.getElementById('t-dur').textContent = fmt(audio.duration);
   }, {once:true});
+}
+
+function updateTagDisplay(n) {
+  const tags = tagCache[n] || {};
+  const t = tracks[n];
+
+  document.getElementById('np-title').textContent = tags.title || t.title;
+  document.getElementById('np-artist').textContent = tags.artist || t.artist;
+
+  const artImg = document.getElementById('art-img');
+  const artDef = document.getElementById('art-default');
+  if (tags.picture) {
+    const pic = tags.picture;
+    const b64 = btoa(String.fromCharCode(...new Uint8Array(pic.data)));
+    artImg.src = `data:${pic.format};base64,${b64}`;
+    artImg.style.display = 'block';
+    artDef.style.display = 'none';
+  } else {
+    artImg.style.display = 'none';
+    artDef.style.display = 'flex';
+  }
+
+  // Lyrics
+  const lyricsText = document.getElementById('lyrics-text');
+  const lyricsEmpty = document.getElementById('lyrics-empty');
+  const lyr = tags.lyrics || (tags.USLT && tags.USLT.text) || null;
+  if (lyr) {
+    lyricsText.textContent = typeof lyr === 'string' ? lyr : lyr.text || '';
+    lyricsText.style.display = 'block';
+    lyricsEmpty.style.display = 'none';
+  } else {
+    lyricsText.style.display = 'none';
+    lyricsEmpty.style.display = 'block';
+    lyricsEmpty.textContent = '歌詞データがありません';
+  }
+}
+
+function toggleLyrics() {
+  const body = document.getElementById('lyrics-body');
+  const arrow = document.getElementById('lyrics-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
 }
 
 function togglePlay() {
@@ -214,14 +296,12 @@ function updateProgress() {
 }
 
 function updateUI() {
-  document.getElementById('np-title').textContent = cur>=0 ? tracks[cur].title : '曲を選んでください';
   document.getElementById('play-btn').textContent = playing ? '⏸' : '▶';
-  document.querySelectorAll('.track').forEach((el,i) => {
-    el.classList.toggle('active', i===cur);
-  });
-  document.querySelectorAll('.track-disc').forEach((el,i) => {
-    el.classList.toggle('spinning', i===cur && playing);
-  });
+  const artImg = document.getElementById('art-img');
+  const artDef = document.getElementById('art-default');
+  artImg.classList.toggle('spinning', playing);
+  artDef.classList.toggle('spinning', playing);
+  document.querySelectorAll('.track').forEach((el,i) => el.classList.toggle('active', i===cur));
 }
 
 function fmt(s) {
