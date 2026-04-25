@@ -126,9 +126,6 @@ footer em{color:var(--green);font-style:normal;}
 
 <script src="apikey.js"></script>
 <script>
-const API_KEY = GEMINI_API_KEY;
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`;
-
 const SYSTEM_PROMPT = `日本プロ野球選手を評価するアシスタントです。必ずJSONのみで返してください。マークダウンやコードブロックは絶対に使わないでください。
 
 選手が特定できた場合のJSON:
@@ -165,28 +162,32 @@ function parseJSON(raw) {
 }
 
 async function callAI(userMsg, isSubCmd) {
-  const contents = [];
+  const msgs = [];
   if (!isSubCmd) {
-    contents.push({ role: 'user', parts: [{ text: userMsg }] });
+    msgs.push({ role: 'user', content: userMsg });
   } else {
-    history.forEach(h => contents.push(h));
-    contents.push({ role: 'user', parts: [{ text: userMsg }] });
+    history.forEach(h => msgs.push(h));
+    msgs.push({ role: 'user', content: userMsg });
   }
 
-  const body = {
-    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-    contents: contents,
-    generationConfig: { maxOutputTokens: 800, temperature: 0.2 }
-  };
-
-  const r = await fetch(API_URL, {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 800,
+      system: SYSTEM_PROMPT,
+      messages: msgs
+    })
   });
   const d = await r.json();
   if (d.error) throw new Error(d.error.message);
-  const text = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const text = d.content?.map(b => b.text||'').join('') || '';
   if (!text) throw new Error('レスポンスが空です');
   return text;
 }
@@ -201,8 +202,8 @@ async function doSearch() {
   try {
     const raw = await callAI(q, false);
     history = [
-      { role: 'user', parts: [{ text: q }] },
-      { role: 'model', parts: [{ text: raw }] }
+      { role: 'user', content: q },
+      { role: 'assistant', content: raw }
     ];
     const data = parseJSON(raw);
     if (data.type === 'candidates') renderCandidates(data);
@@ -222,8 +223,8 @@ async function selectCandidate(name) {
   try {
     const raw = await callAI(name, false);
     history = [
-      { role: 'user', parts: [{ text: name }] },
-      { role: 'model', parts: [{ text: raw }] }
+      { role: 'user', content: name },
+      { role: 'assistant', content: raw }
     ];
     const data = parseJSON(raw);
     if (data.type === 'player') renderPlayer(data);
