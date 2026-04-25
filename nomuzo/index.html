@@ -287,22 +287,24 @@ async function readPdf(fname) {
 
 ${allText.substring(0, 8000)}
 
-【重要】PDFの前走データには「③③④⑥」のような丸数字4つが並んでいます。
-これは「1角・2角・3角・4角」の通過順位です。
-corner4は必ず4番目（最後）の丸数字を整数で返してください。
-例：「③③④⑥」→ corner4は6
-例：「⑧⑦⑦⑥」→ corner4は6
-例：「①①①①」→ corner4は1
-丸数字がない場合は"0"
+【重要】PDFのフォーマット説明：
+1. 各馬の前走データには「③③④⑥」のような丸数字4つが並んでいます
+   → 1角・2角・3角・4角の通過順位です
+   → corner4は必ず4番目（最後）の丸数字を整数で返してください
+   → 例：「③③④⑥」→ corner4=6、「①①①①」→ corner4=1
+
+2. 前走着順は丸数字の直前に出てくる数字です
+   → 例：「9 ③③④⑥ 9頭4番8人」→ zenso_result=9（最初の9が着順）
+   → 例：「3 ①①①①」→ zenso_result=3
+   → 例：「1 ③③③③」→ zenso_result=1
+   → 着順は1〜18の整数。見つからない場合は"0"
 
 抽出ルール：
-- 馬番1番から全頭抽出（省略禁止・18頭全部）
-- corner4：前走4角通過順位（上記参照）
-- zenso_result：前走着順の数字
-- father：父馬名のみ
+- 馬番1番から全18頭抽出（省略禁止）
+- father：父馬名のみ（母父不要）
 
 JSONのみ返してください（コードブロック不要）：
-{"race_name":"レース名","race_date":"開催日","race_course":"コース(例:東京芝2400m 18頭)","horses":[{"banum":"1","name":"馬名","father":"父馬名","corner4":"6","zenso_class":"クラス","zenso_result":"2"},...全18頭]}`;
+{"race_name":"レース名","race_date":"開催日","race_course":"コース(例:東京芝2400m 18頭)","horses":[{"banum":"1","name":"馬名","father":"父馬名","corner4":"6","zenso_class":"クラス","zenso_result":"9"},...全18頭]}`;
 
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
