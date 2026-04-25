@@ -59,13 +59,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .lyrics-label{font-size:10px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;font-family:'Cormorant Garamond',serif;}
 .lyrics-arrow{color:var(--gold);font-size:13px;transition:transform 0.3s;}
 .lyrics-arrow.open{transform:rotate(180deg);}
-.lyrics-body{display:none;height:220px;overflow-y:auto;scroll-behavior:smooth;padding:12px 0;scrollbar-width:none;}
+.lyrics-body{display:none;height:220px;overflow:hidden;padding:0;scrollbar-width:none;position:relative;}
 .lyrics-body::-webkit-scrollbar{display:none;}
 .lyrics-body.open{display:block;}
-.lyrics-line{padding:10px 18px;font-size:14px;color:var(--muted);line-height:1.8;transition:all 0.3s;text-align:center;cursor:pointer;}
+.lyrics-inner{transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);padding-top:88px;padding-bottom:88px;}
+.lyrics-line{padding:9px 18px;font-size:13px;color:rgba(160,128,96,0.5);line-height:1.8;transition:all 0.4s;text-align:center;cursor:pointer;height:44px;display:flex;align-items:center;justify-content:center;}
 .lyrics-line:hover{color:var(--muted2);}
-.lyrics-line.active{color:var(--gold2);font-size:16px;font-weight:700;text-shadow:0 0 20px rgba(240,201,110,0.5);}
-.lyrics-line.passed{color:var(--muted);}
+.lyrics-line.active{color:var(--gold2);font-size:15px;font-weight:700;text-shadow:0 0 16px rgba(240,201,110,0.4);}
+.lyrics-line.near{color:var(--muted2);font-size:13px;}
+.lyrics-line.passed{color:rgba(160,128,96,0.3);}
 .lyrics-empty{font-size:12px;color:var(--muted);text-align:center;padding:20px;}
 
 /* PLAYLIST */
@@ -208,14 +210,18 @@ function buildLyrics(n) {
   }
   empty.style.display = 'none';
 
+  const inner = document.createElement('div');
+  inner.id = 'lyrics-inner';
+  inner.className = 'lyrics-inner';
   lines.forEach((l, i) => {
     const div = document.createElement('div');
     div.className = 'lyrics-line';
     div.id = `lyric${i}`;
     div.textContent = l.text;
     div.onclick = () => { audio.currentTime = l.time; };
-    container.appendChild(div);
+    inner.appendChild(div);
   });
+  container.appendChild(inner);
 }
 
 function updateLyrics() {
@@ -235,19 +241,18 @@ function updateLyrics() {
   curLyricIdx = idx;
 
   document.querySelectorAll('.lyrics-line').forEach((el, i) => {
-    el.classList.remove('active', 'passed');
+    el.classList.remove('active', 'near', 'passed');
     if (i === idx) el.classList.add('active');
+    else if (i === idx-1 || i === idx+1) el.classList.add('near');
     else if (i < idx) el.classList.add('passed');
   });
 
-  // Auto scroll
-  if (idx >= 0) {
-    const activeEl = document.getElementById(`lyric${idx}`);
-    if (activeEl) {
-      const body = document.getElementById('lyrics-body');
-      const offset = activeEl.offsetTop - body.offsetHeight / 2 + activeEl.offsetHeight / 2;
-      body.scrollTop = offset;
-    }
+  // Scroll: move inner div so active line stays at center (3rd row)
+  const LINE_H = 44;
+  const inner = document.getElementById('lyrics-inner');
+  if (inner && idx >= 0) {
+    const offset = idx * LINE_H;
+    inner.style.transform = `translateY(-${offset}px)`;
   }
 }
 
