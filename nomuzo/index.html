@@ -202,10 +202,20 @@ async function procPdf(file){
 function parsePdf(lines, fname){
   // Race info
   let race_name='', race_date='', race_course='';
-  for(const ln of lines.slice(0,60)){
+  for(let li=0;li<Math.min(lines.length,80);li++){
+    const ln=lines[li];
     if(!race_date){const m=ln.match(/(\d{4}\/\d{1,2}\/\d{1,2})/);if(m)race_date=m[1];}
     if(!race_course){const m=ln.match(/芝(\d{4})m\s*(\d{1,2})頭/);if(m)race_course=`芝${m[1]}m ${m[2]}頭`;}
-    if(!race_name){const m=ln.match(/(テレビ[^\s]+賞|[^\s]+賞|[^\s]+ステークス|[^\s]+カップ)/);if(m)race_name=m[1];}
+    // Race name: line after "11R" that contains kanji/katakana race name
+    if(!race_name && /^\d+R$/.test(ln.trim())){
+      const next=lines[li+1]||'';
+      const m=next.match(/^([\u4e00-\u9fffァ-ヶー]+[賞特別記念カップ])/);
+      if(m)race_name=m[1].trim();
+    }
+    if(!race_name){
+      const m=ln.match(/([\u4e00-\u9fff]{2,}[賞特別記念])/);
+      if(m&&!ln.includes('競馬')&&!ln.includes('データ'))race_name=m[1];
+    }
   }
 
   // Find horse names: pure katakana lines followed by "--人気/--⼈気" within next 6 lines
@@ -238,10 +248,10 @@ function parsePdf(lines, fname){
       const m=ln.trim().match(/^(\d)\s+(\d{1,2})\s+---/);
       if(m){banum=m[2];break;}
     }
-    // 前走着順: "騎手：X.X%[N] Z" → last number Z (1-18)
+    // 前走着順: "騎手：X%[N] Z ..." → first number Z (1-18) after %[N]
     let zenso_result=0;
     for(const ln of sec.slice(0,6)){
-      const m=ln.match(/騎[手⼿][：:]\s*[\d.]+%\[\d+\]\s+(\d{1,2})\s*$/);
+      const m=ln.match(/騎[手⼿][：:]\s*[\d.]+%\[\d+\]\s+(\d{1,2})/);
       if(m){
         const v=parseInt(m[1]);
         if(v>=1&&v<=18){zenso_result=v;break;}
@@ -253,11 +263,31 @@ function parsePdf(lines, fname){
       const m=ln.match(/[①-⑱]{4}/);
       if(m){corner4=CIRCLE[m[0][3]]||0;break;}
     }
-    // 父馬名: "XXXXX (---kg)" pattern
+    // 父馬名: "(---kg)" の前のカタカナ or 騎手行の末尾カタカナ
     let father='不明';
     for(const ln of sec){
-      const m=ln.match(/([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,15})\s*\(---kg\)/);
-      if(m){father=m[1].trim();break;}
+      // Pattern 1: "父馬名 (---kg)"
+      const m1=ln.match(/([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,15})\s*\(---kg\)/);
+      if(m1&&!/[0-9]/.test(m1[1])){father=m1[1].trim();break;}
+    }
+    if(father==='不明'){
+      for(const ln of sec){
+        // Pattern 2: jockey line ends with father name "◁◁◀◁ キタサンブラック"  
+        const m2=ln.match(/[◁◀]+\s+([ァ-ヶーA-Za-z\u4e00-\u9fff]{3,15})\s*$/);
+        if(m2){father=m2[1].trim();break;}
+        // Pattern 3: standalone father name line after "---kg 父馬："
+        const m3=ln.match(/---kg\s+[父⽗][⾺馬][：:]/);
+        if(m3){
+          // next line might have father name
+          const idx2=sec.indexOf(ln);
+          if(idx2>=0&&idx2+1<sec.length){
+            const nextLn=sec[idx2+1];
+            const m4=nextLn.match(/^([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,15})/);
+            if(m4)father=m4[1].trim();
+          }
+          break;
+        }
+      }
     }
     // コース適性: 当該/東芝 W P S X
     let tekisei=30;
