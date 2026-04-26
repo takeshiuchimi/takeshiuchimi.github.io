@@ -196,6 +196,9 @@ async function procPdf(file) {
       allText += tc.items.map(it => it.str + (it.hasEOL ? '\n' : ' ')).join('') + '\n';
     }
     pdfText = allText;
+    // DEBUG: show text around horse area
+    const idx = allText.indexOf('--');
+    alert('-- found at:' + idx + '\n' + JSON.stringify(allText.substring(Math.max(0,idx-30), idx+50)));
     parsePdf(allText, file.name);
   } catch(err) {
     setSt('❌','エラー',err.message);
