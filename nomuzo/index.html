@@ -193,10 +193,6 @@ async function procPdf(file){
         allLines.push(yMap[y].join(' '));
       }
     }
-    // DEBUG
-    const rn = allLines.slice(10,25).map((l,i)=>`${i+10}:${l.substring(0,30)}`).join('\n');
-    const cats = allLines.filter(l=>/^[ァ-ヶー]{3,}$/.test(l.trim())).slice(0,8).join(',');
-    alert('Lines 10-24:\n'+rn+'\n\nKatakana lines: '+cats);
     parsePdf(allLines, file.name);
   }catch(err){
     setSt('❌','エラー',err.message);
@@ -224,25 +220,18 @@ function parsePdf(lines, fname){
 
   // Find horse names: pure katakana lines followed by "--人気/--⼈気" within next 6 lines
   const horses=[];
-  // Collect all katakana-only lines with -- nearby
+  // Collect horse names: katakana-only lines that have "---倍" within next 15 lines
+  // This distinguishes horse names from father/mother names
   const candidates=[];
   for(let i=0;i<lines.length;i++){
     const ln=lines[i].trim();
-    if(/^[ァ-ヶー]{3,}$/.test(ln)){
-      const nearby=lines.slice(i+1,i+8).join('\n');
-      if(/--/.test(nearby)) candidates.push({idx:i,name:ln});
+    if(/^[ァ-ヶー]{3,12}$/.test(ln)){
+      const nearby=lines.slice(i+1,i+15).join('\n');
+      // Horse sections have "---倍" (odds) - this is unique to horse blocks
+      if(/---倍/.test(nearby)) candidates.push({idx:i,name:ln});
     }
   }
-  // Remove duplicates: if two candidates are within 3 lines, keep the SECOND (horse name)
-  // Mother name appears 1 line before horse name
-  const filtered=[];
-  for(let i=0;i<candidates.length;i++){
-    if(i+1<candidates.length && candidates[i+1].idx - candidates[i].idx <= 3){
-      // Skip first (母名), keep second (馬名)
-      continue;
-    }
-    filtered.push(candidates[i]);
-  }
+  const filtered=candidates; // No dedup needed with ---倍 filter
   // Build sections
   for(let fi=0;fi<filtered.length;fi++){
     const {idx,name}=filtered[fi];
