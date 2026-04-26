@@ -172,6 +172,7 @@ function onSel(e){const f=e.target.files[0];if(f)procPdf(f);}
 async function procPdf(file){
   setSt('⏳',file.name,'PDFを読み込んでいます…');
   try{
+    alert('procPdf start: ' + file.name);
     const buf=await file.arrayBuffer();
     const pdf=await pdfjsLib.getDocument({data:buf}).promise;
     
@@ -193,6 +194,8 @@ async function procPdf(file){
         allLines.push(yMap[y].join(' '));
       }
     }
+    const ddLines = allLines.filter(l=>l.includes('--')).slice(0,5).map(l=>JSON.stringify(l.substring(0,40)));
+    alert('Lines with --:\n' + ddLines.join('\n'));
     parsePdf(allLines, file.name);
   }catch(err){
     setSt('❌','エラー',err.message);
