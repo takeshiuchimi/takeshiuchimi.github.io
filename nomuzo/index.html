@@ -206,108 +206,80 @@ function parsePdf(lines, fname){
     const ln=lines[li];
     if(!race_date){const m=ln.match(/(\d{4}\/\d{1,2}\/\d{1,2})/);if(m)race_date=m[1];}
     if(!race_course){const m=ln.match(/芝(\d{4})m\s*(\d{1,2})頭/);if(m)race_course=`芝${m[1]}m ${m[2]}頭`;}
-    // Race name: line after "11R" that contains kanji/katakana race name
     if(!race_name && /^\d+R$/.test(ln.trim())){
-      const next=lines[li+1]||'';
-      const m=next.match(/^([\u4e00-\u9fffァ-ヶー]+[賞特別記念カップ])/);
-      if(m)race_name=m[1].trim();
-    }
-    if(!race_name){
-      const m=ln.match(/([\u4e00-\u9fff]{2,}[賞特別記念])/);
-      if(m&&!ln.includes('競馬')&&!ln.includes('データ'))race_name=m[1];
-    }
-  }
-
-  // Find horse names: pure katakana lines followed by "--人気/--⼈気" within next 6 lines
-  const horses=[];
-  // Collect horse names: katakana-only lines that have "---倍" within next 15 lines
-  // This distinguishes horse names from father/mother names
-  const candidates=[];
-  for(let i=0;i<lines.length;i++){
-    const ln=lines[i].trim();
-    if(/^[ァ-ヶー]{3,12}$/.test(ln)){
-      const nearby=lines.slice(i+1,i+15).join('\n');
-      // Horse sections have "---倍" (odds) - this is unique to horse blocks
-      if(/---倍/.test(nearby)) candidates.push({idx:i,name:ln});
-    }
-  }
-  const filtered=candidates; // No dedup needed with ---倍 filter
-  // Build sections
-  for(let fi=0;fi<filtered.length;fi++){
-    const {idx,name}=filtered[fi];
-    const nextIdx=fi+1<filtered.length ? filtered[fi+1].idx : lines.length;
-    const section=lines.slice(idx,nextIdx);
-    horses.push({name,lineIdx:idx,section});
-  }
-
-  const parsed=horses.map((h,idx)=>{
-    const sec=h.section;
-    // 馬番: "X Y ---" pattern (枠番 馬番 ---)
-    let banum=String(idx+1);
-    for(const ln of sec){
-      const m=ln.trim().match(/^(\d)\s+(\d{1,2})\s+---/);
-      if(m){banum=m[2];break;}
-    }
-    // 前走着順: "騎手：X%[N] Z ..." → first number Z (1-18) after %[N]
-    let zenso_result=0;
-    for(const ln of sec.slice(0,6)){
-      const m=ln.match(/騎[手⼿][：:]\s*[\d.]+%\[\d+\]\s+(\d{1,2})/);
-      if(m){
-        const v=parseInt(m[1]);
-        if(v>=1&&v<=18){zenso_result=v;break;}
+      const next=(lines[li+1]||'').trim();
+      if(next.length>=4 && !/^[\d:RrR]/.test(next)){
+        race_name=next.replace(/[\s\u3000]+/g,'').replace(/（[^）]*）/g,'');
       }
     }
-    // 4角位置: 4 consecutive circled numbers → last one
+  }
+
+  // Find horses using "--人気" as anchor, look back for katakana name
+  const filtered=[];
+  for(let i=2;i<lines.length;i++){
+    const ln=lines[i];
+    if(!ln.includes('--')) continue;
+    if(!ln.includes('\u4eba\u6c17') && !ln.includes('\u2f08\u6c17') && !ln.includes('\u2eba\u6c17')) continue;
+    // Look back up to 5 lines for horse name
+    for(let j=i-1;j>=Math.max(0,i-5);j--){
+      const prev=lines[j].trim();
+      const m1=prev.match(/^([ァ-ヶー]{3,12})$/);
+      if(m1){
+        if(!filtered.some(f=>f.name===m1[1])) filtered.push({idx:j,niIdx:i,name:m1[1]});
+        break;
+      }
+      const m2=prev.match(/^([ァ-ヶー]{3,12})\s/);
+      if(m2 && /[\u4e00-\u9fff\d]/.test(prev)){
+        if(!filtered.some(f=>f.name===m2[1])) filtered.push({idx:j,niIdx:i,name:m2[1]});
+        break;
+      }
+    }
+  }
+
+  const horses=[];
+  const parsed=filtered.map((h,fi)=>{
+    const nextH=fi+1<filtered.length ? filtered[fi+1].idx : lines.length;
+    const section=lines.slice(h.idx,nextH);
+    // 馬番
+    let banum=String(fi+1);
+    for(const sl of section){
+      const bm=sl.trim().match(/^(\d)\s+(\d{1,2})\s+---/);
+      if(bm){banum=bm[2];break;}
+    }
+    // 前走着順: single number line (1-18) near top
+    let zenso_result=0;
+    for(const sl of section.slice(0,8)){
+      const m=sl.trim().match(/^(\d{1,2})$/);
+      if(m){const v=parseInt(m[1]);if(v>=1&&v<=18){zenso_result=v;break;}}
+    }
+    // 4角位置
     let corner4=0;
-    for(const ln of sec){
-      const m=ln.match(/[①-⑱]{4}/);
+    for(const sl of section){
+      const m=sl.match(/[①-⑱]{4}/);
       if(m){corner4=CIRCLE[m[0][3]]||0;break;}
     }
-    // 父馬名: "(---kg)" の前のカタカナ or 騎手行の末尾カタカナ
+    // 父馬名
     let father='不明';
-    for(const ln of sec){
-      // Pattern 1: "父馬名 (---kg)"
-      const m1=ln.match(/([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,15})\s*\(---kg\)/);
-      if(m1&&!/[0-9]/.test(m1[1])){father=m1[1].trim();break;}
+    for(const sl of section){
+      const m=sl.match(/\u2003([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,15})\s*\(---kg\)/);
+      if(m){father=m[1];break;}
     }
-    if(father==='不明'){
-      for(const ln of sec){
-        // Pattern 2: jockey line ends with father name "◁◁◀◁ キタサンブラック"  
-        const m2=ln.match(/[◁◀]+\s+([ァ-ヶーA-Za-z\u4e00-\u9fff]{3,15})\s*$/);
-        if(m2){father=m2[1].trim();break;}
-        // Pattern 3: standalone father name line after "---kg 父馬："
-        const m3=ln.match(/---kg\s+[父⽗][⾺馬][：:]/);
-        if(m3){
-          // next line might have father name
-          const idx2=sec.indexOf(ln);
-          if(idx2>=0&&idx2+1<sec.length){
-            const nextLn=sec[idx2+1];
-            const m4=nextLn.match(/^([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,15})/);
-            if(m4)father=m4[1].trim();
-          }
-          break;
-        }
-      }
-    }
-    // コース適性: 当該/東芝 W P S X
+    // コース適性
     let tekisei=30;
-    for(const ln of sec){
-      const tm=ln.match(/当該\s+(\d)\s+(\d)\s+(\d)\s+(\d)/);
-      const tzm=ln.match(/東芝\s+(\d)\s+(\d)\s+(\d)\s+(\d)/);
+    for(const sl of section){
+      const tm=sl.match(/当該\s+(\d)\s+(\d)/);
+      const tzm=sl.match(/東芝\s+(\d)\s+(\d)/);
       if(tm)tekisei+=parseInt(tm[1])*4+parseInt(tm[2])*2;
       if(tzm)tekisei+=parseInt(tzm[1])*3+parseInt(tzm[2])*1;
     }
     tekisei=Math.min(40,Math.max(25,tekisei));
-    // 全成績: 全 W P S X
+    // 能力
     let noryoku=27;
-    for(const ln of sec.slice(0,3)){
-      const m=ln.match(/全\s+(\d)\s+(\d)\s+(\d)\s+(\d)/);
-      if(m){
-        const w=parseInt(m[1]),top3=parseInt(m[1])+parseInt(m[2])+parseInt(m[3]);
-        noryoku=Math.min(35,Math.max(20,20+w*4+top3));break;
-      }
+    for(const sl of section.slice(0,3)){
+      const m=sl.match(/全\s+(\d)\s+(\d)\s+(\d)\s+(\d)/);
+      if(m){const w=parseInt(m[1]),top3=w+parseInt(m[2])+parseInt(m[3]);noryoku=Math.min(35,Math.max(20,20+w*4+top3));break;}
     }
-    // 実行力: 前走着順ベース
+    // 実行力
     let jikkoryoku=17;
     if(zenso_result===1)jikkoryoku=24;
     else if(zenso_result===2)jikkoryoku=22;
@@ -316,39 +288,16 @@ function parsePdf(lines, fname){
     else if(zenso_result<=8)jikkoryoku=14;
     else if(zenso_result<=15)jikkoryoku=11;
     else jikkoryoku=10;
-
     const score=Math.round((tekisei*noryoku*jikkoryoku)/35);
     return{banum,name:h.name,father,corner4,zenso_result,tekisei,noryoku,jikkoryoku,score};
   });
 
   raceData={race_name,race_date,race_course,horses:parsed};
   const n=parsed.length;
-  setSt('✅',fname,`${race_name||'レース'} / ${n}頭 読取完了`);
+  setSt('\u2705',fname,`${race_name||'レース'} / ${n}頭 読取完了`);
   document.getElementById('gobtn').disabled=(n===0);
 }
 
-function getKq(c4){
-  const c=parseInt(c4)||0;
-  if(c===0)return'不明';
-  if(c<=2)return'逃';
-  if(c<=5)return'先';
-  if(c<=10)return'差';
-  return'追';
-}
-
-function getTenkai(horses){
-  const sc=[...horses].sort((a,b)=>b.score-a.score);
-  const top5=sc.slice(0,5).map(h=>({...h,kq:getKq(h.corner4)}));
-  const nige=top5.filter(h=>h.kq==='逃').length;
-  const sen=top5.filter(h=>h.kq==='先').length;
-  let pattern,desc;
-  if(nige===0&&sen>=2){pattern='①スロー前残り';desc='逃げ不在・先行多数。スローで前が残りやすい。';}
-  else if(nige===1&&sen>=2){pattern='①スロー前残り';desc='逃げ1頭・先行複数で前有利。';}
-  else if(nige>=2&&nige<=3){pattern='②平均〜やや速';desc=`逃げ${nige}頭の競り合い。差しも届く。`;}
-  else if(nige>=4){pattern='③ハイ差し';desc=`逃げ${nige}頭のハイペース。差し追い込み有利。`;}
-  else{pattern='④瞬発戦';desc='先行手薄。スローからの瞬発力勝負。';}
-  return{pattern,desc,nige,sen,top5};
-}
 
 async function analyze(){
   if(!raceData.horses||raceData.horses.length===0){alert('PDFを読み込んでください');return;}
