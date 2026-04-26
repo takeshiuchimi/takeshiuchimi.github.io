@@ -3,17 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍶 呑蔵競馬 v5</title>
+<title>🍶 呑蔵競馬</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="../apikey.js"></script>
 <style>
-:root{
-  --bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--bg4:#242424;
-  --gold:#c9a84c;--gold2:#f0c96e;--red:#c0392b;--red2:#e74c3c;
-  --green:#27ae60;--blue:#2980b9;
-  --text:#e8e0d0;--muted:#555;--muted2:#888;--border:#2a2a2a;--radius:10px;
-}
+:root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--bg4:#242424;--gold:#c9a84c;--gold2:#f0c96e;--red:#c0392b;--red2:#e74c3c;--text:#e8e0d0;--muted:#555;--muted2:#888;--border:#2a2a2a;--radius:10px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Noto Serif JP',serif;min-height:100vh;padding-bottom:80px;}
 header{background:linear-gradient(180deg,#080808,#111);border-bottom:2px solid var(--gold);padding:16px 20px 12px;text-align:center;position:sticky;top:0;z-index:100;}
@@ -71,15 +66,15 @@ header h1 em{color:var(--gold);font-style:normal;}
 .rc ul li{font-size:13px;line-height:1.9;color:var(--text);padding:8px 0 8px 18px;border-bottom:1px solid var(--border);position:relative;}
 .rc ul li::before{content:'▸';position:absolute;left:0;color:var(--gold);font-size:10px;top:10px;}
 .rc ul li:last-child{border-bottom:none;}
-.tenkai-pattern{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:12px;}
-.tenkai-label{font-size:10px;color:var(--muted2);letter-spacing:2px;margin-bottom:8px;}
-.tenkai-row{display:flex;gap:6px;flex-wrap:wrap;}
-.tenkai-tag{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
-.tag-nige{background:rgba(192,57,43,0.2);color:#e74c3c;border:1px solid rgba(192,57,43,0.3);}
-.tag-sen{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.3);}
-.tag-sa{background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.3);}
-.tag-oi{background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);}
-.tag-fu{background:var(--bg3);color:var(--muted2);border:1px solid var(--border);}
+.tpat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:12px;}
+.tpat-label{font-size:10px;color:var(--muted2);letter-spacing:2px;margin-bottom:8px;}
+.tpat-row{display:flex;gap:6px;flex-wrap:wrap;}
+.kq-tag{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.kq-nige{background:rgba(192,57,43,0.2);color:#e74c3c;border:1px solid rgba(192,57,43,0.3);}
+.kq-sen{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.3);}
+.kq-sa{background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.3);}
+.kq-oi{background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);}
+.kq-fu{background:var(--bg3);color:var(--muted2);border:1px solid var(--border);}
 .ri{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);gap:12px;}
 .ri:last-child{border-bottom:none;}
 .ri-medal{font-family:'Oswald',sans-serif;font-size:24px;font-weight:700;min-width:36px;text-align:center;}
@@ -105,7 +100,7 @@ footer em{color:var(--gold);font-style:normal;}
   <a class="back-btn" href="../index.html">‹ TOP</a>
   <div class="logo">Nomuzo · Prediction Engine</div>
   <h1>🍶 呑蔵<em>競馬</em></h1>
-  <div class="vbadge">v5.0 · Pure JS Parse</div>
+  <div class="vbadge">v5.1 · Pure JS Parse</div>
 </header>
 <div class="wrap">
 <div id="inp">
@@ -164,269 +159,220 @@ footer em{color:var(--gold);font-style:normal;}
 </div>
 </div>
 <footer>🍶 <em>呑蔵競馬</em> — 飲みながら楽しむ予想エンジン<br>馬券購入は自己責任で。飲みすぎにもご注意を。</footer>
-
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-// ── 丸数字マップ ────────────────────────────
-const CIRCLE = {};
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const CIRCLE={};
 '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱'.split('').forEach((c,i)=>CIRCLE[c]=i+1);
 
-let raceData = {}, pdfText = '', currentFile = null;
+let raceData={};
 
-// ── PDF取込 ──────────────────────────────────
-function onDrop(e) {
-  e.preventDefault();
-  document.getElementById('drop').classList.remove('drag');
-  const f = e.dataTransfer.files[0];
-  if (f) { currentFile=f; procPdf(f); }
-}
-function onSel(e) { const f=e.target.files[0]; if(f){currentFile=f;procPdf(f);} }
+function onDrop(e){e.preventDefault();document.getElementById('drop').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)procPdf(f);}
+function onSel(e){const f=e.target.files[0];if(f)procPdf(f);}
 
-async function procPdf(file) {
-  setSt('⏳', file.name, 'PDFを読み込んでいます…');
-  try {
-    const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({data:buf}).promise;
-    let allText = '';
-    for (let i=1; i<=pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const tc = await page.getTextContent();
-      // Use hasEOL to preserve line breaks like pdfplumber
-      allText += tc.items.map(it => it.str + (it.hasEOL ? '\n' : ' ')).join('') + '\n';
+async function procPdf(file){
+  setSt('⏳',file.name,'PDFを読み込んでいます…');
+  try{
+    const buf=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    
+    // Extract text preserving line structure via y-coordinate grouping
+    const allLines=[];
+    for(let p=1;p<=pdf.numPages;p++){
+      const page=await pdf.getPage(p);
+      const tc=await page.getTextContent();
+      // Group items by y-coordinate (rounded to nearest 2px)
+      const yMap={};
+      for(const item of tc.items){
+        if(!item.str) continue;
+        const y=Math.round(item.transform[5]/2)*2;
+        if(!yMap[y]) yMap[y]=[];
+        yMap[y].push(item.str);
+      }
+      const ys=Object.keys(yMap).map(Number).sort((a,b)=>b-a);
+      for(const y of ys){
+        allLines.push(yMap[y].join(' '));
+      }
     }
-    pdfText = allText;
-    parsePdf(allText, file.name);
-  } catch(err) {
+    parsePdf(allLines, file.name);
+  }catch(err){
     setSt('❌','エラー',err.message);
   }
 }
 
-// ── JSパーサー ────────────────────────────────
-function parsePdf(text, fname) {
-  // レース情報
-  const raceNameM = text.match(/(\d+R\s+[^\n]+?(?:賞|特別|競走|ステークス|カップ|記念))/);
-  const dateM = text.match(/(\d{4}\/\d{1,2}\/\d{1,2})/);
-  const courseM = text.match(/芝(\d{4})m\s+(\d{1,2})頭/);
-  const gradeM = text.match(/（(ＧⅠ|ＧⅡ|ＧⅢ|OP|L)）/);
-
-  // 馬名を抽出（--人気 の前に出る名前）
-  // Horse name appears on its OWN line just before jockey line and "枠 馬番 ---" line
-  // Pattern: newline + katakana/kanji (2-12 chars) + newline
-  const horseNamePat = /\n([ァ-ヶーＡ-Ｚa-zA-Z\u4e00-\u9fff]{2,12})\n/g;
-  const horseNamePat2 = null; // not needed
-  const horses = [];
-  let m;
-  // Horse names are on their own line - collect candidates then filter
-  const candidates = [];
-  while ((m = horseNamePat.exec(text)) !== null) {
-    const name = m[1];
-    // Must be katakana-based (horse names in Japan are katakana)
-    if (/^[ァ-ヶー]{2,}/.test(name) && !candidates.includes(name)) {
-      candidates.push(name);
-    }
+function parsePdf(lines, fname){
+  // Race info
+  let race_name='', race_date='', race_course='';
+  for(const ln of lines.slice(0,60)){
+    if(!race_date){const m=ln.match(/(\d{4}\/\d{1,2}\/\d{1,2})/);if(m)race_date=m[1];}
+    if(!race_course){const m=ln.match(/芝(\d{4})m\s*(\d{1,2})頭/);if(m)race_course=`芝${m[1]}m ${m[2]}頭`;}
+    if(!race_name){const m=ln.match(/(テレビ[^\s]+賞|[^\s]+賞|[^\s]+ステークス|[^\s]+カップ)/);if(m)race_name=m[1];}
   }
-  // Further filter: only names that appear near "---" pattern (枠番 馬番 ---)
-  for (const name of candidates) {
-    const pos = text.indexOf('\n' + name + '\n');
-    if (pos >= 0) {
-      const after = text.substring(pos, pos + 200);
-      if (/\d\s+\d{1,2}\s+---/.test(after)) {
-        horses.push(name);
+
+  // Find horse names: pure katakana lines followed by "--人気/--⼈気" within next 6 lines
+  const horses=[];
+  for(let i=0;i<lines.length;i++){
+    const ln=lines[i].trim();
+    if(/^[ァ-ヶー]{3,}$/.test(ln)){
+      const nearby=lines.slice(i+1,i+7).join('\n');
+      if(/--/.test(nearby)){
+        // Find next horse index
+        let nextIdx=lines.length;
+        for(let j=i+5;j<lines.length;j++){
+          if(/^[ァ-ヶー]{3,}$/.test(lines[j].trim())){
+            const nb=lines.slice(j+1,j+7).join('\n');
+            if(/--/.test(nb)){nextIdx=j;break;}
+          }
+        }
+        const section=lines.slice(i,nextIdx);
+        horses.push({name:ln, lineIdx:i, section});
+        i=nextIdx-1;
       }
     }
   }
 
-  // 各馬データ抽出
-  const parsed = horses.map((name, i) => {
-    const pos = text.indexOf('\n' + name + '\n');
-    const nextPos = i+1 < horses.length
-      ? text.indexOf('\n' + horses[i+1] + '\n', pos+10)
-      : text.length;
-    const section = text.substring(pos, nextPos > pos ? nextPos : pos+800);
-    const lines = section.split('\n');
-
-    // 馬番: "枠番 馬番 ---" パターン
-    let banum = String(i+1);
-    for (const ln of lines.slice(0,5)) {
-      const bm = ln.match(/^\s*(\d)\s+(\d{1,2})\s+---/);
-      if (bm) { banum = bm[2]; break; }
+  const parsed=horses.map((h,idx)=>{
+    const sec=h.section;
+    // 馬番: "X Y ---" pattern (枠番 馬番 ---)
+    let banum=String(idx+1);
+    for(const ln of sec){
+      const m=ln.trim().match(/^(\d)\s+(\d{1,2})\s+---/);
+      if(m){banum=m[2];break;}
     }
-
-    // 父馬名: "(---kg)" の直前のカタカナ/漢字
-    let father = '不明';
-    const fm = section.match(/([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,15})\s+\(---kg\)/);
-    if (fm) father = fm[1];
-
-    // 前走着順: "芝良/稍/重/不 W P S X N" の後のN（1行目）
-    let zenso_result = 0;
-    const zm = lines[0] ? lines[0].match(/芝[良稍重不]\s+\d\s+\d\s+\d\s+\d\s+(\d{1,2})\s+\d/) : null;
-    if (zm) zenso_result = parseInt(zm[1]);
-
-    // 4角位置: 丸数字4つの最後（3行目あたり）
-    let corner4 = 0;
-    for (const ln of lines.slice(1,5)) {
-      const cp = ln.match(/[①-⑱]{4}/);
-      if (cp) { corner4 = CIRCLE[cp[0][3]] || 0; break; }
+    // 前走着順: "騎手：X.X%[N] Z" → last number Z (1-18)
+    let zenso_result=0;
+    for(const ln of sec.slice(0,6)){
+      const m=ln.match(/騎[手⼿][：:]\s*[\d.]+%\[\d+\]\s+(\d{1,2})\s*$/);
+      if(m){
+        const v=parseInt(m[1]);
+        if(v>=1&&v<=18){zenso_result=v;break;}
+      }
     }
-
-    // コース適性: 当該 W P S X / 東芝 W P S X（6行目あたり）
-    let tekisei = 30;
-    for (const ln of lines.slice(3,8)) {
-      const tm = ln.match(/当該\s+(\d)\s+(\d)\s+(\d)\s+(\d)/);
-      const tzm = ln.match(/東芝\s+(\d)\s+(\d)\s+(\d)\s+(\d)/);
-      if (tm) tekisei += parseInt(tm[1])*4 + parseInt(tm[2])*2;
-      if (tzm) tekisei += parseInt(tzm[1])*3 + parseInt(tzm[2])*1;
+    // 4角位置: 4 consecutive circled numbers → last one
+    let corner4=0;
+    for(const ln of sec){
+      const m=ln.match(/[①-⑱]{4}/);
+      if(m){corner4=CIRCLE[m[0][3]]||0;break;}
     }
-    tekisei = Math.min(40, Math.max(25, tekisei));
-
-    // 能力: 全成績から
-    let noryoku = 27;
-    const zenM = lines[0] ? lines[0].match(/全\s+(\d)\s+(\d)\s+(\d)\s+(\d)/) : null;
-    if (zenM) {
-      const wins = parseInt(zenM[1]);
-      const top3 = parseInt(zenM[1])+parseInt(zenM[2])+parseInt(zenM[3]);
-      noryoku = Math.min(35, Math.max(20, 20 + wins*4 + top3*1));
+    // 父馬名: "XXXXX (---kg)" pattern
+    let father='不明';
+    for(const ln of sec){
+      const m=ln.match(/([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,15})\s*\(---kg\)/);
+      if(m){father=m[1].trim();break;}
     }
-
-    // 実行力: 前走着順から
-    let jikkoryoku = 17;
-    if (zenso_result===1) jikkoryoku=24;
-    else if (zenso_result===2) jikkoryoku=22;
-    else if (zenso_result===3) jikkoryoku=20;
-    else if (zenso_result<=5) jikkoryoku=18;
-    else if (zenso_result<=8) jikkoryoku=14;
-    else if (zenso_result<=15) jikkoryoku=11;
+    // コース適性: 当該/東芝 W P S X
+    let tekisei=30;
+    for(const ln of sec){
+      const tm=ln.match(/当該\s+(\d)\s+(\d)\s+(\d)\s+(\d)/);
+      const tzm=ln.match(/東芝\s+(\d)\s+(\d)\s+(\d)\s+(\d)/);
+      if(tm)tekisei+=parseInt(tm[1])*4+parseInt(tm[2])*2;
+      if(tzm)tekisei+=parseInt(tzm[1])*3+parseInt(tzm[2])*1;
+    }
+    tekisei=Math.min(40,Math.max(25,tekisei));
+    // 全成績: 全 W P S X
+    let noryoku=27;
+    for(const ln of sec.slice(0,3)){
+      const m=ln.match(/全\s+(\d)\s+(\d)\s+(\d)\s+(\d)/);
+      if(m){
+        const w=parseInt(m[1]),top3=parseInt(m[1])+parseInt(m[2])+parseInt(m[3]);
+        noryoku=Math.min(35,Math.max(20,20+w*4+top3));break;
+      }
+    }
+    // 実行力: 前走着順ベース
+    let jikkoryoku=17;
+    if(zenso_result===1)jikkoryoku=24;
+    else if(zenso_result===2)jikkoryoku=22;
+    else if(zenso_result===3)jikkoryoku=20;
+    else if(zenso_result<=5)jikkoryoku=18;
+    else if(zenso_result<=8)jikkoryoku=14;
+    else if(zenso_result<=15)jikkoryoku=11;
     else jikkoryoku=10;
 
-    const score = Math.round((tekisei * noryoku * jikkoryoku) / 35);
-
-    return { banum, name, father, corner4, zenso_result, tekisei, noryoku, jikkoryoku, score };
+    const score=Math.round((tekisei*noryoku*jikkoryoku)/35);
+    return{banum,name:h.name,father,corner4,zenso_result,tekisei,noryoku,jikkoryoku,score};
   });
 
-  // レース情報保存
-  raceData = {
-    race_name: (raceNameM ? raceNameM[1] : '') || text.match(/テレビ\S+賞|[^\s]+賞|[^\s]+ステークス/)?.[0] || 'レース',
-    race_date: dateM ? dateM[1] : '',
-    race_course: courseM ? `芝${courseM[1]}m ${courseM[2]}頭` : '',
-    grade: gradeM ? gradeM[1] : '',
-    horses: parsed.filter(h => h.name.length >= 2)
-  };
-
-  const n = raceData.horses.length;
-  setSt('✅', fname, `${raceData.race_name} / ${n}頭 読取完了`);
-  document.getElementById('gobtn').disabled = (n === 0);
+  raceData={race_name,race_date,race_course,horses:parsed};
+  const n=parsed.length;
+  setSt('✅',fname,`${race_name||'レース'} / ${n}頭 読取完了`);
+  document.getElementById('gobtn').disabled=(n===0);
 }
 
-// ── 脚質判定 ─────────────────────────────────
-function getKq(corner4) {
-  const c = parseInt(corner4)||0;
-  if (c===0) return '不明';
-  if (c<=2) return '逃';
-  if (c<=5) return '先';
-  if (c<=10) return '差';
-  return '追';
+function getKq(c4){
+  const c=parseInt(c4)||0;
+  if(c===0)return'不明';
+  if(c<=2)return'逃';
+  if(c<=5)return'先';
+  if(c<=10)return'差';
+  return'追';
 }
 
-// ── 展開判定 ─────────────────────────────────
-function getTenkai(horses) {
-  const scored = [...horses].sort((a,b)=>b.score-a.score);
-  const top5 = scored.slice(0,5).map(h=>({...h, kq:getKq(h.corner4)}));
-  const nige = top5.filter(h=>h.kq==='逃').length;
-  const sen = top5.filter(h=>h.kq==='先').length;
-  let pattern, desc;
-  if (nige===0 && sen>=2) { pattern='①スロー前残り'; desc='逃げ不在・先行多数。スローで前が残りやすい。'; }
-  else if (nige>=1 && nige<=1 && sen>=2) { pattern='①スロー前残り'; desc='逃げ1頭・先行複数で前有利。'; }
-  else if (nige>=2 && nige<=3) { pattern='②平均〜やや速'; desc=`逃げ${nige}頭の競り合い。差しも届く。`; }
-  else if (nige>=4) { pattern='③ハイ差し'; desc=`逃げ${nige}頭のハイペース。差し・追い込み有利。`; }
-  else { pattern='④瞬発戦'; desc='先行手薄。スローからの瞬発力勝負。'; }
-  return {pattern, desc, nige, sen, top5};
+function getTenkai(horses){
+  const sc=[...horses].sort((a,b)=>b.score-a.score);
+  const top5=sc.slice(0,5).map(h=>({...h,kq:getKq(h.corner4)}));
+  const nige=top5.filter(h=>h.kq==='逃').length;
+  const sen=top5.filter(h=>h.kq==='先').length;
+  let pattern,desc;
+  if(nige===0&&sen>=2){pattern='①スロー前残り';desc='逃げ不在・先行多数。スローで前が残りやすい。';}
+  else if(nige===1&&sen>=2){pattern='①スロー前残り';desc='逃げ1頭・先行複数で前有利。';}
+  else if(nige>=2&&nige<=3){pattern='②平均〜やや速';desc=`逃げ${nige}頭の競り合い。差しも届く。`;}
+  else if(nige>=4){pattern='③ハイ差し';desc=`逃げ${nige}頭のハイペース。差し追い込み有利。`;}
+  else{pattern='④瞬発戦';desc='先行手薄。スローからの瞬発力勝負。';}
+  return{pattern,desc,nige,sen,top5};
 }
 
-// ── 分析 ─────────────────────────────────────
-async function analyze() {
-  if (!raceData.horses || raceData.horses.length===0) { alert('PDFを読み込んでください'); return; }
-
+async function analyze(){
+  if(!raceData.horses||raceData.horses.length===0){alert('PDFを読み込んでください');return;}
   document.getElementById('inp').style.display='none';
   document.getElementById('res').style.display='none';
   setLoad(true,'🍶 呑蔵AI 分析中…','コメント生成中');
-
-  try {
-    const horses = raceData.horses.map(h=>({...h, kq:getKq(h.corner4)}));
-    const scored = [...horses].sort((a,b)=>b.score-a.score).map((h,i)=>({...h,rank:i+1}));
-    const tenkai = getTenkai(horses);
-    const ai = await callAI(scored, tenkai);
-    render(ai, scored, tenkai);
-  } catch(err) {
+  try{
+    const horses=raceData.horses.map(h=>({...h,kq:getKq(h.corner4)}));
+    const scored=[...horses].sort((a,b)=>b.score-a.score).map((h,i)=>({...h,rank:i+1}));
+    const tenkai=getTenkai(horses);
+    const ai=await callAI(scored,tenkai);
+    render(ai,scored,tenkai);
+  }catch(err){
     document.getElementById('inp').style.display='block';
     alert('エラー: '+err.message);
-  } finally { setLoad(false); }
+  }finally{setLoad(false);}
 }
 
-// ── AI（コメントのみ）────────────────────────
-async function callAI(scored, tenkai) {
-  const horseList = scored.map(h=>
-    `${h.banum}番 ${h.name} 父:${h.father} 脚質:${h.kq} 前走${h.zenso_result||'?'}着 スコア:${h.score}pt`
-  ).join('\n');
+async function callAI(scored,tenkai){
+  const horseList=scored.map(h=>`${h.banum}番 ${h.name} 父:${h.father} 脚質:${h.kq} 前走${h.zenso_result||'?'}着 ${h.score}pt`).join('\n');
+  const prompt=`「呑蔵競馬」AIです。居酒屋トーン・断定・短文で語ってください。
 
-  const prompt = `あなたは「呑蔵競馬」のAIです。居酒屋トーン・断定口調・短文で語ってください。
-
-レース：${raceData.race_name} ${raceData.grade||''}　コース：${raceData.race_course}
-展開パターン：${tenkai.pattern}（${tenkai.desc}）
+レース：${raceData.race_name}　コース：${raceData.race_course}
+展開：${tenkai.pattern}（${tenkai.desc}）
 
 全馬スコア順：
 ${horseList}
 
-【ルール】
-- 展・コ・煽は脚質と役割のみで語る（馬名・馬番禁止）
-- 展と結論は必ず同じ前提
-- 煽は否定と揺さぶり
-- 通はコース傾向・血統知識で3つ以上
-- 突はツッコミ＋返し
-- 言は呑蔵らしい格言3つ
-- 名は馬名の読み・意味・考察3つ
+【ルール】展・コ・煽は脚質と役割のみ（馬名・馬番禁止）。全のみ馬名OK。展とコは同じ結論。煽は揺さぶり。通はコース傾向・血統知識で3つ。突はツッコミ返し。言は格言3つ。名は馬名考察3つ。
 
-JSONのみ返してください（コードブロック不要）：
-{"tenkai":"展開断定1行","comment":["","",""],"aori":["","",""],"tsu":["","",""],"tsukomi":["","",""],"kotoba":["","",""],"namaae":["",""]}`;
+JSONのみ（コードブロック不要）：
+{"tenkai":"","comment":["","",""],"aori":["","",""],"tsu":["","",""],"tsukomi":["","",""],"kotoba":["","",""],"namaae":["","",""]}`;
 
-  const r = await fetch('https://api.anthropic.com/v1/messages',{
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key':ANTHROPIC_API_KEY,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body:JSON.stringify({
-      model:'claude-haiku-4-5-20251001',
-      max_tokens:1000,
-      messages:[{role:'user',content:prompt}]
-    })
+    headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:prompt}]})
   });
-  const d = await r.json();
-  if (d.error) throw new Error(d.error.message);
-  const raw = d.content?.map(b=>b.text||'').join('')||'';
-  const s = raw.replace(/```json|```/g,'').trim();
-  const start=s.indexOf('{'), end=s.lastIndexOf('}');
-  return JSON.parse(s.substring(start,end+1));
+  const d=await r.json();
+  if(d.error)throw new Error(d.error.message);
+  const raw=d.content?.map(b=>b.text||'').join('')||'';
+  const s=raw.replace(/```json|```/g,'').trim();
+  return JSON.parse(s.substring(s.indexOf('{'),s.lastIndexOf('}')+1));
 }
 
-// ── 描画 ─────────────────────────────────────
-function render(ai, scored, tenkai) {
-  document.getElementById('rbtitle').textContent = raceData.race_name||'レース';
-  document.getElementById('rbsub').textContent = [raceData.race_date, raceData.race_course].filter(Boolean).join(' · ');
+function render(ai,scored,tenkai){
+  document.getElementById('rbtitle').textContent=raceData.race_name||'レース';
+  document.getElementById('rbsub').textContent=[raceData.race_date,raceData.race_course].filter(Boolean).join(' · ');
   document.getElementById('rbadge').classList.add('on');
 
-  const kqCls = k=>k==='逃'?'tag-nige':k==='先'?'tag-sen':k==='差'?'tag-sa':k==='追'?'tag-oi':'tag-fu';
-  const kqHtml = tenkai.top5.map(h=>`<span class="tenkai-tag ${kqCls(h.kq)}">${h.kq}</span>`).join('');
+  const kqCls=k=>k==='逃'?'kq-nige':k==='先'?'kq-sen':k==='差'?'kq-sa':k==='追'?'kq-oi':'kq-fu';
+  const kqHtml=tenkai.top5.map(h=>`<span class="kq-tag ${kqCls(h.kq)}">${h.kq}</span>`).join('');
 
-  document.getElementById('c0').innerHTML=`
-    <div class="tenkai-pattern">
-      <div class="tenkai-label">上位5頭の脚質</div>
-      <div class="tenkai-row">${kqHtml}</div>
-    </div>
-    <p>${tenkai.pattern}<br>${ai.tenkai}</p>`;
-
+  document.getElementById('c0').innerHTML=`<div class="tpat"><div class="tpat-label">上位5頭の脚質</div><div class="tpat-row">${kqHtml}</div></div><p>${tenkai.pattern}<br>${ai.tenkai}</p>`;
   document.getElementById('c1').innerHTML=`<p>${ai.tenkai}</p>${ul(ai.comment)}`;
   document.getElementById('c2').innerHTML=ul(ai.aori);
   document.getElementById('c3').innerHTML=ul(ai.tsu);
@@ -434,57 +380,24 @@ function render(ai, scored, tenkai) {
   document.getElementById('c6').innerHTML=ul(ai.kotoba);
   document.getElementById('c7').innerHTML=ul(ai.namaae);
 
-  const mx = Math.max(...scored.map(h=>h.score));
-  document.getElementById('c4').innerHTML = scored.map((h,i)=>{
-    const pct = Math.round((h.score/mx)*100);
-    const cls = i===0?'r1':i===1?'r2':i===2?'r3':'rx';
-    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':h.rank;
-    return `<div class="ri ${cls}">
-      <div class="ri-medal">${medal}</div>
-      <div class="ri-info">
-        <div class="ri-name"><span class="ri-badge">${h.banum}番</span>${h.name} <span class="tenkai-tag ${kqCls(h.kq)}" style="font-size:9px;padding:2px 6px;">${h.kq}</span></div>
-        <div class="ri-sub">父:${h.father} · 適性${h.tekisei} · 能力${h.noryoku} · 実行力${h.jikkoryoku}</div>
-        <div class="ri-bw">
-          <div class="ri-bar"><div class="ri-fill" style="width:0%" data-p="${pct}"></div></div>
-          <div class="ri-score">${h.score}<small>pt</small></div>
-        </div>
-      </div>
-    </div>`;
+  const mx=Math.max(...scored.map(h=>h.score));
+  document.getElementById('c4').innerHTML=scored.map((h,i)=>{
+    const pct=Math.round((h.score/mx)*100);
+    const cls=i===0?'r1':i===1?'r2':i===2?'r3':'rx';
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':h.rank;
+    return`<div class="ri ${cls}"><div class="ri-medal">${medal}</div><div class="ri-info"><div class="ri-name"><span class="ri-badge">${h.banum}番</span>${h.name} <span class="kq-tag ${kqCls(h.kq)}" style="font-size:9px;padding:2px 6px;">${h.kq}</span></div><div class="ri-sub">父:${h.father} · 適性${h.tekisei} · 能力${h.noryoku} · 実行力${h.jikkoryoku}</div><div class="ri-bw"><div class="ri-bar"><div class="ri-fill" style="width:0%" data-p="${pct}"></div></div><div class="ri-score">${h.score}<small>pt</small></div></div></div></div>`;
   }).join('');
 
   document.getElementById('res').style.display='block';
-  setTimeout(()=>{
-    document.querySelectorAll('.ri-fill').forEach(el=>el.style.width=el.dataset.p+'%');
-  },50);
+  setTimeout(()=>document.querySelectorAll('.ri-fill').forEach(el=>el.style.width=el.dataset.p+'%'),50);
   tab(0);
 }
 
-function ul(items){return `<ul>${(items||[]).map(t=>`<li>${t}</li>`).join('')}</ul>`;}
-function tab(n){
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('on',i===n));
-  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('on',i===n));
-}
-function setLoad(on,txt,sub){
-  document.getElementById('loading').classList.toggle('on',on);
-  if(txt)document.getElementById('ltxt').textContent=txt;
-  if(sub)document.getElementById('lsub').textContent=sub;
-}
-function setSt(ico,name,det){
-  document.getElementById('pst').classList.add('on');
-  document.getElementById('stico').textContent=ico;
-  document.getElementById('stname').textContent=name;
-  document.getElementById('stdet').textContent=det;
-}
-function resetAll(){
-  raceData={}; pdfText=''; currentFile=null;
-  document.getElementById('pfile').value='';
-  document.getElementById('pst').classList.remove('on');
-  document.getElementById('gobtn').disabled=true;
-  document.getElementById('res').style.display='none';
-  document.getElementById('rbadge').classList.remove('on');
-  document.getElementById('inp').style.display='block';
-  setLoad(false); tab(0);
-}
+function ul(items){return`<ul>${(items||[]).map(t=>`<li>${t}</li>`).join('')}</ul>`;}
+function tab(n){document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('on',i===n));document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('on',i===n));}
+function setLoad(on,txt,sub){document.getElementById('loading').classList.toggle('on',on);if(txt)document.getElementById('ltxt').textContent=txt;if(sub)document.getElementById('lsub').textContent=sub;}
+function setSt(ico,name,det){document.getElementById('pst').classList.add('on');document.getElementById('stico').textContent=ico;document.getElementById('stname').textContent=name;document.getElementById('stdet').textContent=det;}
+function resetAll(){raceData={};document.getElementById('pfile').value='';document.getElementById('pst').classList.remove('on');document.getElementById('gobtn').disabled=true;document.getElementById('res').style.display='none';document.getElementById('rbadge').classList.remove('on');document.getElementById('inp').style.display='block';setLoad(false);tab(0);}
 </script>
 </body>
 </html>
