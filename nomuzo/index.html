@@ -192,7 +192,8 @@ async function procPdf(file) {
     for (let i=1; i<=pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const tc = await page.getTextContent();
-      allText += tc.items.map(it=>it.str).join(' ') + '\n';
+      // Use hasEOL to preserve line breaks like pdfplumber
+      allText += tc.items.map(it => it.str + (it.hasEOL ? '\n' : ' ')).join('') + '\n';
     }
     pdfText = allText;
     parsePdf(allText, file.name);
@@ -210,11 +211,22 @@ function parsePdf(text, fname) {
   const gradeM = text.match(/（(ＧⅠ|ＧⅡ|ＧⅢ|OP|L)）/);
 
   // 馬名を抽出（--人気 の前に出る名前）
-  const horseNamePat = /([ァ-ヶーＡ-Ｚa-zA-Z\u4e00-\u9fff]{2,12})\s+--人気/g;
+  const horseNamePat = /([ァ-ヶーＡ-Ｚa-zA-Z\u4e00-\u9fff]{2,12})\s+--[\u4e00\u2f08]?[\u6c17\u2f31]?気/g;
+  // Also try simpler: match horse name before "--" followed by 人気/⼈気
+  const horseNamePat2 = /([ァ-ヶーＡ-Ｚa-zA-Z\u4e00-\u9fff]{2,12}) --/g;
   const horses = [];
   let m;
+  // Try primary pattern first
   while ((m = horseNamePat.exec(text)) !== null) {
-    horses.push(m[1]);
+    const name = m[1];
+    if (name.length >= 2 && !horses.includes(name)) horses.push(name);
+  }
+  // Fallback: use simpler pattern if no horses found
+  if (horses.length === 0) {
+    while ((m = horseNamePat2.exec(text)) !== null) {
+      const name = m[1];
+      if (name.length >= 2 && !horses.includes(name)) horses.push(name);
+    }
   }
 
   // 各馬データ抽出
