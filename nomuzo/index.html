@@ -196,9 +196,6 @@ async function procPdf(file) {
       allText += tc.items.map(it => it.str + (it.hasEOL ? '\n' : ' ')).join('') + '\n';
     }
     pdfText = allText;
-    // DEBUG: show text around horse area
-    const idx = allText.indexOf('--');
-    alert('-- found at:' + idx + '\n' + JSON.stringify(allText.substring(Math.max(0,idx-30), idx+50)));
     parsePdf(allText, file.name);
   } catch(err) {
     setSt('❌','エラー',err.message);
@@ -214,29 +211,37 @@ function parsePdf(text, fname) {
   const gradeM = text.match(/（(ＧⅠ|ＧⅡ|ＧⅢ|OP|L)）/);
 
   // 馬名を抽出（--人気 の前に出る名前）
-  const horseNamePat = /([ァ-ヶーＡ-Ｚa-zA-Z\u4e00-\u9fff]{2,12})\s+--[\u4e00\u2f08]?[\u6c17\u2f31]?気/g;
-  // Also try simpler: match horse name before "--" followed by 人気/⼈気
-  const horseNamePat2 = /([ァ-ヶーＡ-Ｚa-zA-Z\u4e00-\u9fff]{2,12}) --/g;
+  // Horse name appears on its OWN line just before jockey line and "枠 馬番 ---" line
+  // Pattern: newline + katakana/kanji (2-12 chars) + newline
+  const horseNamePat = /\n([ァ-ヶーＡ-Ｚa-zA-Z\u4e00-\u9fff]{2,12})\n/g;
+  const horseNamePat2 = null; // not needed
   const horses = [];
   let m;
-  // Try primary pattern first
+  // Horse names are on their own line - collect candidates then filter
+  const candidates = [];
   while ((m = horseNamePat.exec(text)) !== null) {
     const name = m[1];
-    if (name.length >= 2 && !horses.includes(name)) horses.push(name);
+    // Must be katakana-based (horse names in Japan are katakana)
+    if (/^[ァ-ヶー]{2,}/.test(name) && !candidates.includes(name)) {
+      candidates.push(name);
+    }
   }
-  // Fallback: use simpler pattern if no horses found
-  if (horses.length === 0) {
-    while ((m = horseNamePat2.exec(text)) !== null) {
-      const name = m[1];
-      if (name.length >= 2 && !horses.includes(name)) horses.push(name);
+  // Further filter: only names that appear near "---" pattern (枠番 馬番 ---)
+  for (const name of candidates) {
+    const pos = text.indexOf('\n' + name + '\n');
+    if (pos >= 0) {
+      const after = text.substring(pos, pos + 200);
+      if (/\d\s+\d{1,2}\s+---/.test(after)) {
+        horses.push(name);
+      }
     }
   }
 
   // 各馬データ抽出
   const parsed = horses.map((name, i) => {
-    const pos = text.indexOf(name + ' --人気');
+    const pos = text.indexOf('\n' + name + '\n');
     const nextPos = i+1 < horses.length
-      ? text.indexOf(horses[i+1] + ' --人気', pos+10)
+      ? text.indexOf('\n' + horses[i+1] + '\n', pos+10)
       : text.length;
     const section = text.substring(pos, nextPos > pos ? nextPos : pos+800);
     const lines = section.split('\n');
