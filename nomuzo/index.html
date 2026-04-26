@@ -220,24 +220,31 @@ function parsePdf(lines, fname){
 
   // Find horse names: pure katakana lines followed by "--人気/--⼈気" within next 6 lines
   const horses=[];
+  // Collect all katakana-only lines with -- nearby
+  const candidates=[];
   for(let i=0;i<lines.length;i++){
     const ln=lines[i].trim();
     if(/^[ァ-ヶー]{3,}$/.test(ln)){
-      const nearby=lines.slice(i+1,i+7).join('\n');
-      if(/--/.test(nearby)){
-        // Find next horse index
-        let nextIdx=lines.length;
-        for(let j=i+5;j<lines.length;j++){
-          if(/^[ァ-ヶー]{3,}$/.test(lines[j].trim())){
-            const nb=lines.slice(j+1,j+7).join('\n');
-            if(/--/.test(nb)){nextIdx=j;break;}
-          }
-        }
-        const section=lines.slice(i,nextIdx);
-        horses.push({name:ln, lineIdx:i, section});
-        i=nextIdx-1;
-      }
+      const nearby=lines.slice(i+1,i+8).join('\n');
+      if(/--/.test(nearby)) candidates.push({idx:i,name:ln});
     }
+  }
+  // Remove duplicates: if two candidates are within 3 lines, keep the SECOND (horse name)
+  // Mother name appears 1 line before horse name
+  const filtered=[];
+  for(let i=0;i<candidates.length;i++){
+    if(i+1<candidates.length && candidates[i+1].idx - candidates[i].idx <= 3){
+      // Skip first (母名), keep second (馬名)
+      continue;
+    }
+    filtered.push(candidates[i]);
+  }
+  // Build sections
+  for(let fi=0;fi<filtered.length;fi++){
+    const {idx,name}=filtered[fi];
+    const nextIdx=fi+1<filtered.length ? filtered[fi+1].idx : lines.length;
+    const section=lines.slice(idx,nextIdx);
+    horses.push({name,lineIdx:idx,section});
   }
 
   const parsed=horses.map((h,idx)=>{
