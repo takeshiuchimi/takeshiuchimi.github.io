@@ -193,6 +193,10 @@ async function procPdf(file){
         allLines.push(yMap[y].join(' '));
       }
     }
+    // DEBUG
+    const rn = allLines.slice(10,25).map((l,i)=>`${i+10}:${l.substring(0,30)}`).join('\n');
+    const cats = allLines.filter(l=>/^[ァ-ヶー]{3,}$/.test(l.trim())).slice(0,8).join(',');
+    alert('Lines 10-24:\n'+rn+'\n\nKatakana lines: '+cats);
     parsePdf(allLines, file.name);
   }catch(err){
     setSt('❌','エラー',err.message);
