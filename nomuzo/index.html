@@ -219,8 +219,18 @@ function parsePdf(L,fname){
   const horses=[];
   for(const ai of anchors){
     let found=false;
-    for(let j=ai-1;j>=Math.max(0,ai-5);j--){
+    for(let j=ai-1;j>=Math.max(0,ai-4);j--){
       const prev=L[j].trim();
+      // ③ 純カタカナ単独行：前行に⼆〇or全が含まれれば馬名（最優先）
+      if(/^[ァ-ヶー]{4,15}$/.test(prev)){
+        const prevLine=(L[j-1]||'').trim();
+        if(/二〇|全/.test(prevLine)){
+          if(!horses.some(h=>h.name===prev)){
+            horses.push({name:prev,nameIdx:j,anchorIdx:ai});
+          }
+          found=true;break;
+        }
+      }
       // ① カタカナ+数字（例: "タイダルロック2中山4..."）
       const m1=/^([ァ-ヶー]{3,15})\d/.exec(prev);
       if(m1){
@@ -236,16 +246,6 @@ function parsePdf(L,fname){
           horses.push({name:m2[1],nameIdx:j,anchorIdx:ai});
         }
         found=true;break;
-      }
-      // ③ 純カタカナ単独行：前行に⼆〇or全が含まれれば馬名（例: コスモギガンティア）
-      if(/^[ァ-ヶー]{4,15}$/.test(prev)){
-        const prevLine=(L[j-1]||'').trim();
-        if(/二〇|全/.test(prevLine)){  // ⼆〇 or 全
-          if(!horses.some(h=>h.name===prev)){
-            horses.push({name:prev,nameIdx:j,anchorIdx:ai});
-          }
-          found=true;break;
-        }
       }
     }
   }
