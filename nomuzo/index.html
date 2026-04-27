@@ -219,33 +219,21 @@ function parsePdf(L,fname){
   const horses=[];
   for(const ai of anchors){
     let found=false;
-    for(let j=ai-1;j>=Math.max(0,ai-8);j--){
+    // 馬名は必ずアンカーの2〜3行前にある（デバッグデータより確認済み）
+    for(let j=ai-1;j>=Math.max(0,ai-4);j--){
       const prev=L[j].trim();
-      // 隣接行を参照してノイズ除外（母名・父名は(---kg)の近くにある）
-      const prevPrev=(L[j-1]||'').trim();
-      const prevNext=(L[j+1]||'').trim();
-      const nearKg=prevPrev.includes('---kg')||prevNext.includes('---kg')||
-                   prevPrev.includes('(---kg)')||prevNext.includes('(---kg)');
-      // ① 純カタカナ行
-      if(/^[ァ-ヶー]{3,15}$/.test(prev)&&!nearKg){
+      // ① 行頭カタカナ＋数字（馬名＋過去成績が同一行: "トゥーナスタディ4中山8..."）
+      const m1=/^([ァ-ヶー]{3,15})\d/.exec(prev);
+      if(m1){
+        if(!horses.some(h=>h.name===m1[1])){
+          horses.push({name:m1[1],nameIdx:j,anchorIdx:ai});
+        }
+        found=true;break;
+      }
+      // ② 純カタカナ行（単独行の馬名）
+      if(/^[ァ-ヶー]{3,15}$/.test(prev)){
         if(!horses.some(h=>h.name===prev)){
           horses.push({name:prev,nameIdx:j,anchorIdx:ai});
-        }
-        found=true;break;
-      }
-      // ② 行頭カタカナ＋数字（馬名＋過去成績が同一行）
-      const m2=/^([ァ-ヶー]{3,15})\d/.exec(prev);
-      if(m2&&!/騎手|コンビ|アザレア|スプリング|ホープフル|百日草|ジュニア|きさらぎ/.test(prev)){
-        if(!horses.some(h=>h.name===m2[1])){
-          horses.push({name:m2[1],nameIdx:j,anchorIdx:ai});
-        }
-        found=true;break;
-      }
-      // ③ フォールバック：行頭カタカナ4文字以上（nearKg除外）
-      const m3=/^([ァ-ヶー]{4,15})/.exec(prev);
-      if(m3&&!nearKg&&!/騎手|---倍|---kg|当該|東芝|コンビ|賞|未勝利|新馬|アザレア|スプリング|ホープフル|きさらぎ|百日草|ジュニア|黒竹|水仙|山吹|大寒桜|芙蓉|芝\d|ダ\d/.test(prev)){
-        if(!horses.some(h=>h.name===m3[1])){
-          horses.push({name:m3[1],nameIdx:j,anchorIdx:ai});
         }
         found=true;break;
       }
@@ -367,7 +355,7 @@ async function callAI(scored,tk){
 全馬スコア順：
 ${list}
 
-【ルール】展・コ・煽は脚質と役割のみ（馬名・馬番禁止）。全のみ馬名OK。展とコは同じ結論。煽は揺さぶり。通はコース・血統知識で3つ。突はツッコミ返し。言は格言3つ。名は馬名考察3つ。
+【ルール】展・コ・煽は脚質と役割のみ（馬名・馬番禁止）。全のみ馬名OK。展とコは同じ結論。煽は揺さぶり。通はコース・血統知識で3つ。突は「競馬あるある」へのツッコミ3つ（必ず3つ埋めること）。言は格言3つ。名は馬名考察3つ。
 
 JSONのみ（コードブロック不要）：
 {"tenkai":"","comment":["","",""],"aori":["","",""],"tsu":["","",""],"tsukomi":["","",""],"kotoba":["","",""],"namaae":["","",""]}`;
