@@ -207,27 +207,20 @@ function parsePdf(L,fname){
     }
   }
 
-  // Find anchor lines: '--人気' 行 または '---倍' 行
+  // アンカー検出: '---倍' 行（各馬に確実に1つ存在）
   const anchors=[];
   for(let i=0;i<L.length;i++){
-    const ln=L[i];
-    // 方法1: --人気（文字コード複数対応）
-    if(ln.includes('--')&&(ln.includes(JINKI)||ln.includes(JINKI2)||ln.includes('気'))){
+    const ln=L[i].trim();
+    if(ln==='---倍'||ln.startsWith('---倍')){
       anchors.push(i);
     }
-    // 方法2: ---倍 行（人気行の直下、各馬に1つ）
-    // → これは重複するので使わない
   }
-  // アンカーが18未満なら '---倍' でも補完
+  // フォールバック
   if(anchors.length<10){
     for(let i=0;i<L.length;i++){
       const ln=L[i];
-      if(/^---倍/.test(ln.trim())||ln.trim()==='---倍'){
-        // この行の2行前がアンカー候補
-        const ai2=i-2;
-        if(ai2>=0&&!anchors.includes(ai2)){
-          anchors.push(ai2);
-        }
+      if(ln.includes('--')&&(ln.includes(JINKI)||ln.includes(JINKI2)||ln.includes('気'))){
+        if(!anchors.includes(i)) anchors.push(i);
       }
     }
     anchors.sort((a,b)=>a-b);
@@ -237,7 +230,7 @@ function parsePdf(L,fname){
   const horses=[];
   for(const ai of anchors){
     let found=false;
-    for(let j=ai-1;j>=Math.max(0,ai-6);j--){
+    for(let j=ai-1;j>=Math.max(0,ai-11);j--){
       const prev=L[j].trim();
       // ③ 純カタカナ単独行：前行に⼆〇or全が含まれれば馬名（最優先）
       if(/^[ァ-ヶー]{4,15}$/.test(prev)){
@@ -254,7 +247,7 @@ function parsePdf(L,fname){
       if(m1){
         // 前行が当該/東芝行なら母名なのでスキップ
         const prevL=(L[j-1]||'').trim();
-        const isHahaName=/当該|東芝|芝不|コンビ/.test(prevL);
+        const isHahaName=/当該|東芝|芝不|コンビ/.test(prevL)||prevL.includes('(---kg)')||prevL.includes('---kg');
         if(!isHahaName&&!horses.some(h=>h.name===m1[1])){
           horses.push({name:m1[1],nameIdx:j,anchorIdx:ai});
         }
