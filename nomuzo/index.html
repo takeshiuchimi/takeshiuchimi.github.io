@@ -268,16 +268,25 @@ function parsePdf(L,fname){
       const m2=sl.trim().match(/^(\d)\s+(\d{1,2})\s+---/);
       if(m2){banum=m2[2];break;}
     }
-    // 前走着順: single digit line 1-18
+    // 前走着順: アンカー直前の数字のみ行から取得
+    // join('')後パターン: "9"(単独) or "3132"(複数着順連続)
     let zenso=0;
-    for(const sl of sec.slice(0,8)){
-      const m=sl.trim().match(/^(\d{1,2})$/);
-      if(m){const v=parseInt(m[1]);if(v>=1&&v<=18){zenso=v;break;}}
+    // アンカー行はsec内のどこか → anchorIdxとnameIdxの差がoffset
+    const anchorOffset=h.anchorIdx-h.nameIdx;
+    // アンカー直前1〜2行が着順行
+    for(let off=anchorOffset-1;off>=anchorOffset-3&&off>=0;off--){
+      const sl=(sec[off]||'').trim();
+      // 数字のみで構成される行（スペース除去後）
+      if(/^\d+$/.test(sl)&&sl.length>=1&&sl.length<=10){
+        // 2桁以下なら全体、3桁以上は先頭1桁が前走着順
+        const v=sl.length<=2?parseInt(sl):parseInt(sl[0]);
+        if(v>=1&&v<=18){zenso=v;break;}
+      }
     }
-    // Also try: from %[N] pattern line
+    // フォールバック: sec全体から%[N]パターン
     if(zenso===0){
-      for(const sl of sec.slice(0,6)){
-        const m=sl.match(/%\[\d+\]\s+(\d{1,2})\b/);
+      for(const sl of sec.slice(0,8)){
+        const m=sl.match(/%\[\d+\]\s*(\d{1,2})(?:\D|$)/);
         if(m){const v=parseInt(m[1]);if(v>=1&&v<=18){zenso=v;break;}}
       }
     }
@@ -389,14 +398,7 @@ JSONのみ（コードブロック不要）：
   const start=s.indexOf('{');
   const end=s.lastIndexOf('}');
   if(start===-1||end===-1)throw new Error('JSONが見つかりません: '+s.substring(0,100));
-  try{
-    return JSON.parse(s.substring(start,end+1));
-  }catch(e){
-    // 不完全なJSONを補完して再試行
-    const partial=s.substring(start);
-    const fixed=partial.replace(/,\s*$/, '').replace(/:\s*$/, ':"..."') + (partial.match(/\{/g)||[]).length > (partial.match(/\}/g)||[]).length ? '}' : '';
-    try{ return JSON.parse(fixed); }catch(e2){ throw new Error('JSON解析失敗（max_tokens不足の可能性）'); }
-  }
+  return JSON.parse(s.substring(start,end+1));
 }
 
 function render(ai,scored,tk){
