@@ -221,8 +221,13 @@ function parsePdf(L,fname){
     let found=false;
     for(let j=ai-1;j>=Math.max(0,ai-8);j--){
       const prev=L[j].trim();
+      // 隣接行を参照してノイズ除外（母名・父名は(---kg)の近くにある）
+      const prevPrev=(L[j-1]||'').trim();
+      const prevNext=(L[j+1]||'').trim();
+      const nearKg=prevPrev.includes('---kg')||prevNext.includes('---kg')||
+                   prevPrev.includes('(---kg)')||prevNext.includes('(---kg)');
       // ① 純カタカナ行
-      if(/^[ァ-ヶー]{3,15}$/.test(prev)){
+      if(/^[ァ-ヶー]{3,15}$/.test(prev)&&!nearKg){
         if(!horses.some(h=>h.name===prev)){
           horses.push({name:prev,nameIdx:j,anchorIdx:ai});
         }
@@ -236,9 +241,9 @@ function parsePdf(L,fname){
         }
         found=true;break;
       }
-      // ③ フォールバック：行頭カタカナ4文字以上
+      // ③ フォールバック：行頭カタカナ4文字以上（nearKg除外）
       const m3=/^([ァ-ヶー]{4,15})/.exec(prev);
-      if(m3&&!/騎手|---倍|---kg|当該|東芝|コンビ|賞|未勝利|新馬|アザレア|スプリング|ホープフル|きさらぎ|百日草|ジュニア|黒竹|水仙|山吹|大寒桜|芙蓉|芝\d|ダ\d/.test(prev)){
+      if(m3&&!nearKg&&!/騎手|---倍|---kg|当該|東芝|コンビ|賞|未勝利|新馬|アザレア|スプリング|ホープフル|きさらぎ|百日草|ジュニア|黒竹|水仙|山吹|大寒桜|芙蓉|芝\d|ダ\d/.test(prev)){
         if(!horses.some(h=>h.name===m3[1])){
           horses.push({name:m3[1],nameIdx:j,anchorIdx:ai});
         }
@@ -280,8 +285,16 @@ function parsePdf(L,fname){
     // 父馬名: \u2003 + name + (---kg)
     let father='不明';
     for(const sl of sec){
-      const m=sl.match(/\u2003([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,15})\s*\(---kg\)/);
-      if(m){father=m[1];break;}
+      // join('')後: "ゴールドアクター(---kg)メイタイ" or "キタサンブラック(---kg)ノーザン"
+      const m=sl.match(/^([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,20})\(---kg\)/);
+      if(m&&!/当該|東芝|コンビ|騎手|馬番|父馬|種牡|調教|勝負/.test(sl)){father=m[1];break;}
+      // 単独行の父名（(---kg)が別行の場合）
+      const m2=sl.match(/^([ァ-ヶー]{4,15})$/);
+      if(m2&&father==='不明'){
+        // 次の行が(---kg)かチェックするのは難しいのでセクション内のシンプルカタカナ行を候補に
+        const nextSl=sec[sec.indexOf(sl)+1]||'';
+        if(nextSl.includes('(---kg)')||nextSl.includes('---kg')){father=m2[1];break;}
+      }
     }
     // コース適性
     let tekisei=30;
