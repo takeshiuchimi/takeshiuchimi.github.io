@@ -194,16 +194,7 @@ async function procPdf(file){
 }
 
 function parsePdf(L,fname){
-  // デバッグ: ノチェセラーダ周辺を出力
-  const noIdx=L.findIndex(l=>l.includes('ノチェセラーダ'));
-  if(noIdx>=0){
-    console.log('=== ノチェセラーダ周辺 ===');
-    for(let i=Math.max(0,noIdx-2);i<=Math.min(L.length-1,noIdx+5);i++){
-      console.log(`L[${i}]: ${L[i].substring(0,60)}`);
-    }
-  }
-  const anchIdx=L.findIndex((l,i)=>i>=(noIdx-5)&&l.includes('--')&&(l.includes('\u2f08\u6c17')||l.includes('\u4eba\u6c17')));
-  console.log('ノチェセラーダ nearest anchor:', anchIdx);
+
   // Race info
   let race_name='',race_date='',race_course='';
   for(let i=0;i<Math.min(L.length,80);i++){
@@ -216,13 +207,30 @@ function parsePdf(L,fname){
     }
   }
 
-  // Find anchor lines: contain "--" and ⼈気 or 人気
+  // Find anchor lines: '--人気' 行 または '---倍' 行
   const anchors=[];
   for(let i=0;i<L.length;i++){
     const ln=L[i];
-    if(ln.includes('--')&&(ln.includes(JINKI)||ln.includes(JINKI2))){
+    // 方法1: --人気（文字コード複数対応）
+    if(ln.includes('--')&&(ln.includes(JINKI)||ln.includes(JINKI2)||ln.includes('気'))){
       anchors.push(i);
     }
+    // 方法2: ---倍 行（人気行の直下、各馬に1つ）
+    // → これは重複するので使わない
+  }
+  // アンカーが18未満なら '---倍' でも補完
+  if(anchors.length<10){
+    for(let i=0;i<L.length;i++){
+      const ln=L[i];
+      if(/^---倍/.test(ln.trim())||ln.trim()==='---倍'){
+        // この行の2行前がアンカー候補
+        const ai2=i-2;
+        if(ai2>=0&&!anchors.includes(ai2)){
+          anchors.push(ai2);
+        }
+      }
+    }
+    anchors.sort((a,b)=>a-b);
   }
 
   // For each anchor, look back up to 6 lines for horse name
@@ -342,9 +350,6 @@ function parsePdf(L,fname){
     return{banum,name:h.name,father,corner4,zenso,tekisei,noryoku,jik,score,kq:kq(corner4)};
   });
 
-  // デバッグ alert
-  const dbg=horses.map(h=>`${h.name}[${h.nameIdx}→${h.anchorIdx}]`).join('\n');
-  alert(`検出馬(${horses.length}頭):\n${dbg}`);
   raceData={race_name,race_date,race_course,horses:parsed};
   const n=parsed.length;
   setSt('✅',fname,`${race_name||'レース'} / ${n}頭 読取完了`);
