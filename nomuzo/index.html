@@ -219,17 +219,33 @@ function parsePdf(L,fname){
   const horses=[];
   for(const ai of anchors){
     let found=false;
-    // 馬名は必ずアンカーの2〜4行前、かつ「カタカナ+数字（過去成績）」の形式
-    // 純カタカナ単独行は母名・父名なので除外
     for(let j=ai-1;j>=Math.max(0,ai-5);j--){
       const prev=L[j].trim();
-      // 「カタカナ+数字」= 馬名+過去成績が同一行（例: "タイダルロック2中山4..."）
+      // ① カタカナ+数字（例: "タイダルロック2中山4..."）
       const m1=/^([ァ-ヶー]{3,15})\d/.exec(prev);
       if(m1){
         if(!horses.some(h=>h.name===m1[1])){
           horses.push({name:m1[1],nameIdx:j,anchorIdx:ai});
         }
         found=true;break;
+      }
+      // ② カタカナ+⼆〇など漢字成績（例: "パラディオン⼆〇1001..."）
+      const m2=/^([ァ-ヶー]{3,15})[一-鿿⼀-⿟]/.exec(prev);
+      if(m2&&!/賞|Ｓ|特別|記念|クラス|馬|騎|厩|牡|牝|セ/.test(prev)){
+        if(!horses.some(h=>h.name===m2[1])){
+          horses.push({name:m2[1],nameIdx:j,anchorIdx:ai});
+        }
+        found=true;break;
+      }
+      // ③ 純カタカナ単独行：前行に⼆〇or全が含まれれば馬名（例: コスモギガンティア）
+      if(/^[ァ-ヶー]{4,15}$/.test(prev)){
+        const prevLine=(L[j-1]||'').trim();
+        if(/二〇|全/.test(prevLine)){  // ⼆〇 or 全
+          if(!horses.some(h=>h.name===prev)){
+            horses.push({name:prev,nameIdx:j,anchorIdx:ai});
+          }
+          found=true;break;
+        }
       }
     }
   }
@@ -239,11 +255,15 @@ function parsePdf(L,fname){
     const nextIdx=hi+1<horses.length?horses[hi+1].nameIdx:L.length;
     const sec=L.slice(h.nameIdx,nextIdx);
 
-    // 馬番
+    // 馬番: "枠番+馬番+---orスコア" パターン
     let banum=String(hi+1);
     for(const sl of sec){
-      const m=sl.trim().match(/^(\d)\s*(\d{1,2})\s*---/) || sl.trim().match(/^(\d)(\d{1,2})---/);
+      // パターン①: "12---" or "2497" (枠+馬番+スコアor---)
+      const m=sl.trim().match(/^(\d)(\d{1,2})(?:---|\d{2})[①-⑱③]/);
       if(m){banum=m[2];break;}
+      // パターン②: "1 2 ---" スペースあり
+      const m2=sl.trim().match(/^(\d)\s+(\d{1,2})\s+---/);
+      if(m2){banum=m2[2];break;}
     }
     // 前走着順: single digit line 1-18
     let zenso=0;
