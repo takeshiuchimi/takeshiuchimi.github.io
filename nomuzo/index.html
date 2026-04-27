@@ -229,7 +229,7 @@ function parsePdf(L,fname){
         found=true;break;
       }
       // Katakana name at start followed by stats (⼆〇...)
-      const m=/^([ァ-ヶー]{3,12})\s+[\u4e8c\u2f06\u4e8c]/.exec(prev);
+      const m=/^([ァ-ヶー]{3,12})\s+[二⼆]/.exec(prev);
       if(m){
         if(!horses.some(h=>h.name===m[1])){
           horses.push({name:m[1],nameIdx:j,anchorIdx:ai});
