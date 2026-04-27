@@ -207,30 +207,20 @@ function parsePdf(L,fname){
     }
   }
 
-  // アンカー検出: '---倍' 行（各馬に確実に1つ存在）
+  // アンカー検出: '---kg' 行（各馬に確実に1つ存在、文字コード問題なし）
   const anchors=[];
   for(let i=0;i<L.length;i++){
-    const ln=L[i].trim();
-    if(ln==='---倍'||ln.startsWith('---倍')){
+    const ln=L[i];
+    if(ln.startsWith('---kg')){
       anchors.push(i);
     }
-  }
-  // フォールバック
-  if(anchors.length<10){
-    for(let i=0;i<L.length;i++){
-      const ln=L[i];
-      if(ln.includes('--')&&(ln.includes(JINKI)||ln.includes(JINKI2)||ln.includes('気'))){
-        if(!anchors.includes(i)) anchors.push(i);
-      }
-    }
-    anchors.sort((a,b)=>a-b);
   }
 
   // For each anchor, look back up to 6 lines for horse name
   const horses=[];
   for(const ai of anchors){
     let found=false;
-    for(let j=ai-1;j>=Math.max(0,ai-11);j--){
+    for(let j=ai-1;j>=Math.max(0,ai-14);j--){
       const prev=L[j].trim();
       // ③ 純カタカナ単独行：前行に⼆〇or全が含まれれば馬名（最優先）
       if(/^[ァ-ヶー]{4,15}$/.test(prev)){
