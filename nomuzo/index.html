@@ -219,21 +219,15 @@ function parsePdf(L,fname){
   const horses=[];
   for(const ai of anchors){
     let found=false;
-    // 馬名は必ずアンカーの2〜3行前にある（デバッグデータより確認済み）
-    for(let j=ai-1;j>=Math.max(0,ai-4);j--){
+    // 馬名は必ずアンカーの2〜4行前、かつ「カタカナ+数字（過去成績）」の形式
+    // 純カタカナ単独行は母名・父名なので除外
+    for(let j=ai-1;j>=Math.max(0,ai-5);j--){
       const prev=L[j].trim();
-      // ① 行頭カタカナ＋数字（馬名＋過去成績が同一行: "トゥーナスタディ4中山8..."）
+      // 「カタカナ+数字」= 馬名+過去成績が同一行（例: "タイダルロック2中山4..."）
       const m1=/^([ァ-ヶー]{3,15})\d/.exec(prev);
       if(m1){
         if(!horses.some(h=>h.name===m1[1])){
           horses.push({name:m1[1],nameIdx:j,anchorIdx:ai});
-        }
-        found=true;break;
-      }
-      // ② 純カタカナ行（単独行の馬名）
-      if(/^[ァ-ヶー]{3,15}$/.test(prev)){
-        if(!horses.some(h=>h.name===prev)){
-          horses.push({name:prev,nameIdx:j,anchorIdx:ai});
         }
         found=true;break;
       }
@@ -272,16 +266,16 @@ function parsePdf(L,fname){
     }
     // 父馬名: \u2003 + name + (---kg)
     let father='不明';
-    for(const sl of sec){
-      // join('')後: "ゴールドアクター(---kg)メイタイ" or "キタサンブラック(---kg)ノーザン"
-      const m=sl.match(/^([ァ-ヶーA-Za-z\u4e00-\u9fff]{2,20})\(---kg\)/);
+    for(let si=0;si<sec.length;si++){
+      const sl=sec[si];
+      // パターン①: "キタサンブラック(---kg)ノーザン" （同一行）
+      const m=sl.match(/^([\u30A1-\u30F6\u30FC\uFF21-\uFF5A]{2,20})\(---kg\)/);
       if(m&&!/当該|東芝|コンビ|騎手|馬番|父馬|種牡|調教|勝負/.test(sl)){father=m[1];break;}
-      // 単独行の父名（(---kg)が別行の場合）
-      const m2=sl.match(/^([ァ-ヶー]{4,15})$/);
-      if(m2&&father==='不明'){
-        // 次の行が(---kg)かチェックするのは難しいのでセクション内のシンプルカタカナ行を候補に
-        const nextSl=sec[sec.indexOf(sl)+1]||'';
-        if(nextSl.includes('(---kg)')||nextSl.includes('---kg')){father=m2[1];break;}
+      // パターン②: 単独カタカナ行 → 次行が(---kg)で始まる（例: キズナ → (---kg)サンデー）
+      const m2=sl.match(/^([\u30A1-\u30F6\u30FC]{2,15})$/);
+      if(m2){
+        const nextSl=sec[si+1]||'';
+        if(nextSl.startsWith('(---kg)')){father=m2[1];break;}
       }
     }
     // コース適性
