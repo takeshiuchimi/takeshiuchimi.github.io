@@ -194,6 +194,16 @@ async function procPdf(file){
 }
 
 function parsePdf(L,fname){
+  // デバッグ: ノチェセラーダ周辺を出力
+  const noIdx=L.findIndex(l=>l.includes('ノチェセラーダ'));
+  if(noIdx>=0){
+    console.log('=== ノチェセラーダ周辺 ===');
+    for(let i=Math.max(0,noIdx-2);i<=Math.min(L.length-1,noIdx+5);i++){
+      console.log(`L[${i}]: ${L[i].substring(0,60)}`);
+    }
+  }
+  const anchIdx=L.findIndex((l,i)=>i>=(noIdx-5)&&l.includes('--')&&(l.includes('\u2f08\u6c17')||l.includes('\u4eba\u6c17')));
+  console.log('ノチェセラーダ nearest anchor:', anchIdx);
   // Race info
   let race_name='',race_date='',race_course='';
   for(let i=0;i<Math.min(L.length,80);i++){
@@ -332,6 +342,9 @@ function parsePdf(L,fname){
     return{banum,name:h.name,father,corner4,zenso,tekisei,noryoku,jik,score,kq:kq(corner4)};
   });
 
+  // デバッグ alert
+  const dbg=horses.map(h=>`${h.name}[${h.nameIdx}→${h.anchorIdx}]`).join('\n');
+  alert(`検出馬(${horses.length}頭):\n${dbg}`);
   raceData={race_name,race_date,race_course,horses:parsed};
   const n=parsed.length;
   setSt('✅',fname,`${race_name||'レース'} / ${n}頭 読取完了`);
