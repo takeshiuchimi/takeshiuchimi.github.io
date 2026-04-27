@@ -268,27 +268,28 @@ function parsePdf(L,fname){
       const m2=sl.trim().match(/^(\d)\s+(\d{1,2})\s+---/);
       if(m2){banum=m2[2];break;}
     }
-    // 前走着順: アンカー直前の数字のみ行から取得
-    // join('')後パターン: "9"(単独) or "3132"(複数着順連続)
+    // 前走着順: 騎手行(%[N])を基点に取得
+    // 騎手行パターン: "騎⼿：XX.X%[N]" or "騎⼿：XX.X%[N]着順数字"
     let zenso=0;
-    // アンカー行はsec内のどこか → anchorIdxとnameIdxの差がoffset
-    const anchorOffset=h.anchorIdx-h.nameIdx;
-    // アンカー直前1〜2行が着順行
-    for(let off=anchorOffset-1;off>=anchorOffset-3&&off>=0;off--){
-      const sl=(sec[off]||'').trim();
-      // 数字のみで構成される行（スペース除去後）
-      if(/^\d+$/.test(sl)&&sl.length>=1&&sl.length<=10){
-        // 2桁以下なら全体、3桁以上は先頭1桁が前走着順
-        const v=sl.length<=2?parseInt(sl):parseInt(sl[0]);
+    for(let si=0;si<sec.length&&si<10;si++){
+      const sl=sec[si];
+      // 騎手行を検出
+      if(!/騎/.test(sl)&&!/騎/.test(sl)) continue;
+      if(!/%\[/.test(sl)) continue;
+      // 騎手行内に着順が含まれるケース: "%[26]14" や "%[9]1132"
+      const mIn=sl.match(/%\[\d+\](\d+)/);
+      if(mIn){
+        const nums=mIn[1];
+        const v=nums.length<=2?parseInt(nums):parseInt(nums[0]);
         if(v>=1&&v<=18){zenso=v;break;}
       }
-    }
-    // フォールバック: sec全体から%[N]パターン
-    if(zenso===0){
-      for(const sl of sec.slice(0,8)){
-        const m=sl.match(/%\[\d+\]\s*(\d{1,2})(?:\D|$)/);
-        if(m){const v=parseInt(m[1]);if(v>=1&&v<=18){zenso=v;break;}}
+      // 騎手行の次の行が着順行
+      const nextSl=(sec[si+1]||'').trim();
+      if(/^\d+$/.test(nextSl)&&nextSl.length>=1&&nextSl.length<=8){
+        const v=nextSl.length<=2?parseInt(nextSl):parseInt(nextSl[0]);
+        if(v>=1&&v<=18){zenso=v;break;}
       }
+      break; // 騎手行は1つだけ
     }
     // 4角
     let corner4=0;
