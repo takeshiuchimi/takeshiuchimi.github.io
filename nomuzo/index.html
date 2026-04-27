@@ -219,7 +219,7 @@ function parsePdf(L,fname){
   const horses=[];
   for(const ai of anchors){
     let found=false;
-    for(let j=ai-1;j>=Math.max(0,ai-6);j--){
+    for(let j=ai-1;j>=Math.max(0,ai-8);j--){
       const prev=L[j].trim();
       // Pure katakana line
       if(/^[ァ-ヶー]{3,12}$/.test(prev)){
@@ -229,7 +229,7 @@ function parsePdf(L,fname){
         found=true;break;
       }
       // Katakana name at start followed by stats (⼆〇...)
-      const m=/^([ァ-ヶー]{3,12})\s+[\u4e8c\u2ed6\u4e8c]/.exec(prev);
+      const m=/^([ァ-ヶー]{3,12})\s+[\u4e8c\u2f06\u4e8c]/.exec(prev);
       if(m){
         if(!horses.some(h=>h.name===m[1])){
           horses.push({name:m[1],nameIdx:j,anchorIdx:ai});
