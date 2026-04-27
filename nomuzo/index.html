@@ -229,8 +229,8 @@ function parsePdf(L,fname){
         found=true;break;
       }
       // Katakana name at start followed by stats (⼆〇...)
-      const m=/^([ァ-ヶー]{3,12})\s+[二⼆]/.exec(prev);
-      if(m){
+      const m=/^([ァ-ヶー]{3,12})\s/.exec(prev);
+      if(m&&!/騎手|---倍|---kg|当該|東芝|コンビ|芙蓉|賞|未勝利|新馬/.test(prev)&&/全\s/.test(prev)){
         if(!horses.some(h=>h.name===m[1])){
           horses.push({name:m[1],nameIdx:j,anchorIdx:ai});
         }
