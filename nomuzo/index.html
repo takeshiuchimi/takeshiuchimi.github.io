@@ -221,18 +221,26 @@ function parsePdf(L,fname){
     let found=false;
     for(let j=ai-1;j>=Math.max(0,ai-8);j--){
       const prev=L[j].trim();
-      // Pure katakana line
-      if(/^[ァ-ヶー]{3,12}$/.test(prev)){
+      // ① 純カタカナ行
+      if(/^[ァ-ヶー]{3,15}$/.test(prev)){
         if(!horses.some(h=>h.name===prev)){
           horses.push({name:prev,nameIdx:j,anchorIdx:ai});
         }
         found=true;break;
       }
-      // Katakana name at start followed by stats (⼆〇...)
-      const m=/^([ァ-ヶー]{3,12})\s/.exec(prev);
-      if(m&&!/騎手|---倍|---kg|当該|東芝|コンビ|芙蓉|賞|未勝利|新馬/.test(prev)&&/全\s/.test(prev)){
-        if(!horses.some(h=>h.name===m[1])){
-          horses.push({name:m[1],nameIdx:j,anchorIdx:ai});
+      // ② 馬番+馬名パターン: "1 1 --- トゥーナスタディ" or "1 1 トゥーナスタディ"
+      const m2=/^\d\s+\d{1,2}\s+(?:---\s+)?([ァ-ヶー]{3,15})/.exec(prev);
+      if(m2){
+        if(!horses.some(h=>h.name===m2[1])){
+          horses.push({name:m2[1],nameIdx:j,anchorIdx:ai});
+        }
+        found=true;break;
+      }
+      // ③ 行中カタカナ馬名（ノイズ除外）
+      const m3=/([ァ-ヶー]{4,15})/.exec(prev);
+      if(m3&&!/騎手|---倍|---kg|当該|東芝|コンビ|芙蓉|賞|未勝利|新馬|アザレア|スプリング|ホープフル|きさらぎ|百日草|ジュニア|黒竹|水仙|山吹|大寒桜|芙蓉|芝\d|ダ\d/.test(prev)){
+        if(!horses.some(h=>h.name===m3[1])){
+          horses.push({name:m3[1],nameIdx:j,anchorIdx:ai});
         }
         found=true;break;
       }
