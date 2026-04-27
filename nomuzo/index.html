@@ -179,7 +179,7 @@ async function procPdf(file){
       const tc=await page.getTextContent();
       for(const item of tc.items){
         if(!item.str||!item.str.trim()) continue;
-        const y=Math.round(item.transform[5]/3)*3;
+        const y=Math.round(item.transform[5]/2)*2;
         if(!yMap[y]) yMap[y]=[];
         yMap[y].push(item.str);
       }
@@ -219,7 +219,7 @@ function parsePdf(L,fname){
   const horses=[];
   for(const ai of anchors){
     let found=false;
-    for(let j=ai-1;j>=Math.max(0,ai-5);j--){
+    for(let j=ai-1;j>=Math.max(0,ai-6);j--){
       const prev=L[j].trim();
       // ③ 純カタカナ単独行：前行に⼆〇or全が含まれれば馬名（最優先）
       if(/^[ァ-ヶー]{4,15}$/.test(prev)){
@@ -380,13 +380,23 @@ JSONのみ（コードブロック不要）：
   const r=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:prompt}]})
   });
   const d=await r.json();
   if(d.error)throw new Error(d.error.message);
   const raw=d.content?.map(b=>b.text||'').join('')||'';
   const s=raw.replace(/```json|```/g,'').trim();
-  return JSON.parse(s.substring(s.indexOf('{'),s.lastIndexOf('}')+1));
+  const start=s.indexOf('{');
+  const end=s.lastIndexOf('}');
+  if(start===-1||end===-1)throw new Error('JSONが見つかりません: '+s.substring(0,100));
+  try{
+    return JSON.parse(s.substring(start,end+1));
+  }catch(e){
+    // 不完全なJSONを補完して再試行
+    const partial=s.substring(start);
+    const fixed=partial.replace(/,\s*$/, '').replace(/:\s*$/, ':"..."') + (partial.match(/\{/g)||[]).length > (partial.match(/\}/g)||[]).length ? '}' : '';
+    try{ return JSON.parse(fixed); }catch(e2){ throw new Error('JSON解析失敗（max_tokens不足の可能性）'); }
+  }
 }
 
 function render(ai,scored,tk){
