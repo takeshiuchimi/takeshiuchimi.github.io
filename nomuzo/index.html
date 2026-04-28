@@ -207,21 +207,23 @@ function parsePdf(L,fname){
     }
   }
 
-  // アンカー検出: '---kg' で始まる行 + '気' を含む '--' 行の両方
-  const anchors=new Set();
+  // アンカー検出: '気' を含む '--' 行（17個）+ 補完
+  const kiAnchors=[];
+  const kgAnchors=[];
   for(let i=0;i<L.length;i++){
     const ln=L[i];
-    // ①: ---kg で始まる行（馬体重行）
-    if(ln.startsWith('---kg')) anchors.add(i);
-    // ②: '--' + 何らかの '気' を含む行（--人気行、文字コード不問）
-    if(ln.includes('--')&&ln.includes('気')) anchors.add(i);
-    // ③: '---倍' で始まる行
-    if(ln.startsWith('---倍')||ln===('---倍')) anchors.add(i);
+    if(ln.includes('--')&&ln.includes('気')) kiAnchors.push(i);
+    if(ln.startsWith('---kg')) kgAnchors.push(i);
   }
-  const anchorsArr=[...anchors].sort((a,b)=>a-b);
-  // デバッグ: アンカー数をコンソールに出力
+  // 各---kg行について、近傍に気アンカーがなければ補完
+  const anchorsArr=[...kiAnchors];
+  for(const ki of kgAnchors){
+    const hasNear=kiAnchors.some(a=>Math.abs(a-ki)<=10);
+    if(!hasNear) anchorsArr.push(ki);
+  }
+  anchorsArr.sort((a,b)=>a-b);
   console.log('アンカー数:', anchorsArr.length, anchorsArr.slice(0,5));
-  if(anchorsArr.length!==18) alert('アンカー数: '+anchorsArr.length+'\n最初の5個: '+anchorsArr.slice(0,5).join(','));
+  console.log('気アンカー:',kiAnchors.length,'kgアンカー補完:',anchorsArr.length-kiAnchors.length,'合計:',anchorsArr.length);
 
   // For each anchor, look back up to 6 lines for horse name
   const horses=[];
