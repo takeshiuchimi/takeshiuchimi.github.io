@@ -215,7 +215,15 @@ function parsePdf(L,fname){
     }
   }
   console.log('アンカー数:', anchorsArr.length, anchorsArr.slice(0,5));
-  console.log('Ωアンカー数:', anchorsArr.length);
+  console.log('丸数字アンカー数:', anchorsArr.length);
+  // ノチェセラーダ周辺を確認
+  const nIdx=L.findIndex(l=>l.includes('ノチェセラーダ'));
+  if(nIdx>=0){
+    const near=L.slice(Math.max(0,nIdx-2),nIdx+15).map((l,i)=>`[${nIdx-2+i}]${l.substring(0,30)}`).join('\n');
+    alert('アンカー数:'+anchorsArr.length+'\nノチェセラーダ['+nIdx+']周辺:\n'+near);
+  } else {
+    alert('アンカー数:'+anchorsArr.length+'\nノチェセラーダ未発見');
+  }
 
   // For each anchor, look back up to 6 lines for horse name
   const horses=[];
