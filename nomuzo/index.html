@@ -207,12 +207,10 @@ function parsePdf(L,fname){
     }
   }
 
-  // アンカー検出: Ω指数行（60〜99の2桁数字のみ行、各馬に1つ確実に存在）
+  // アンカー検出: 丸数字(①〜⑱)を含む行（各馬の成績行、確実に18個）
   const anchorsArr=[];
   for(let i=0;i<L.length;i++){
-    const ln=L[i].trim();
-    // 60〜99の2桁数字のみ行
-    if(/^[6-9]\d$/.test(ln)){
+    if(/[\u2460-\u2471]/.test(L[i])){
       anchorsArr.push(i);
     }
   }
@@ -223,7 +221,7 @@ function parsePdf(L,fname){
   const horses=[];
   for(const ai of anchorsArr){
     let found=false;
-    for(let j=ai-1;j>=Math.max(0,ai-11);j--){
+    for(let j=ai-1;j>=Math.max(0,ai-12);j--){
       const prev=L[j].trim();
       // ③ 純カタカナ単独行：前行に⼆〇or全が含まれれば馬名（最優先）
       if(/^[ァ-ヶー]{4,15}$/.test(prev)){
