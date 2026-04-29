@@ -6,11 +6,20 @@
 <title>📖 稲盛先生</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* =============================================
+   稲盛先生 · デザイントークン
+   ベース：v5.3共通 / アクセント：ゴールド×深紅
+   ============================================= */
 :root{
-  --bg:#0f0e0c;--bg2:#1a1914;--bg3:#24221c;--bg4:#2e2b22;
-  --gold:#c9a84c;--gold2:#f0c96e;--red:#8b1a1a;--red2:#c0392b;
-  --text:#ede8dc;--muted:#7a7060;--muted2:#a09070;--border:#2e2b22;
-  --radius:10px;
+  /* ベース（v5.3共通） */
+  --bg:#1a1a1f;--bg2:#23232b;--bg3:#2c2c36;--bg4:#35353f;
+  --text:#f0ead8;--text2:#c8bfa8;
+  --muted:#6a6a7a;--muted2:#9a9aaa;
+  --border:#3a3a46;--border2:#46465a;
+  --radius:12px;
+  /* アクセント（稲盛独自：ゴールド×深紅） */
+  --gold:#d4a843;--gold2:#f5d06e;--gold-dim:rgba(212,168,67,0.12);
+  --red:#8b1a1a;--red2:#c0392b;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Shippori Mincho',serif;min-height:100vh;padding-bottom:80px;}
@@ -19,7 +28,7 @@ body::before{content:'';position:fixed;inset:0;
   background:radial-gradient(ellipse at 50% 0%,rgba(139,26,26,0.08) 0%,transparent 60%);
   pointer-events:none;z-index:0;}
 
-header{background:linear-gradient(180deg,#080807 0%,#0f0e0c 100%);border-bottom:2px solid rgba(201,168,76,0.3);padding:18px 20px 14px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 30px rgba(0,0,0,0.7);}
+header{background:linear-gradient(180deg,#111118,#1a1a1f);border-bottom:2px solid rgba(212,168,67,0.3);padding:18px 20px 14px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 30px rgba(0,0,0,0.5);}
 .logo{font-family:'Noto Serif JP',serif;font-size:10px;letter-spacing:5px;color:var(--muted2);text-transform:uppercase;margin-bottom:4px;}
 header h1{font-size:22px;font-weight:900;color:var(--text);letter-spacing:4px;}
 header h1 em{color:var(--gold);font-style:normal;}
