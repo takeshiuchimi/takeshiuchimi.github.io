@@ -340,13 +340,14 @@ function parsePdf(L,fname){
         }
       }
 
-      // ★ 馬名+末尾1〜2文字パターン（例: "ピティロディアピ", "ゼンノインヴォークゼ"）
-      const mExtra=/^([ァ-ヶー]{4,15})[ァ-ヶー]{1,2}$/.exec(prev);
+      // ★ 馬名+末尾1文字パターン（例: "ピティロディアピ" → "ピティロディア"）
+      // 競馬ラボ横型では馬名の後に先頭1文字が付く
+      const mExtra=/^([ァ-ヶー]{4,15})[ァ-ヶー]{1}$/.exec(prev);
       if(mExtra){
         const name=mExtra[1];
         const prevL=(L[j-1]||'').trim();
         const isHaha=/当該|東芝|中芝|阪芝|京芝|福芝|新芝|芝不|コンビ/.test(prevL)||prevL.includes('(---kg)')||prevL.includes('---kg');
-        if(!isHaha&&name.length>=4&&!horses.some(h=>h.name===name)){
+        if(!isHaha&&!horses.some(h=>h.name===name)){
           horses.push({name,nameIdx:j,anchorIdx:ai});
           break;
         }
@@ -449,10 +450,19 @@ function parsePdf(L,fname){
     let father='不明';
     for(let si=0;si<sec.length;si++){
       const sl=sec[si];
+      // パターン①: "キタサンブラック(---kg)..." 同一行
       const m=sl.match(/^([\u30A1-\u30F6\u30FC\uFF21-\uFF5A]{2,20})\(---kg\)/);
       if(m&&!/当該|東芝|コンビ|騎手|馬番|父馬|種牡|調教|勝負/.test(sl)){father=m[1];break;}
+      // パターン②: 単独カタカナ行 → 次行が(---kg)で始まる
       const m2=sl.match(/^([\u30A1-\u30F6\u30FC]{2,15})$/);
       if(m2){const nextSl=sec[si+1]||'';if(nextSl.startsWith('(---kg)')){father=m2[1];break;}}
+      // パターン③: "キンシャサノキセキ89" → 父馬名+Ωスコア数字（飯盛山特別等）
+      const m3=sl.match(/^([\u30A1-\u30F6\u30FC]{3,20})\d{2}$/);
+      if(m3&&!/当該|東芝|コンビ|騎手|馬番|父馬|種牡|調教|勝負|⼈気/.test(sl)){
+        // 前行が「父馬：XX%[N]」パターンなら父馬名として採用
+        const prevSl=(sec[si-1]||'').trim();
+        if(/父/.test(prevSl)||/⽗/.test(prevSl)){father=m3[1];break;}
+      }
     }
 
     // ══════════════════════════════════════════
