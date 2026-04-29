@@ -211,8 +211,6 @@ footer em{color:var(--gold);font-style:normal;}
     <button class="tab-btn" onclick="tab(3)"><span>🎩</span>通</button>
     <button class="tab-btn" onclick="tab(4)"><span>🏆</span>全</button>
     <button class="tab-btn" onclick="tab(5)"><span>😂</span>突</button>
-    <button class="tab-btn" onclick="tab(6)"><span>💬</span>言</button>
-    <button class="tab-btn" onclick="tab(7)"><span>🐴</span>名</button>
   </div>
   <div class="panel on" id="p0"><div class="rc"><div class="rc-title">⚡ 展開予想</div><div id="c0"></div></div></div>
   <div class="panel" id="p1"><div class="rc"><div class="rc-title">🍺 レースコメント</div><div id="c1"></div></div></div>
@@ -220,8 +218,6 @@ footer em{color:var(--gold);font-style:normal;}
   <div class="panel" id="p3"><div class="rc"><div class="rc-title">🎩 通人の見立て</div><div id="c3"></div></div></div>
   <div class="panel" id="p4"><div class="rc"><div class="rc-title">🏆 全馬スコアランキング</div><div id="c4"></div></div></div>
   <div class="panel" id="p5"><div class="rc"><div class="rc-title">😂 ツッコミ解説</div><div id="c5"></div></div></div>
-  <div class="panel" id="p6"><div class="rc"><div class="rc-title">💬 呑蔵語録</div><div id="c6"></div></div></div>
-  <div class="panel" id="p7"><div class="rc"><div class="rc-title">🐴 馬名考察</div><div id="c7"></div></div></div>
 </div>
 </div>
 <footer>🍶 <em>呑蔵競馬</em> — 飲みながら楽しむ予想エンジン<br>馬券購入は自己責任で。飲みすぎにもご注意を。</footer>
@@ -347,68 +343,138 @@ function parsePdf(L,fname){
       const m2=sl.trim().match(/^(\d)\s+(\d{1,2})\s+---/);
       if(m2){banum=m2[2];break;}
     }
-    // 前走着順: 騎手行(%[N])を基点に取得
-    // 騎手行パターン: "騎⼿：XX.X%[N]" or "騎⼿：XX.X%[N]着順数字"
-    let zenso=0;
-    for(let si=0;si<sec.length&&si<10;si++){
+    // ── 5走分の着順・4角位置を取得 ──
+    // 騎手行(%[N])を最大5件収集
+    const zensoList=[];   // 着順 最大5走
+    const corner4List=[]; // 4角位置 最大5走
+    for(let si=0;si<sec.length&&zensoList.length<5;si++){
       const sl=sec[si];
-      // 騎手行を検出
-      if(!/騎/.test(sl)&&!/騎/.test(sl)) continue;
+      if((!/騎/.test(sl))&&(!/\u9a0e/.test(sl))) continue;
       if(!/%\[/.test(sl)) continue;
-      // 騎手行内に着順が含まれるケース: "%[26]14" や "%[9]1132"
+      // 着順: "%[26]14" → 14、"%[9]1" → 1
       const mIn=sl.match(/%\[\d+\](\d+)/);
       if(mIn){
         const nums=mIn[1];
         const v=nums.length<=2?parseInt(nums):parseInt(nums[0]);
-        if(v>=1&&v<=18){zenso=v;break;}
+        if(v>=1&&v<=18) zensoList.push(v);
+        else zensoList.push(0);
+      } else {
+        const nextSl=(sec[si+1]||'').trim();
+        if(/^\d+$/.test(nextSl)&&nextSl.length<=2){
+          const v=parseInt(nextSl);
+          if(v>=1&&v<=18) zensoList.push(v);
+          else zensoList.push(0);
+        } else {
+          zensoList.push(0);
+        }
       }
-      // 騎手行の次の行が着順行
-      const nextSl=(sec[si+1]||'').trim();
-      if(/^\d+$/.test(nextSl)&&nextSl.length>=1&&nextSl.length<=8){
-        const v=nextSl.length<=2?parseInt(nextSl):parseInt(nextSl[0]);
-        if(v>=1&&v<=18){zenso=v;break;}
-      }
-      break; // 騎手行は1つだけ
     }
-    // 4角
-    let corner4=0;
+    // 4角位置を5走分収集（丸数字4つ連続の行）
     for(const sl of sec){
+      if(corner4List.length>=5) break;
       const m=sl.match(/[①-⑱]{4}/);
-      if(m){corner4=CIRCLE[m[0][3]]||0;break;}
+      if(m) corner4List.push(CIRCLE[m[0][3]]||0);
     }
-    // 父馬名: \u2003 + name + (---kg)
+    const zenso=zensoList[0]||0;       // 前走着順（表示用）
+    const corner4=corner4List[0]||0;   // 前走4角（脚質判定用）
+
+    // ── 父馬名 ──
     let father='不明';
     for(let si=0;si<sec.length;si++){
       const sl=sec[si];
-      // パターン①: "キタサンブラック(---kg)ノーザン" （同一行）
       const m=sl.match(/^([\u30A1-\u30F6\u30FC\uFF21-\uFF5A]{2,20})\(---kg\)/);
       if(m&&!/当該|東芝|コンビ|騎手|馬番|父馬|種牡|調教|勝負/.test(sl)){father=m[1];break;}
-      // パターン②: 単独カタカナ行 → 次行が(---kg)で始まる（例: キズナ → (---kg)サンデー）
       const m2=sl.match(/^([\u30A1-\u30F6\u30FC]{2,15})$/);
-      if(m2){
-        const nextSl=sec[si+1]||'';
-        if(nextSl.startsWith('(---kg)')){father=m2[1];break;}
+      if(m2){const nextSl=sec[si+1]||'';if(nextSl.startsWith('(---kg)')){father=m2[1];break;}}
+    }
+
+    // ══════════════════════════════════════════
+    // 内海式 減点法スコア計算
+    // 満点：適性40 能力35 実行力25 → 合計100
+    // 各条件×=miss → -1点/条件
+    // 前走5走 × 3条件 = 最大15チェック
+    // ══════════════════════════════════════════
+
+    // 当該コース成績を取得（"当該 勝 連 ..."）
+    let tekiWin=0,tekiNi=0,tekiTotal=0;
+    for(const sl of sec){
+      const tm=sl.match(/当該\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/);
+      if(tm){
+        tekiWin=parseInt(tm[1]);tekiNi=parseInt(tm[2]);
+        tekiTotal=tekiWin+tekiNi+parseInt(tm[3])+parseInt(tm[4]);
+        break;
+      }
+      // "当該 W N" の2数パターン
+      const tm2=sl.match(/当該\s+(\d)\s+(\d)/);
+      if(tm2){tekiWin=parseInt(tm2[1]);tekiNi=parseInt(tm2[2]);tekiTotal=tekiWin+tekiNi+2;break;}
+    }
+
+    // 全成績
+    let zenWin=0,zenNi=0,zenSan=0,zenTotal=0;
+    for(const sl of sec.slice(0,8)){
+      const m=sl.match(/全\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/);
+      if(m){
+        zenWin=parseInt(m[1]);zenNi=parseInt(m[2]);zenSan=parseInt(m[3]);
+        zenTotal=zenWin+zenNi+zenSan+parseInt(m[4]);break;
       }
     }
-    // コース適性
-    let tekisei=30;
-    for(const sl of sec){
-      const tm=sl.match(/当該\s+(\d)\s+(\d)/);
-      const tzm=sl.match(/東芝\s+(\d)\s+(\d)/);
-      if(tm)tekisei+=parseInt(tm[1])*4+parseInt(tm[2])*2;
-      if(tzm)tekisei+=parseInt(tzm[1])*3+parseInt(tzm[2])*1;
+
+    // 脚質（全走の平均4角位置で判定）
+    const avgC4=corner4List.length?corner4List.reduce((a,b)=>a+b,0)/corner4List.length:0;
+    const kqStyle=kq(avgC4);
+    // 展開予想用の今回レース脚質（前走ベース）
+    const kqNow=kq(corner4);
+
+    // ── 適性チェック（満点40、-1/miss/走） ──
+    let tekiseiMiss=0;
+    const runs=Math.min(zensoList.length,5)||1;
+    for(let r=0;r<runs;r++){
+      // ①距離合ってる：当該コース出走歴あり
+      if(tekiTotal===0) tekiseiMiss++;
+      // ②コース合ってる：当該コース連対あり（勝or2着）
+      if(tekiWin===0&&tekiNi===0) tekiseiMiss++;
+      // ③脚質合ってる：4角位置が安定（標準偏差小）
+      // → 走ごとではなく全体で1回判定（ペナルティ軽め）
     }
-    tekisei=Math.min(40,Math.max(25,tekisei));
-    // 全成績
-    let noryoku=27;
-    for(const sl of sec.slice(0,4)){
-      const m=sl.match(/全\s+(\d)\s+(\d)\s+(\d)\s+(\d)/);
-      if(m){const w=parseInt(m[1]),top3=w+parseInt(m[2])+parseInt(m[3]);noryoku=Math.min(35,Math.max(20,20+w*4+top3));break;}
+    // ③脚質安定は全体判定（最大-2）
+    if(corner4List.length>=2){
+      const mean=corner4List.reduce((a,b)=>a+b,0)/corner4List.length;
+      const sd=Math.sqrt(corner4List.map(v=>(v-mean)**2).reduce((a,b)=>a+b,0)/corner4List.length);
+      if(sd>4) tekiseiMiss+=2;
+      else if(sd>2) tekiseiMiss+=1;
     }
-    // 実行力
-    let jik=zenso===1?24:zenso===2?22:zenso===3?20:zenso<=5?18:zenso<=8?14:zenso<=15?11:zenso>0?10:17;
+    let tekisei=Math.max(25,40-tekiseiMiss);
+
+    // ── 能力チェック（満点35、-1/miss/走） ──
+    let noryokuMiss=0;
+    for(let r=0;r<runs;r++){
+      const z=zensoList[r]||99;
+      // ④前走レース格OK：全成績で勝利あり（簡易）
+      if(zenWin===0) noryokuMiss++;
+      // ⑤前走3着以内
+      if(z>3) noryokuMiss++;
+      // ⑥相手レベル高い：連対率30%以上（簡易）
+      if(zenTotal>0&&(zenWin+zenNi)/zenTotal<0.3) noryokuMiss++;
+    }
+    let noryoku=Math.max(20,35-noryokuMiss);
+
+    // ── 実行力チェック（満点25、-1/miss/走） ──
+    let jikMiss=0;
+    for(let r=0;r<runs;r++){
+      const z=zensoList[r]||99;
+      const c=corner4List[r]||0;
+      // ⑦着差小（3着以内を着差OK代替）
+      if(z>5) jikMiss++;
+      // ⑧位置取り安定（4角10番手以内）
+      if(c>10) jikMiss++;
+      // ⑨大崩れなし（10着以下ならペナルティ）
+      if(z>=10) jikMiss++;
+    }
+    let jik=Math.max(10,25-jikMiss);
+
+    // 最終スコア
     const score=Math.round(tekisei*noryoku*jik/35);
-    return{banum,name:h.name,father,corner4,zenso,tekisei,noryoku,jik,score,kq:kq(corner4)};
+    return{banum,name:h.name,father,corner4:corner4List[0]||0,zenso,zensoList,tekisei,noryoku,jik,score,kq:kqNow,tekiseiMiss,noryokuMiss,jikMiss};
   });
 
   raceData={race_name,race_date,race_course,horses:parsed};
@@ -452,7 +518,7 @@ async function analyze(){
 }
 
 async function callAI(scored,tk){
-  const list=scored.map(h=>`${h.banum}番 ${h.name} 父:${h.father} 脚質:${h.kq} 前走${h.zenso||'?'}着 ${h.score}pt`).join('\n');
+  const list=scored.map(h=>`${h.banum}番 ${h.name} 父:${h.father} 脚質:${h.kq} 近5走:${h.zensoList.slice(0,5).map(v=>v||'?').join('-')}着 適${h.tekisei}/能${h.noryoku}/実${h.jik} ${h.score}pt`).join('\n');
   const prompt=`「呑蔵競馬」AIです。居酒屋トーン・断定・短文で。
 
 レース：${raceData.race_name}　コース：${raceData.race_course}
@@ -461,11 +527,10 @@ async function callAI(scored,tk){
 全馬スコア順：
 ${list}
 
-【ルール】展・コ・煽は脚質と役割のみ（馬名・馬番禁止）。全のみ馬名OK。展とコは同じ結論。煽は揺さぶり。通はコース・血統知識で3つ。突は「競馬あるある」へのツッコミ3つ（必ず3つ埋めること）。言は格言3つ。名は馬名考察3つ。
+【ルール】展・コ・煽は脚質と役割のみ（馬名・馬番禁止）。全のみ馬名OK。展とコは同じ結論。煽は揺さぶり。通はコース・血統知識で3つ。突は「競馬あるある」へのツッコミ3つ（必ず3つ埋めること）。
 
 JSONのみ（コードブロック不要）：
-{"tenkai":"","comment":["","",""],"aori":["","",""],"tsu":["","",""],"tsukomi":["","",""],"kotoba":["","",""],"namaae":["","",""]}`;
-
+{"tenkai":"","comment":["","",""],"aori":["","",""],"tsu":["","",""],"tsukomi":["","",""]}`;
   const r=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -493,15 +558,14 @@ function render(ai,scored,tk){
   document.getElementById('c2').innerHTML=ul(ai.aori);
   document.getElementById('c3').innerHTML=ul(ai.tsu);
   document.getElementById('c5').innerHTML=ul(ai.tsukomi);
-  document.getElementById('c6').innerHTML=ul(ai.kotoba);
-  document.getElementById('c7').innerHTML=ul(ai.namaae);
 
   const mx=Math.max(...scored.map(h=>h.score));
   document.getElementById('c4').innerHTML=scored.map((h,i)=>{
     const pct=Math.round(h.score/mx*100);
     const cls=i===0?'r1':i===1?'r2':i===2?'r3':'rx';
     const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':h.rank;
-    return`<div class="ri ${cls}"><div class="ri-medal">${medal}</div><div class="ri-info"><div class="ri-name"><span class="ri-badge">${h.banum}番</span>${h.name} ${kqTag(h.kq)}</div><div class="ri-sub">父:${h.father} · 適性${h.tekisei} · 能力${h.noryoku} · 実行力${h.jik}</div><div class="ri-bw"><div class="ri-bar"><div class="ri-fill" style="width:0%" data-p="${pct}"></div></div><div class="ri-score">${h.score}<small>pt</small></div></div></div></div>`;
+    const zensuStr=h.zensoList&&h.zensoList.length?h.zensoList.slice(0,5).map(v=>v||'?').join('-')+'着':'—';
+    return`<div class="ri ${cls}"><div class="ri-medal">${medal}</div><div class="ri-info"><div class="ri-name"><span class="ri-badge">${h.banum}番</span>${h.name} ${kqTag(h.kq)}</div><div class="ri-sub">父:${h.father} · 近走:${zensuStr}</div><div class="ri-sub" style="margin-top:2px;">適性${h.tekisei}(×${h.tekiseiMiss||0}) · 能力${h.noryoku}(×${h.noryokuMiss||0}) · 実行力${h.jik}(×${h.jikMiss||0})</div><div class="ri-bw"><div class="ri-bar"><div class="ri-fill" style="width:0%" data-p="${pct}"></div></div><div class="ri-score">${h.score}<small>pt</small></div></div></div></div>`;
   }).join('');
 
   document.getElementById('res').style.display='block';
