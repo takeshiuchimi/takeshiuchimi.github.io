@@ -281,14 +281,25 @@ function parsePdf(L,fname){
         race_course=`${m[1]}${m[2]}m ${m[3]}頭`;
       }
     }
-    // 開催場所: "東京競馬" "中山競馬" など
+    // 開催場所
     if(!race_place){
       const pm=ln.match(/(東京|中山|阪神|京都|中京|小倉|福島|新潟|札幌|函館|大井|川崎|船橋|浦和)/);
       if(pm) race_place=pm[1];
     }
+    // レース名: パターンA "11R"単独行の次行
     if(!race_name&&/^\d+R$/.test(ln.trim())){
       const next=(L[i+1]||'').trim();
-      if(next.length>=3) race_name=next.replace(/\s+/g,'').replace(/（[^）]*）/g,'');
+      if(next.length>=3&&!/^\d/.test(next)) race_name=next.replace(/\s+/g,'').replace(/（[^）]*）/g,'');
+    }
+    // レース名: パターンB "福島9R飯盛山特別" のような混合行
+    if(!race_name){
+      const rm=ln.match(/\d+R(.{3,20}?)(?:ネット|出⾺|$)/);
+      if(rm&&rm[1]&&!/^\d/.test(rm[1])) race_name=rm[1].trim().replace(/\s+/g,'');
+    }
+    // レース名: パターンC 独立したレース名行（カタカナ+漢字、特別・賞・ステークス等を含む）
+    if(!race_name&&/[特別賞Ｓステークスカップ記念]/.test(ln)&&ln.length<30&&!/^\d/.test(ln)){
+      const clean=ln.replace(/\s+/g,'').replace(/（[^）]*）/g,'');
+      if(clean.length>=3) race_name=clean;
     }
   }
 
@@ -417,18 +428,15 @@ function parsePdf(L,fname){
           if(v>=1) zensoList.push(v);
         }
       }
-      // パターンB: %[N]の後が空 → 次行・次々行から着順を取得
+      // パターンB: %[N]の後が空 → 次行・次々行から着順を取得（…はスキップ）
       if(zensoList.length===0){
-        for(let d=1;d<=3;d++){
+        for(let d=1;d<=5;d++){
           const nxt=(sec[si+d]||'').trim();
-          if(!nxt) continue;
-          // 数字のみの行（着順）
+          if(!nxt||nxt==='…'||nxt==='‥') continue; // …をスキップ
           if(/^\d{1,2}$/.test(nxt)){
             const v=parseInt(nxt);
-            if(v>=1&&v<=18) zensoList.push(v);
-            break;
+            if(v>=1&&v<=18){zensoList.push(v);break;}
           }
-          // 複数着順が連結した行 "9" "61" など
           if(/^\d{2,5}$/.test(nxt)){
             for(const ch of nxt){
               if(zensoList.length>=5) break;
@@ -437,7 +445,6 @@ function parsePdf(L,fname){
             }
             break;
           }
-          // 数字以外の行が来たら終了
           if(/[^\d]/.test(nxt)) break;
         }
       }
@@ -456,12 +463,11 @@ function parsePdf(L,fname){
       // パターン②: 単独カタカナ行 → 次行が(---kg)で始まる
       const m2=sl.match(/^([\u30A1-\u30F6\u30FC]{2,15})$/);
       if(m2){const nextSl=sec[si+1]||'';if(nextSl.startsWith('(---kg)')){father=m2[1];break;}}
-      // パターン③: "キンシャサノキセキ89" → 父馬名+Ωスコア数字（飯盛山特別等）
+      // パターン③: "キンシャサノキセキ89" → 次行が「父馬：XX%[N]」なら父馬名
       const m3=sl.match(/^([\u30A1-\u30F6\u30FC]{3,20})\d{2}$/);
       if(m3&&!/当該|東芝|コンビ|騎手|馬番|父馬|種牡|調教|勝負|⼈気/.test(sl)){
-        // 前行が「父馬：XX%[N]」パターンなら父馬名として採用
-        const prevSl=(sec[si-1]||'').trim();
-        if(/父/.test(prevSl)||/⽗/.test(prevSl)){father=m3[1];break;}
+        const nextSl=(sec[si+1]||'').trim();
+        if((/父/.test(nextSl)||/⽗/.test(nextSl))&&/%/.test(nextSl)){father=m3[1];break;}
       }
     }
 
