@@ -220,7 +220,7 @@ footer em{color:var(--gold);font-style:normal;}
   <div class="panel" id="p5"><div class="rc"><div class="rc-title">😂 ツッコミ解説</div><div id="c5"></div></div></div>
 </div>
 </div>
-<footer>🍶 <em>呑蔵競馬</em> — 飲みながら楽しむ予想エンジン<br>馬券購入は自己責任で。飲みすぎにもご注意を。</footer>
+<footer>🍶 <em>呑蔵競馬</em> — 飲みながら楽しむ予想エンジン<br>馬券購入は自己責任で。飲みすぎにもご注意を。<br><a href="./debug.html" style="font-size:9px;color:var(--muted);letter-spacing:1px;opacity:0.5;">🔍 debug</a></footer>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const CIRCLE={};
@@ -316,11 +316,11 @@ function parsePdf(L,fname){
 
   // ── アンカー検出（横型統一）──
   // 競馬ラボPDFは全て横型: 1行に5走分まとめて記載
-  // アンカー = 丸数字3つ以上含む行（4連続が基本だが3角なしもあるため3以上）
+  // アンカー = 丸数字4連続を含む行
   const anchorsArr=[];
   for(let i=0;i<L.length;i++){
     const ln=L[i];
-    if(/[\u2460-\u2471]{3}/.test(ln)&&/^\d/.test(ln.trim())){
+    if(/[\u2460-\u2471]{4}/.test(ln)){
       anchorsArr.push(i);
     }
   }

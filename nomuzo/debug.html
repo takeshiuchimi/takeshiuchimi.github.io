@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDFデバッグビューア</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+body{background:#111;color:#ddd;font-family:monospace;font-size:11px;padding:12px;}
+h2{color:#c9a84c;font-size:14px;margin-bottom:8px;}
+.drop{border:2px dashed #444;border-radius:8px;padding:24px;text-align:center;cursor:pointer;position:relative;margin-bottom:12px;}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.drop strong{color:#c9a84c;}
+#out{white-space:pre-wrap;word-break:break-all;line-height:1.7;}
+.ln{display:flex;gap:8px;border-bottom:1px solid #222;padding:2px 0;}
+.lnum{color:#555;min-width:32px;text-align:right;flex-shrink:0;}
+.ltxt{flex:1;}
+/* キーワードハイライト */
+.hl-kiji{color:#e74c3c;}   /* 騎手行 */
+.hl-c4{color:#f0c96e;}     /* 丸数字4連 */
+.hl-pct{color:#3498db;}    /* %[ */
+.hl-name{color:#2ecc71;}   /* 馬名候補 */
+.hl-teki{color:#e67e22;}   /* 当該 */
+.bar{background:#1a1a1a;padding:8px;border-radius:6px;margin-bottom:8px;font-size:10px;color:#888;}
+</style>
+</head>
+<body>
+<h2>🔍 PDF 生テキスト デバッグビューア</h2>
+<div class="drop" id="drop"
+     ondragover="event.preventDefault();this.style.borderColor='#c9a84c'"
+     ondragleave="this.style.borderColor='#444'"
+     ondrop="onDrop(event)">
+  <input type="file" accept=".pdf" onchange="onSel(event)">
+  <strong>PDFをタップして選択</strong><br>
+  <span style="font-size:10px;color:#666;">競馬ラボ横型馬柱PDF</span>
+</div>
+<div class="bar" id="stat">— PDFを読み込んでください —</div>
+<div id="out"></div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+function onDrop(e){
+  e.preventDefault();
+  document.getElementById('drop').style.borderColor='#444';
+  const f=e.dataTransfer.files[0];
+  if(f) proc(f);
+}
+function onSel(e){const f=e.target.files[0];if(f) proc(f);}
+
+async function proc(file){
+  document.getElementById('stat').textContent='読み込み中…';
+  const buf=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  const yMap={};
+  for(let p=1;p<=pdf.numPages;p++){
+    const page=await pdf.getPage(p);
+    const tc=await page.getTextContent();
+    for(const item of tc.items){
+      if(!item.str||!item.str.trim()) continue;
+      const y=Math.round(item.transform[5]/2)*2;
+      if(!yMap[y]) yMap[y]=[];
+      yMap[y].push(item.str);
+    }
+  }
+  const ys=Object.keys(yMap).map(Number).sort((a,b)=>b-a);
+  const L=ys.map(y=>yMap[y].join(''));
+
+  // カウント
+  const c4lines=L.filter(l=>/[\u2460-\u2471]{4}/.test(l)).length;
+  const pctlines=L.filter(l=>/%\[/.test(l)).length;
+  const kijilines=L.filter(l=>/騎/.test(l)||/\u9a0e/.test(l)).length;
+
+  document.getElementById('stat').textContent=
+    `総行数:${L.length} / 丸数字4連行:${c4lines} / %[行:${pctlines} / 騎手行:${kijilines}`;
+
+  // 表示（最初の300行）
+  const frag=L.slice(0,300).map((ln,i)=>{
+    let cls='ltxt';
+    let txt=esc(ln);
+    // ハイライト
+    const is_c4=/[\u2460-\u2471]{4}/.test(ln);
+    const is_pct=/%\[/.test(ln);
+    const is_kiji=/騎/.test(ln)||/\u9a0e/.test(ln);
+    const is_teki=/当該/.test(ln);
+    const is_name=/^[ァ-ヶー]{3,15}[\d一-鿿]/.test(ln.trim());
+
+    if(is_c4) txt=`<span class="hl-c4">${txt}</span>`;
+    else if(is_pct) txt=`<span class="hl-pct">${txt}</span>`;
+    else if(is_kiji) txt=`<span class="hl-kiji">${txt}</span>`;
+    else if(is_teki) txt=`<span class="hl-teki">${txt}</span>`;
+    else if(is_name) txt=`<span class="hl-name">${txt}</span>`;
+
+    return`<div class="ln"><span class="lnum">${i}</span><span class="ltxt">${txt}</span></div>`;
+  }).join('');
+
+  document.getElementById('out').innerHTML=frag;
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
