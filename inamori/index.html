@@ -60,7 +60,9 @@ header h1 em{color:var(--gold);font-style:normal;}
 .question-card{background:var(--bg2);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius);padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
 .question-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold));}
 .question-text{font-size:14px;line-height:2;color:var(--text);margin-bottom:14px;}
-.question-note{font-size:11px;color:var(--muted2);line-height:1.8;margin-top:8px;padding:10px;background:var(--bg3);border-radius:6px;display:none;}
+.no-quote{font-size:15px;font-weight:700;color:var(--gold2);line-height:1.7;margin-bottom:6px;}
+.no-sub{font-size:11px;color:var(--muted2);}
+font-size:11px;color:var(--muted2);line-height:1.8;margin-top:8px;padding:10px;background:var(--bg3);border-radius:6px;display:none;}
 .question-note.show{display:block;}
 .yn-row{display:flex;gap:10px;}
 .yn-btn{flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--muted2);font-family:'Shippori Mincho',serif;font-size:13px;cursor:pointer;transition:all 0.15s;text-align:center;}
@@ -105,6 +107,10 @@ textarea::placeholder{color:var(--muted);font-size:12px;}
 
 /* SHIME */
 .shime{text-align:center;padding:20px;font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:3px;line-height:2;}
+
+/* NO語録表示 */
+.no-quote{font-size:15px;font-weight:700;color:var(--gold2);line-height:1.8;margin-bottom:6px;}
+.no-sub{font-size:11px;color:var(--muted2);margin-top:4px;}
 
 footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2;position:relative;z-index:1;}
 footer em{color:var(--gold);font-style:normal;}
@@ -200,35 +206,53 @@ footer em{color:var(--gold);font-style:normal;}
 
 </div>
 
-<footer>📖 <em>稲盛先生</em> — 稲盛和夫フィロソフィーに基づく対話システム</footer>
+<footer>📖 <em>稲盛先生</em> — 稲盛和夫フィロソフィーに基づく対話システム<br>
+<a href="./quotes_v2.html" style="font-size:9px;color:var(--muted);letter-spacing:1px;text-decoration:none;opacity:0.5;margin-top:6px;display:inline-block;">語録データ確認</a>
+</footer>
 
 <script src="../apikey.js"></script>
 <script>
 
+// ── ジャンルキー対応表 ──
+const GENRE_KEYS = ['work','relationship','money','leadership','growth','decision','trouble','team','challenge'];
+const GENRE_LABELS = ['仕事','人間関係','お金','リーダーシップ','自己成長','判断','トラブル対応','チーム・組織','挑戦・変化'];
 
-const GENRES = ['仕事','人間関係','お金','リーダーシップ','自己成長','判断','トラブル対応','チーム・組織','挑戦・変化'];
+// NO質問→JSONキー対応
+const Q_TO_NO_KEY = { 1:'no_human', 2:'no_motive', 3:'no_effort' };
 
-let selectedGenre = '';
+let quotesData = null; // JSONキャッシュ
+let selectedGenreIdx = -1;
 let userContent = '';
 let answers = {};
-let qStep = 1;
 
+// ── JSON読み込み ──
+async function loadQuotes() {
+  if (quotesData) return quotesData;
+  const r = await fetch('./inamori_quotes_v2.json');
+  quotesData = await r.json();
+  return quotesData;
+}
+
+// ── ジャンル選択 ──
 function selectGenre(i) {
-  selectedGenre = GENRES[i];
+  selectedGenreIdx = i;
   document.querySelectorAll('.genre-btn').forEach((b,j) => b.classList.toggle('selected', i===j));
   document.getElementById('step-content').style.display = 'block';
   document.getElementById('step-content').scrollIntoView({behavior:'smooth'});
 }
 
+// ── 相談内容入力→質問へ ──
 function startQuestions() {
   userContent = document.getElementById('content-input').value.trim();
   if (!userContent) { alert('内容を入力してください'); return; }
+  if (selectedGenreIdx < 0) { alert('ジャンルを選んでください'); return; }
   document.getElementById('step-content').style.display = 'none';
   document.getElementById('step-questions').style.display = 'block';
   document.getElementById('q1-card').scrollIntoView({behavior:'smooth'});
 }
 
-function answerQ(q, ans) {
+// ── YES/NO回答 ──
+async function answerQ(q, ans) {
   answers[q] = ans;
   const yBtn = document.getElementById(`q${q}-yes`);
   const nBtn = document.getElementById(`q${q}-no`);
@@ -236,8 +260,20 @@ function answerQ(q, ans) {
   nBtn.classList.toggle('no', ans==='no');
   yBtn.disabled = true; nBtn.disabled = true;
 
+  // NOの場合はJSONから該当語録を即表示
   if (ans === 'no') {
-    document.getElementById(`q${q}-note`).classList.add('show');
+    const noteEl = document.getElementById(`q${q}-note`);
+    try {
+      const data = await loadQuotes();
+      const genreKey = GENRE_KEYS[selectedGenreIdx];
+      const noKey = Q_TO_NO_KEY[q];
+      const pool = data[genreKey][noKey];
+      const quote = pool[Math.floor(Math.random() * pool.length)];
+      noteEl.innerHTML = `<div class="no-quote">「${quote}」</div><div class="no-sub">では、どうすればイエスにできますか？</div>`;
+    } catch(e) {
+      // フォールバック（JSON読めない場合は元のテキスト）
+    }
+    noteEl.classList.add('show');
   }
 
   setTimeout(() => {
@@ -247,24 +283,34 @@ function answerQ(q, ans) {
     } else {
       getResult();
     }
-  }, ans==='no' ? 1200 : 400);
+  }, ans==='no' ? 1400 : 400);
 }
 
+// ── AI起動（ジャンル判定→語録選択→行動提案を1回で） ──
 async function getResult() {
   document.getElementById('step-questions').style.display = 'none';
   document.getElementById('loading').classList.add('on');
 
-  const prompt = `ユーザーの相談内容：「${userContent}」
-選択ジャンル：${selectedGenre}
+  try {
+    const data = await loadQuotes();
+    const userGenreKey = GENRE_KEYS[selectedGenreIdx];
+    const userGenreLabel = GENRE_LABELS[selectedGenreIdx];
+
+    // 全ジャンルの通常語録をAIに渡してジャンル判定＋行動提案させる
+    const genreList = GENRE_KEYS.map((k,i) => `${GENRE_LABELS[i]}（${k}）`).join('、');
+
+    const prompt = `ユーザーの相談内容：「${userContent}」
+ユーザーが選択したジャンル：${userGenreLabel}
 ３問の回答：
 ①人として正しい方向か → ${answers[1]==='yes'?'イエス':'ノー'}
 ②動機は誰かのためか → ${answers[2]==='yes'?'イエス':'ノー'}
 ③出来ることをやり切っているか → ${answers[3]==='yes'?'イエス':'ノー'}
 
-稲盛和夫の語録と行動提案をJSONのみで返してください（コードブロック不要）：
-{"quotes":["語録1","語録2","語録3","語録4"],"actions":["行動提案1","行動提案2","行動提案3"],"shime":"正しいことを、やり切るだけです。"}`;
+利用可能なジャンル：${genreList}
 
-  try {
+以下の形式のJSONのみ返してください（コードブロック不要）：
+{"ai_genre_key":"最もふさわしいジャンルのキー（例:work）","actions":["この相談への具体的行動提案1","行動提案2","行動提案3"]}`;
+
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -275,16 +321,34 @@ async function getResult() {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
-        system: '稲盛和夫フィロソフィーに基づき、簡潔で断定的、温かく厳しい言葉で語りなさい。JSONのみ返すこと。',
+        max_tokens: 600,
+        system: '稲盛和夫フィロソフィーに基づき判断しなさい。JSONのみ返すこと。',
         messages: [{ role: 'user', content: prompt }]
       })
     });
+
     const d = await r.json();
     const raw = d.content?.map(b=>b.text||'').join('') || '';
     const clean = raw.replace(/```json|```/g,'').trim();
-    const data = JSON.parse(clean);
-    renderResult(data);
+    const aiData = JSON.parse(clean);
+
+    // ── 語録をJSONから選ぶ ──
+    const aiGenreKey = GENRE_KEYS.includes(aiData.ai_genre_key) ? aiData.ai_genre_key : userGenreKey;
+    const userPool = data[userGenreKey].positive;
+    const aiPool = data[aiGenreKey].positive;
+
+    // ユーザーから1つ、AI判定から2つ（重複防止）
+    const userQuote = userPool[Math.floor(Math.random() * userPool.length)];
+    let aiQuotes = [...aiPool].sort(()=>Math.random()-0.5);
+    // AI判定がユーザーと同じジャンルの場合は同じ語録が出ないよう除外
+    if (aiGenreKey === userGenreKey) {
+      aiQuotes = aiQuotes.filter(q => q !== userQuote);
+    }
+    const aiQuote1 = aiQuotes[0];
+    const aiQuote2 = aiQuotes[1];
+
+    renderResult([userQuote, aiQuote1, aiQuote2], aiData.actions);
+
   } catch(e) {
     document.getElementById('result').innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);">エラー：${e.message}</div>`;
     document.getElementById('result').style.display = 'block';
@@ -293,18 +357,19 @@ async function getResult() {
   }
 }
 
-function renderResult(data) {
-  let html = `
+// ── 結果表示 ──
+function renderResult(quotes, actions) {
+  const html = `
     <div class="result-card">
       <div class="result-label">◆ 語録</div>
-      ${data.quotes.map(q=>`<div class="quote"><div class="quote-text">「${q}」</div></div>`).join('')}
+      ${quotes.map(q=>`<div class="quote"><div class="quote-text">「${q}」</div></div>`).join('')}
     </div>
     <div class="result-card">
       <div class="result-label">◆ 次に取る行動のヒントです</div>
-      ${data.actions.map((a,i)=>`<div class="action-item"><div class="action-num">・</div><div class="action-text">${a}</div></div>`).join('')}
+      ${actions.map(a=>`<div class="action-item"><div class="action-num">・</div><div class="action-text">${a}</div></div>`).join('')}
       <div style="margin-top:12px;font-size:12px;color:var(--muted2);">この中から、まず1つ実行してみてください。</div>
     </div>
-    <div class="shime">${data.shime}</div>`;
+    <div class="shime">正しいことを、やり切るだけです。</div>`;
 
   document.getElementById('result').innerHTML = html;
   document.getElementById('result').style.display = 'block';
@@ -312,8 +377,9 @@ function renderResult(data) {
   document.getElementById('result').scrollIntoView({behavior:'smooth'});
 }
 
+// ── リセット ──
 function resetAll() {
-  selectedGenre=''; userContent=''; answers={}; qStep=1;
+  selectedGenreIdx=-1; userContent=''; answers={};
   document.getElementById('step-content').style.display='none';
   document.getElementById('step-questions').style.display='none';
   document.getElementById('result').style.display='none';
@@ -322,6 +388,7 @@ function resetAll() {
   document.getElementById('q3-card').style.display='none';
   ['q1','q2','q3'].forEach(q=>{
     document.getElementById(`${q}-note`).classList.remove('show');
+    document.getElementById(`${q}-note`).innerHTML='';
     document.getElementById(`${q}-yes`).className='yn-btn';
     document.getElementById(`${q}-no`).className='yn-btn';
     document.getElementById(`${q}-yes`).disabled=false;
@@ -331,6 +398,10 @@ function resetAll() {
   document.getElementById('content-input').value='';
   window.scrollTo({top:0,behavior:'smooth'});
 }
+
+// ページ読み込み時にJSONをプリフェッチ
+window.addEventListener('load', () => loadQuotes().catch(()=>{}));
+
 </script>
 </body>
 </html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📖 語録データ確認 v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1a1a1f;--bg2:#23232b;--bg3:#2c2c36;--bg4:#35353f;
+  --text:#f0ead8;--text2:#c8bfa8;
+  --muted:#6a6a7a;--muted2:#9a9aaa;
+  --border:#3a3a46;--border2:#46465a;
+  --radius:12px;
+  --gold:#d4a843;--gold2:#f5d06e;--gold-dim:rgba(212,168,67,0.12);
+  --red:#8b1a1a;--red2:#c0392b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Shippori Mincho',serif;min-height:100vh;padding-bottom:80px;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(139,26,26,0.08) 0%,transparent 60%);pointer-events:none;z-index:0;}
+
+header{background:linear-gradient(180deg,#111118,#1a1a1f);border-bottom:2px solid rgba(212,168,67,0.3);padding:14px 20px 10px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 30px rgba(0,0,0,0.5);}
+.logo{font-family:'Noto Serif JP',serif;font-size:10px;letter-spacing:5px;color:var(--muted2);text-transform:uppercase;margin-bottom:4px;}
+header h1{font-size:20px;font-weight:900;color:var(--text);letter-spacing:3px;}
+header h1 em{color:var(--gold);font-style:normal;}
+.vbadge{font-size:9px;letter-spacing:2px;color:var(--muted);border:1px solid var(--border);padding:2px 10px;border-radius:20px;margin-top:5px;display:inline-block;}
+.back-btn{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:11px;text-decoration:none;opacity:0.7;}
+
+.wrap{max-width:640px;margin:0 auto;padding:20px 14px;position:relative;z-index:1;}
+
+/* サマリー */
+.summary{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;}
+.summary-item{text-align:center;}
+.summary-num{font-family:'Noto Serif JP',serif;font-size:28px;font-weight:900;color:var(--gold2);}
+.summary-label{font-size:9px;letter-spacing:2px;color:var(--muted2);margin-top:2px;}
+
+/* ジャンルカード */
+.genre-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;}
+.genre-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;cursor:pointer;
+  border-bottom:1px solid var(--border);
+  position:relative;
+}
+.genre-header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold),var(--red));}
+.genre-name{font-size:16px;font-weight:700;color:var(--gold2);letter-spacing:2px;}
+.genre-count{font-size:10px;color:var(--muted2);letter-spacing:1px;}
+.genre-toggle{font-size:14px;color:var(--muted2);transition:transform 0.2s;}
+.genre-card.open .genre-toggle{transform:rotate(180deg);}
+
+.genre-body{display:none;padding:16px 18px;}
+.genre-card.open .genre-body{display:block;}
+
+/* 語録タイプ */
+.type-section{margin-bottom:16px;}
+.type-section:last-child{margin-bottom:0;}
+.type-label{
+  font-size:9px;letter-spacing:3px;color:var(--gold);
+  text-transform:uppercase;margin-bottom:10px;
+  padding-bottom:6px;border-bottom:1px solid var(--border);
+}
+.type-label.no{color:var(--red2);}
+
+.quote-item{
+  display:flex;gap:10px;padding:8px 0;
+  border-bottom:1px solid rgba(58,58,70,0.5);
+  align-items:flex-start;
+}
+.quote-item:last-child{border-bottom:none;}
+.quote-dot{color:var(--gold);font-size:12px;padding-top:3px;flex-shrink:0;}
+.quote-dot.no{color:var(--red2);}
+.quote-text{font-size:12px;color:var(--text2);line-height:1.9;}
+
+footer{text-align:center;padding:24px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2.2;}
+footer em{color:var(--gold);font-style:normal;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Inamori · Data</div>
+  <h1>📖 <em>語録</em>データ確認</h1>
+  <div class="vbadge" id="total-badge">読み込み中...</div>
+  <a class="back-btn" href="./index.html">‹ 稲盛先生</a>
+</header>
+
+<div class="wrap">
+  <div class="summary" id="summary"></div>
+  <div id="app"></div>
+</div>
+
+<footer>📖 <em>稲盛先生</em> · 語録データ v2 · 内海管理</footer>
+
+<script>
+const TYPE_LABELS = {
+  positive: { label:'通常語録', no: false },
+  no_human: { label:'NO · 人として正しいか', no: true },
+  no_motive: { label:'NO · 動機善か', no: true },
+  no_effort: { label:'NO · やり切っているか', no: true },
+};
+
+fetch('./inamori_quotes_v2.json')
+  .then(r => r.json())
+  .then(data => render(data))
+  .catch(() => {
+    document.getElementById('app').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">JSONの読み込みに失敗しました</div>';
+  });
+
+function render(data) {
+  const genres = Object.entries(data);
+  let totalQuotes = 0;
+  genres.forEach(([,g]) => {
+    Object.values(g).filter(v => Array.isArray(v)).forEach(arr => totalQuotes += arr.length);
+  });
+
+  // サマリー
+  document.getElementById('total-badge').textContent = `${totalQuotes} 語録`;
+  document.getElementById('summary').innerHTML = `
+    <div class="summary-item"><div class="summary-num">${genres.length}</div><div class="summary-label">ジャンル</div></div>
+    <div class="summary-item"><div class="summary-num">${totalQuotes}</div><div class="summary-label">総語録数</div></div>
+    <div class="summary-item"><div class="summary-num">4</div><div class="summary-label">タイプ / ジャンル</div></div>
+  `;
+
+  // ジャンルカード
+  const app = document.getElementById('app');
+  genres.forEach(([key, group], gi) => {
+    const total = Object.values(group).filter(v=>Array.isArray(v)).reduce((a,b)=>a+b.length,0);
+
+    const card = document.createElement('div');
+    card.className = 'genre-card' + (gi === 0 ? ' open' : '');
+
+    const typesHTML = Object.entries(TYPE_LABELS).map(([typeKey, meta]) => {
+      const quotes = group[typeKey] || [];
+      return `
+        <div class="type-section">
+          <div class="type-label ${meta.no?'no':''}">${meta.label}（${quotes.length}）</div>
+          ${quotes.map(q => `
+            <div class="quote-item">
+              <div class="quote-dot ${meta.no?'no':''}">◆</div>
+              <div class="quote-text">${q}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="genre-header" onclick="toggle(this)">
+        <div class="genre-name">${group.label}</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="genre-count">${total}語録</div>
+          <div class="genre-toggle">▼</div>
+        </div>
+      </div>
+      <div class="genre-body">${typesHTML}</div>
+    `;
+    app.appendChild(card);
+  });
+}
+
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>
