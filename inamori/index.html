@@ -60,10 +60,10 @@ header h1 em{color:var(--gold);font-style:normal;}
 .question-card{background:var(--bg2);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius);padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
 .question-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold));}
 .question-text{font-size:14px;line-height:2;color:var(--text);margin-bottom:14px;}
-.no-quote{font-size:15px;font-weight:700;color:var(--gold2);line-height:1.7;margin-bottom:6px;}
-.no-sub{font-size:11px;color:var(--muted2);}
-font-size:11px;color:var(--muted2);line-height:1.8;margin-top:8px;padding:10px;background:var(--bg3);border-radius:6px;display:none;}
+.question-note{font-size:13px;color:var(--text2);line-height:1.9;margin-top:10px;padding:12px;background:var(--bg3);border-left:3px solid var(--red2);border-radius:0 6px 6px 0;display:none;}
 .question-note.show{display:block;}
+.no-quote{font-size:15px;font-weight:700;color:var(--gold2);line-height:1.8;margin-bottom:6px;}
+.no-sub{font-size:11px;color:var(--muted2);margin-top:4px;}
 .yn-row{display:flex;gap:10px;}
 .yn-btn{flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--muted2);font-family:'Shippori Mincho',serif;font-size:13px;cursor:pointer;transition:all 0.15s;text-align:center;}
 .yn-btn:hover{border-color:var(--gold);color:var(--gold);}
@@ -107,10 +107,6 @@ textarea::placeholder{color:var(--muted);font-size:12px;}
 
 /* SHIME */
 .shime{text-align:center;padding:20px;font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:3px;line-height:2;}
-
-/* NO語録表示 */
-.no-quote{font-size:15px;font-weight:700;color:var(--gold2);line-height:1.8;margin-bottom:6px;}
-.no-sub{font-size:11px;color:var(--muted2);margin-top:4px;}
 
 footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2;position:relative;z-index:1;}
 footer em{color:var(--gold);font-style:normal;}
@@ -210,8 +206,14 @@ footer em{color:var(--gold);font-style:normal;}
 <a href="./quotes_v2.html" style="font-size:9px;color:var(--muted);letter-spacing:1px;text-decoration:none;opacity:0.5;margin-top:6px;display:inline-block;">語録データ確認</a>
 </footer>
 
-<script src="../apikey.js"></script>
 <script>
+// apikey.jsを動的読み込み（ない環境でもクラッシュしない）
+(function(){
+  const s = document.createElement('script');
+  s.src = '../apikey.js';
+  s.onerror = () => console.warn('apikey.js not found - API機能は無効');
+  document.head.appendChild(s);
+})();
 
 // ── ジャンルキー対応表 ──
 const GENRE_KEYS = ['work','relationship','money','leadership','growth','decision','trouble','team','challenge'];
@@ -328,8 +330,11 @@ async function getResult() {
     });
 
     const d = await r.json();
+    // APIエラーチェック
+    if (d.error) throw new Error(`API: ${d.error.message}`);
     const raw = d.content?.map(b=>b.text||'').join('') || '';
-    const clean = raw.replace(/```json|```/g,'').trim();
+    if (!raw) throw new Error('APIからの応答が空です');
+    const clean = raw.replace(/```json[\s\S]*?```/g, m => m.slice(7,-3)).replace(/```/g,'').trim();
     const aiData = JSON.parse(clean);
 
     // ── 語録をJSONから選ぶ ──
