@@ -350,37 +350,59 @@ function parsePdf(L,fname){
       if(m2){banum=m2[2];break;}
     }
     // ── 5走分の着順・4角位置を取得 ──
-    // 騎手行(%[N])を最大5件収集
-    const zensoList=[];   // 着順 最大5走
-    const corner4List=[]; // 4角位置 最大5走
-    for(let si=0;si<sec.length&&zensoList.length<5;si++){
-      const sl=sec[si];
-      if((!/騎/.test(sl))&&(!/\u9a0e/.test(sl))) continue;
-      if(!/%\[/.test(sl)) continue;
-      // 着順: "%[26]14" → 14、"%[9]1" → 1
-      const mIn=sl.match(/%\[\d+\](\d+)/);
-      if(mIn){
-        const nums=mIn[1];
-        const v=nums.length<=2?parseInt(nums):parseInt(nums[0]);
-        if(v>=1&&v<=18) zensoList.push(v);
-        else zensoList.push(0);
-      } else {
-        const nextSl=(sec[si+1]||'').trim();
-        if(/^\d+$/.test(nextSl)&&nextSl.length<=2){
-          const v=parseInt(nextSl);
-          if(v>=1&&v<=18) zensoList.push(v);
-          else zensoList.push(0);
-        } else {
-          zensoList.push(0);
-        }
-      }
-    }
-    // 4角位置を5走分収集（丸数字4つ連続の行）
+    const zensoList=[];
+    const corner4List=[];
+
+    // 4角位置：丸数字4連続行を最大5件（先に収集）
     for(const sl of sec){
       if(corner4List.length>=5) break;
       const m=sl.match(/[①-⑱]{4}/);
       if(m) corner4List.push(CIRCLE[m[0][3]]||0);
     }
+
+    // 着順：複数パターンで5走分収集
+    // パターンA: 騎手行内 "%[N]着順" 例: "XX.X%[26]14"
+    // パターンB: 騎手行(騎 or %[)の直後行が数字のみ
+    // パターンC: 丸数字4連続行の直後行が数字1-2桁
+    // → パターンCが最も安定
+    for(let si=0;si<sec.length&&zensoList.length<5;si++){
+      const sl=sec[si];
+      // パターンA: %[N]の後に着順数字
+      if(/%\[/.test(sl)){
+        const mA=sl.match(/%\[\d+\](\d{1,2})/);
+        if(mA){
+          const v=parseInt(mA[1]);
+          if(v>=1&&v<=18){zensoList.push(v);continue;}
+        }
+        // %[N]はあるが数字なし → 次行確認
+        const nxt=(sec[si+1]||'').trim();
+        const mN=nxt.match(/^(\d{1,2})$/);
+        if(mN){const v=parseInt(mN[1]);if(v>=1&&v<=18){zensoList.push(v);continue;}}
+        // 着順不明
+        if((!/騎/.test(sl))===false) zensoList.push(0);
+      }
+    }
+
+    // パターンCで補完（zensoListが5走未満の場合）
+    if(zensoList.length<corner4List.length){
+      // corner4List行の直後行から着順を取る
+      let c4found=0;
+      for(let si=0;si<sec.length&&c4found<corner4List.length;si++){
+        const sl=sec[si];
+        if(!/[①-⑱]{4}/.test(sl)) continue;
+        c4found++;
+        if(zensoList.length>=c4found) continue; // すでにある
+        // この丸数字行の前後数行から着順を探す
+        for(let d=1;d<=3;d++){
+          const nxt=(sec[si+d]||'').trim();
+          const mN=nxt.match(/^(\d{1,2})$/);
+          if(mN){const v=parseInt(mN[1]);if(v>=1&&v<=18){zensoList.push(v);break;}
+          } else if(nxt===''||d===3){zensoList.push(0);break;}
+        }
+      }
+    }
+
+    console.log(`[${h.name}] zensoList:`,zensoList,'corner4List:',corner4List,'sec.length:',sec.length);
     const zenso=zensoList[0]||0;       // 前走着順（表示用）
     const corner4=corner4List[0]||0;   // 前走4角（脚質判定用）
 
