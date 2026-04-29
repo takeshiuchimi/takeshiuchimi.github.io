@@ -330,6 +330,7 @@ function parsePdf(L,fname){
   for(const ai of anchorsArr){
     for(let j=ai-1;j>=Math.max(0,ai-12);j--){
       const prev=L[j].trim();
+
       // ③ 純カタカナ単独行：前行に距離帯or全が含まれれば馬名
       if(/^[ァ-ヶー]{4,15}$/.test(prev)){
         const prevLine=(L[j-1]||'').trim();
@@ -338,6 +339,19 @@ function parsePdf(L,fname){
           break;
         }
       }
+
+      // ★ 馬名+末尾1〜2文字パターン（例: "ピティロディアピ", "ゼンノインヴォークゼ"）
+      const mExtra=/^([ァ-ヶー]{4,15})[ァ-ヶー]{1,2}$/.exec(prev);
+      if(mExtra){
+        const name=mExtra[1];
+        const prevL=(L[j-1]||'').trim();
+        const isHaha=/当該|東芝|中芝|阪芝|京芝|福芝|新芝|芝不|コンビ/.test(prevL)||prevL.includes('(---kg)')||prevL.includes('---kg');
+        if(!isHaha&&name.length>=4&&!horses.some(h=>h.name===name)){
+          horses.push({name,nameIdx:j,anchorIdx:ai});
+          break;
+        }
+      }
+
       // ① カタカナ+数字（例: "タイダルロック2中山4..."）
       const m1=/^([ァ-ヶー]{3,15})\d/.exec(prev);
       if(m1){
@@ -346,6 +360,7 @@ function parsePdf(L,fname){
         if(!isHaha&&!horses.some(h=>h.name===m1[1])) horses.push({name:m1[1],nameIdx:j,anchorIdx:ai});
         if(!isHaha) break;
       }
+
       // ② カタカナ+漢字成績（例: "パラディオン二〇1001..."）
       const m2=/^([ァ-ヶー]{3,15})[一-鿿⼀-⿟]/.exec(prev);
       if(m2&&!/賞|Ｓ|特別|記念|クラス|馬|騎|厩|牡|牝/.test(prev)){
