@@ -329,6 +329,12 @@ function parsePdf(L,fname){
     }
   }
 
+  // 各馬のsec範囲を確定（次の馬のnameIdxまで、最大80行）
+  horses.sort((a,b)=>a.nameIdx-b.nameIdx);
+  horses.forEach((h,i)=>{
+    h.nextIdx=i+1<horses.length?horses[i+1].nameIdx:h.nameIdx+80;
+  });
+
   // Extract data per horse
   const parsed=horses.map((h,hi)=>{
     const sec=L.slice(h.nameIdx,h.nextIdx);
@@ -425,50 +431,43 @@ function parsePdf(L,fname){
     // 展開予想用の今回レース脚質（前走ベース）
     const kqNow=kq(corner4);
 
-    // ── 適性チェック（満点40、-1/miss/走） ──
+    // ── 適性チェック（満点40、全体1回判定） ──
+    // ①コース出走歴あり、②連対あり、③脚質安定 → 各-最大5点
     let tekiseiMiss=0;
-    const runs=Math.min(zensoList.length,5)||1;
-    for(let r=0;r<runs;r++){
-      // ①距離合ってる：当該コース出走歴あり
-      if(tekiTotal===0) tekiseiMiss++;
-      // ②コース合ってる：当該コース連対あり（勝or2着）
-      if(tekiWin===0&&tekiNi===0) tekiseiMiss++;
-      // ③脚質合ってる：4角位置が安定（標準偏差小）
-      // → 走ごとではなく全体で1回判定（ペナルティ軽め）
-    }
-    // ③脚質安定は全体判定（最大-2）
+    if(tekiTotal===0) tekiseiMiss+=5;           // ①コース実績なし
+    else if(tekiWin===0&&tekiNi===0) tekiseiMiss+=3; // ①あるが連対なし
+    if(tekiWin===0&&tekiNi===0&&tekiTotal===0) tekiseiMiss+=3; // ②連対なし(重複防止済み)
+    // ③脚質安定（SDで判定）
     if(corner4List.length>=2){
       const mean=corner4List.reduce((a,b)=>a+b,0)/corner4List.length;
       const sd=Math.sqrt(corner4List.map(v=>(v-mean)**2).reduce((a,b)=>a+b,0)/corner4List.length);
-      if(sd>4) tekiseiMiss+=2;
-      else if(sd>2) tekiseiMiss+=1;
+      if(sd>5) tekiseiMiss+=4;
+      else if(sd>3) tekiseiMiss+=2;
+      else if(sd>1.5) tekiseiMiss+=1;
     }
     let tekisei=Math.max(25,40-tekiseiMiss);
 
-    // ── 能力チェック（満点35、-1/miss/走） ──
+    // ── 能力チェック（満点35、5走分の近走成績で判定） ──
+    // ④勝利あり(全体)、⑤近5走3着以内の回数、⑥連対率
     let noryokuMiss=0;
-    for(let r=0;r<runs;r++){
-      const z=zensoList[r]||99;
-      // ④前走レース格OK：全成績で勝利あり（簡易）
-      if(zenWin===0) noryokuMiss++;
-      // ⑤前走3着以内
-      if(z>3) noryokuMiss++;
-      // ⑥相手レベル高い：連対率30%以上（簡易）
-      if(zenTotal>0&&(zenWin+zenNi)/zenTotal<0.3) noryokuMiss++;
-    }
+    if(zenWin===0) noryokuMiss+=4;              // ④未勝利
+    const top3cnt=zensoList.filter(z=>z>=1&&z<=3).length;
+    const validRuns=zensoList.filter(z=>z>0).length||1;
+    if(top3cnt===0) noryokuMiss+=5;             // ⑤近走3着以内ゼロ
+    else if(top3cnt/validRuns<0.4) noryokuMiss+=2; // ⑤3着以内率40%未満
+    if(zenTotal>0&&(zenWin+zenNi)/zenTotal<0.2) noryokuMiss+=3; // ⑥連対率20%未満
     let noryoku=Math.max(20,35-noryokuMiss);
 
-    // ── 実行力チェック（満点25、-1/miss/走） ──
+    // ── 実行力チェック（満点25、5走分ループ-1/miss/走） ──
+    // ⑦5着以内、⑧4角10番手以内、⑨10着以下なし → 各走でチェック
     let jikMiss=0;
+    const runs=Math.min(zensoList.length,5)||1;
     for(let r=0;r<runs;r++){
-      const z=zensoList[r]||99;
+      const z=zensoList[r]||0;
       const c=corner4List[r]||0;
-      // ⑦着差小（3着以内を着差OK代替）
-      if(z>5) jikMiss++;
-      // ⑧位置取り安定（4角10番手以内）
-      if(c>10) jikMiss++;
-      // ⑨大崩れなし（10着以下ならペナルティ）
-      if(z>=10) jikMiss++;
+      if(z>0&&z>5)  jikMiss++;   // ⑦5着以外
+      if(c>0&&c>10) jikMiss++;   // ⑧後方すぎ
+      if(z>=10)     jikMiss++;   // ⑨大崩れ
     }
     let jik=Math.max(10,25-jikMiss);
 
