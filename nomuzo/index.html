@@ -269,15 +269,50 @@ function parsePdf(L,fname){
 
   // Race info
   let race_name='',race_date='',race_course='';
+  let race_dist=0, race_place='', race_track='芝';
   for(let i=0;i<Math.min(L.length,80);i++){
     const ln=L[i];
     if(!race_date){const m=ln.match(/(\d{4}\/\d{1,2}\/\d{1,2})/);if(m)race_date=m[1];}
-    if(!race_course){const m=ln.match(/芝(\d{4})m\s*(\d{1,2})頭/);if(m)race_course=`芝${m[1]}m ${m[2]}頭`;}
+    if(!race_course){
+      const m=ln.match(/(芝|ダ)(\d{3,4})m\s*(\d{1,2})頭/);
+      if(m){
+        race_track=m[1]==='ダ'?'ダ':'芝';
+        race_dist=parseInt(m[2]);
+        race_course=`${m[1]}${m[2]}m ${m[3]}頭`;
+      }
+    }
+    // 開催場所: "東京競馬" "中山競馬" など
+    if(!race_place){
+      const pm=ln.match(/(東京|中山|阪神|京都|中京|小倉|福島|新潟|札幌|函館|大井|川崎|船橋|浦和)/);
+      if(pm) race_place=pm[1];
+    }
     if(!race_name&&/^\d+R$/.test(ln.trim())){
       const next=(L[i+1]||'').trim();
       if(next.length>=3) race_name=next.replace(/\s+/g,'').replace(/（[^）]*）/g,'');
     }
   }
+
+  // ── 距離帯コード（PDFの二〇/二五等に対応） ──
+  // 1000~1399m→一三以下, 1400~1599m→一四, 1600~1999m→一六〜一九,
+  // 2000~2499m→二〇, 2500~2999m→二五, 3000m~→三〇
+  function getKyoriCode(dist){
+    if(dist<1400) return'一[三四]';
+    if(dist<1600) return'一[四五]';
+    if(dist<2000) return'一[六七八九]';
+    if(dist<2500) return'二〇';
+    if(dist<3000) return'二五';
+    return'三〇';
+  }
+
+  // ── 場所×馬場コード（PDFの東芝/中芝/阪芝等） ──
+  function getCourseCode(place, track){
+    const t=track==='ダ'?'ダ':'芝';
+    const p={'東京':'東','中山':'中','阪神':'阪','京都':'京','中京':'名','小倉':'小','福島':'福','新潟':'新','札幌':'札','函館':'函'};
+    return (p[place]||'') + t; // 例: "東芝" "中芝" "阪ダ"
+  }
+
+  const kyoriCode=getKyoriCode(race_dist);   // 例: "二〇"
+  const courseCode=getCourseCode(race_place, race_track); // 例: "東芝"
 
   // アンカー検出: 馬番行（行頭数字+丸数字4つ以上、各馬の前走成績行）
   const anchorsArr=[];
@@ -403,55 +438,68 @@ function parsePdf(L,fname){
 
     // ══════════════════════════════════════════
     // 内海式 減点法スコア計算
-    // 満点：適性40 能力35 実行力25 → 合計100
-    // 各条件×=miss → -1点/条件
-    // 前走5走 × 3条件 = 最大15チェック
+    // 満点：適性40 能力35 実行力25
     // ══════════════════════════════════════════
 
-    // 当該コース成績を取得（"当該 勝 連 ..."）
+    // ── 適性データ取得（動的コード） ──
+    let kyoriWin=0,kyoriNi=0,kyoriTotal=0;
+    let toshiWin=0,toshiNi=0,toshiTotal=0;
     let tekiWin=0,tekiNi=0,tekiTotal=0;
+
+    const kyoriRe=new RegExp(kyoriCode+'(\\d)(\\d)(\\d)(\\d)');
+    const courseRe=new RegExp(courseCode+'(\\d)(\\d)(\\d)(\\d)');
+
     for(const sl of sec){
-      const tm=sl.match(/当該\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/);
-      if(tm){
-        tekiWin=parseInt(tm[1]);tekiNi=parseInt(tm[2]);
-        tekiTotal=tekiWin+tekiNi+parseInt(tm[3])+parseInt(tm[4]);
-        break;
+      // ①距離帯（例: 二〇0001）
+      if(!kyoriTotal){
+        const dm=sl.match(kyoriRe);
+        if(dm){kyoriWin=parseInt(dm[1]);kyoriNi=parseInt(dm[2]);kyoriTotal=kyoriWin+kyoriNi+parseInt(dm[3])+parseInt(dm[4]);}
       }
-      // "当該 W N" の2数パターン
-      const tm2=sl.match(/当該\s+(\d)\s+(\d)/);
-      if(tm2){tekiWin=parseInt(tm2[1]);tekiNi=parseInt(tm2[2]);tekiTotal=tekiWin+tekiNi+2;break;}
+      // ②場所×馬場（例: 東芝0100）
+      if(!toshiTotal){
+        const tm=sl.match(courseRe);
+        if(tm){toshiWin=parseInt(tm[1]);toshiNi=parseInt(tm[2]);toshiTotal=toshiWin+toshiNi+parseInt(tm[3])+parseInt(tm[4]);}
+      }
+      // ③当該コース（同距離同場所）
+      if(!tekiTotal){
+        const km=sl.match(/当該(\d)(\d)(\d)(\d)/);
+        if(km){tekiWin=parseInt(km[1]);tekiNi=parseInt(km[2]);tekiTotal=tekiWin+tekiNi+parseInt(km[3])+parseInt(km[4]);}
+      }
     }
 
     // 全成績
     let zenWin=0,zenNi=0,zenSan=0,zenTotal=0;
     for(const sl of sec.slice(0,8)){
       const m=sl.match(/全\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/);
-      if(m){
-        zenWin=parseInt(m[1]);zenNi=parseInt(m[2]);zenSan=parseInt(m[3]);
-        zenTotal=zenWin+zenNi+zenSan+parseInt(m[4]);break;
-      }
+      if(m){zenWin=parseInt(m[1]);zenNi=parseInt(m[2]);zenSan=parseInt(m[3]);zenTotal=zenWin+zenNi+zenSan+parseInt(m[4]);break;}
+      const m2=sl.match(/全(\d)(\d)(\d)(\d)/);
+      if(m2){zenWin=parseInt(m2[1]);zenNi=parseInt(m2[2]);zenSan=parseInt(m2[3]);zenTotal=zenWin+zenNi+zenSan+parseInt(m2[4]);break;}
     }
 
-    // 脚質（全走の平均4角位置で判定）
-    const avgC4=corner4List.length?corner4List.reduce((a,b)=>a+b,0)/corner4List.length:0;
-    const kqStyle=kq(avgC4);
-    // 展開予想用の今回レース脚質（前走ベース）
-    const kqNow=kq(corner4);
+    // 脚質
+    const kqNow=kq(corner4List[0]||0);
 
-    // ── 適性チェック（満点40、全体1回判定） ──
-    // ①コース出走歴あり、②連対あり、③脚質安定 → 各-最大5点
+    // ── 適性チェック（満点40） ──
+    // ①距離適性：2000m台での連対あり
+    // ②コース適性：東京芝での出走歴あり
+    // ③当該適性：同コース同距離での実績あり
+    // → 各条件、5走分ループではなく全体1回判定
     let tekiseiMiss=0;
-    if(tekiTotal===0) tekiseiMiss+=5;           // ①コース実績なし
-    else if(tekiWin===0&&tekiNi===0) tekiseiMiss+=3; // ①あるが連対なし
-    if(tekiWin===0&&tekiNi===0&&tekiTotal===0) tekiseiMiss+=3; // ②連対なし(重複防止済み)
-    // ③脚質安定（SDで判定）
-    if(corner4List.length>=2){
-      const mean=corner4List.reduce((a,b)=>a+b,0)/corner4List.length;
-      const sd=Math.sqrt(corner4List.map(v=>(v-mean)**2).reduce((a,b)=>a+b,0)/corner4List.length);
-      if(sd>5) tekiseiMiss+=4;
-      else if(sd>3) tekiseiMiss+=2;
-      else if(sd>1.5) tekiseiMiss+=1;
-    }
+
+    // ①距離（-最大5点）
+    if(kyoriTotal===0)              tekiseiMiss+=5; // 距離実績なし
+    else if(kyoriWin===0&&kyoriNi===0) tekiseiMiss+=3; // 出走あるが連対なし
+    else if(kyoriWin===0)           tekiseiMiss+=1; // 連対はあるが勝利なし
+
+    // ②東京芝コース（-最大4点）
+    if(toshiTotal===0)              tekiseiMiss+=4; // 東京芝実績なし
+    else if(toshiWin===0&&toshiNi===0) tekiseiMiss+=2; // 出走あるが連対なし
+
+    // ③当該コース（-最大3点）
+    if(tekiTotal===0)               tekiseiMiss+=0; // 初出走は減点なし（新馬戦上がりが多い）
+    else if(tekiWin===0&&tekiNi===0)   tekiseiMiss+=1; // 出走あるが連対なし
+    // 当該で連対あれば減点なし
+
     let tekisei=Math.max(25,40-tekiseiMiss);
 
     // ── 能力チェック（満点35、5走分の近走成績で判定） ──
