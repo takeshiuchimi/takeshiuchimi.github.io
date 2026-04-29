@@ -465,17 +465,20 @@ function parsePdf(L,fname){
     if(zenTotal>0&&(zenWin+zenNi)/zenTotal<0.2) noryokuMiss+=3; // ⑥連対率20%未満
     let noryoku=Math.max(20,35-noryokuMiss);
 
-    // ── 実行力チェック（満点25、5走分ループ-1/miss/走） ──
-    // ⑦5着以内、⑧4角10番手以内、⑨10着以下なし → 各走でチェック
+    // ── 実行力チェック（満点25、5走分ループ） ──
+    // ⑦3着以内、⑧4角8番手以内、⑨6着以下は重ペナ → 各走でチェック
     let jikMiss=0;
     const runs=Math.min(zensoList.length,5)||1;
     for(let r=0;r<runs;r++){
       const z=zensoList[r]||0;
       const c=corner4List[r]||0;
-      if(z>0&&z>5)  jikMiss++;   // ⑦5着以外
-      if(c>0&&c>10) jikMiss++;   // ⑧後方すぎ
-      if(z>=10)     jikMiss++;   // ⑨大崩れ
+      if(z>0&&z>3)  jikMiss++;     // ⑦3着以外
+      if(z>0&&z>=6) jikMiss++;     // ⑨6着以下は追加-1（合計-2）
+      if(c>0&&c>8)  jikMiss++;     // ⑧後方（9番手以降）
     }
+    // 1着ボーナス（近5走で1着があれば+3点相当）
+    const hasWin=zensoList.some(z=>z===1);
+    if(hasWin) jikMiss=Math.max(0,jikMiss-3);
     let jik=Math.max(10,25-jikMiss);
 
     // 最終スコア
