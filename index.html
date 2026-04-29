@@ -6,65 +6,70 @@
 <title>TakeshiUchimi Projects</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* =============================================
+   TakeshiUchimi Projects · デザイントークン
+   呑蔵v5.3と統一
+   ============================================= */
 :root{
-  --bg:#0a0a0a;--bg2:#141414;--bg3:#1c1c1c;
-  --gold:#c9a84c;--gold2:#f0c96e;--red:#c0392b;
-  --text:#e8e0d0;--muted:#666;--muted2:#999;--border:#242424;
+  --bg:#1a1a1f;--bg2:#23232b;--bg3:#2c2c36;--bg4:#35353f;
+  --gold:#d4a843;--gold2:#f5d06e;--gold-dim:rgba(212,168,67,0.15);
+  --red:#c0392b;--red2:#e74c3c;
+  --text:#f0ead8;--text2:#c8bfa8;
+  --muted:#6a6a7a;--muted2:#9a9aaa;
+  --border:#3a3a46;--border2:#46465a;
+  --radius:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Noto Serif JP',serif;min-height:100vh;display:flex;flex-direction:column;}
 
 /* HEADER */
-header{padding:48px 24px 32px;text-align:center;}
-.site-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:6px;color:var(--muted2);text-transform:uppercase;margin-bottom:12px;}
-.site-name{font-size:32px;font-weight:900;color:var(--text);letter-spacing:2px;line-height:1.2;}
+header{
+  padding:52px 24px 36px;text-align:center;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,#111118,var(--bg));
+}
+.site-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:6px;color:var(--muted2);text-transform:uppercase;margin-bottom:14px;}
+.site-name{font-size:34px;font-weight:900;color:var(--text);letter-spacing:2px;line-height:1.2;}
 .site-name em{color:var(--gold);font-style:normal;}
 .site-sub{font-size:12px;color:var(--muted2);margin-top:10px;letter-spacing:2px;}
 .divider{width:60px;height:2px;background:linear-gradient(90deg,var(--gold),var(--red));margin:24px auto 0;border-radius:1px;}
 
 /* MAIN */
 main{flex:1;max-width:480px;margin:0 auto;width:100%;padding:32px 16px 60px;}
-
 .section-label{font-size:10px;letter-spacing:4px;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;padding-left:4px;}
 
 /* PROJECT CARD */
 .project{
   display:flex;align-items:center;gap:16px;
-  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
   padding:18px 20px;margin-bottom:12px;
   text-decoration:none;color:inherit;
-  transition:all 0.2s;position:relative;overflow:hidden;
-  cursor:pointer;
+  transition:all 0.2s;position:relative;overflow:hidden;cursor:pointer;
 }
 .project::before{
   content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
   background:linear-gradient(180deg,var(--gold),var(--red));
-  border-radius:3px 0 0 3px;
-  opacity:0;transition:opacity 0.2s;
+  border-radius:3px 0 0 3px;opacity:0;transition:opacity 0.2s;
 }
-.project:hover{border-color:rgba(201,168,76,0.3);transform:translateX(4px);}
+.project:hover{border-color:rgba(212,168,67,0.35);transform:translateX(4px);background:var(--bg3);}
 .project:hover::before{opacity:1;}
 .project.disabled{opacity:0.4;cursor:default;}
-.project.disabled:hover{transform:none;border-color:var(--border);}
+.project.disabled:hover{transform:none;border-color:var(--border);background:var(--bg2);}
 .project.disabled:hover::before{opacity:0;}
 
-.proj-icon{font-size:28px;flex-shrink:0;width:48px;height:48px;background:var(--bg3);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.proj-icon{font-size:28px;flex-shrink:0;width:48px;height:48px;background:var(--bg4);border-radius:10px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);}
 .proj-info{flex:1;min-width:0;}
 .proj-num{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--muted2);margin-bottom:3px;}
 .proj-name{font-size:15px;font-weight:700;color:var(--text);}
-.proj-desc{font-size:11px;color:var(--muted2);margin-top:4px;line-height:1.6;}
-.proj-badge{
-  flex-shrink:0;font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:20px;
-  font-family:'Oswald',sans-serif;text-transform:uppercase;
-}
-.badge-live{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.3);}
+.proj-desc{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.6;}
+.proj-badge{flex-shrink:0;font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:20px;font-family:'Oswald',sans-serif;text-transform:uppercase;}
+.badge-live{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(212,168,67,0.35);}
 .badge-dev{background:rgba(100,100,100,0.15);color:var(--muted2);border:1px solid var(--border);}
-
 .proj-arrow{color:var(--gold);font-size:18px;flex-shrink:0;opacity:0;transition:opacity 0.2s;}
 .project:hover .proj-arrow{opacity:1;}
 
 /* FOOTER */
-footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2;}
+footer{text-align:center;padding:24px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2.2;}
 footer em{color:var(--gold);font-style:normal;}
 </style>
 </head>
@@ -86,7 +91,7 @@ footer em{color:var(--gold);font-style:normal;}
     <div class="proj-info">
       <div class="proj-num">01</div>
       <div class="proj-name">呑蔵競馬</div>
-      <div class="proj-desc">PDF取込・AI分析・8タブ予想エンジン v4</div>
+      <div class="proj-desc">競馬ラボPDF取込・AI分析・内海式スコア v5.3</div>
     </div>
     <div class="proj-badge badge-live">Live</div>
     <div class="proj-arrow">›</div>
