@@ -291,15 +291,10 @@ function parsePdf(L,fname){
       const next=(L[i+1]||'').trim();
       if(next.length>=3&&!/^\d/.test(next)) race_name=next.replace(/\s+/g,'').replace(/（[^）]*）/g,'');
     }
-    // レース名: パターンB "福島9R飯盛山特別" のような混合行
+    // レース名: パターンB "福島9R飯盛山特別" のような混合行（パターンA未取得時のみ）
     if(!race_name){
-      const rm=ln.match(/\d+R(.{3,20}?)(?:ネット|出⾺|$)/);
-      if(rm&&rm[1]&&!/^\d/.test(rm[1])) race_name=rm[1].trim().replace(/\s+/g,'');
-    }
-    // レース名: パターンC 独立したレース名行（カタカナ+漢字、特別・賞・ステークス等を含む）
-    if(!race_name&&/[特別賞Ｓステークスカップ記念]/.test(ln)&&ln.length<30&&!/^\d/.test(ln)){
-      const clean=ln.replace(/\s+/g,'').replace(/（[^）]*）/g,'');
-      if(clean.length>=3) race_name=clean;
+      const rm=ln.match(/\d+R([^\d][^0-9]{2,20}?)(?:ネット|出⾺|$)/);
+      if(rm&&rm[1]&&rm[1].trim().length>=3) race_name=rm[1].trim().replace(/\s+/g,'');
     }
   }
 
@@ -361,6 +356,22 @@ function parsePdf(L,fname){
         if(!isHaha&&!horses.some(h=>h.name===name)){
           horses.push({name,nameIdx:j,anchorIdx:ai});
           break;
+        }
+      }
+
+      // ★ 長いカタカナ行（余分な文字混入）→ 次行が騎手情報なら馬名として採用
+      // 例: "ミッドセンチュリーミルファミ" 次行: "嶋田純次騎手：..."
+      const mLong=/^([ァ-ヶー]{5,15})[ァ-ヶー]{2,8}$/.exec(prev);
+      if(mLong){
+        const nextL=(L[j+1]||'').trim();
+        if(/騎|%\[/.test(nextL)){
+          const name=mLong[1];
+          const prevL=(L[j-1]||'').trim();
+          const isHaha=/当該|東芝|中芝|阪芝|京芝|福芝|新芝|芝不|コンビ/.test(prevL)||prevL.includes('(---kg)')||prevL.includes('---kg');
+          if(!isHaha&&!horses.some(h=>h.name===name)){
+            horses.push({name,nameIdx:j,anchorIdx:ai});
+            break;
+          }
         }
       }
 
