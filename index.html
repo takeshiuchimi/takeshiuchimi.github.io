@@ -192,30 +192,16 @@ footer em{color:var(--gold);font-style:normal;}
     <div class="proj-badge badge-live">Live</div>
     <div class="proj-arrow">›</div>
   </a>
-  <!-- QR CODE -->
-  <div style="margin-top:32px;text-align:center;">
-    <div style="font-size:10px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;margin-bottom:12px;">Share</div>
-    <div style="display:inline-block;background:#fff;padding:12px;border-radius:12px;">
-      <div id="qr"></div>
-    </div>
-    <div style="font-size:11px;color:var(--muted2);margin-top:10px;letter-spacing:2px;">Takeshi Uchimi Projects</div>
-    <div style="font-size:10px;color:var(--muted);margin-top:4px;">takeshiuchimi.github.io</div>
-  </div>
 
 </main>
 
-<footer>© <em>TakeshiUchimi</em> · All Projects</footer>
+<footer>© <em>TakeshiUchimi</em> · All Projects
+  <div style="margin-top:20px;">
+    <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:3px;margin-bottom:10px;">内海プロジェクト</div>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAACMCAYAAACuwEE+AAADi0lEQVR4nO3dS47TQBQFUMdiEcx7yGJYEGMWxGJ6mDm7gAEKalUnca7qZ8vnDLFj0tHV81NVuXxZXvD29u3PK+dxbNfr+2XrnKcnCMo5PQvO3QOCwrLcD85a/oOwcHMvC+vWCZxbmYn10QG4+ZiNT7ckeGZdFtWFbbeMqDBELqoLCRWGiMAQ+ZJ+4NfPrz2+x0Pff/yOzi+/X/n59PiW3tfvLf19VRgiAkNEYIjEPUwpvQduSe/xrXuWtOdIj2/9Xun5qdoeSoUhIjBEBIZIdQ9Tqh3HSK8/umcppT1Jrd6/7xYVhojAEBEYIs17mNFqe5YttT3K6B6nNxWGiMAQERgih+9hWo+z1J5f6j03NJoKQ0RgiAgMkeY9TO979Oi5o9q/Z+vzo79PLRWGiMAQERgi1T3M6LmQ0ethRh8v7W2uSYUhIjBEBIbI4bb7qJ0Lmt0zzB5HqaXCEBEYIgJDpPtzSb3HKUbvz1K7/qX3+pre629UGCICQ0RgiDSfS9rb3Mzo/WFqe4at67UeZ7LHHV0JDBGBIVK9T+/snmL2epVS6zW5rZ+jqqXCEBEYIgJDpHo9zOyeYvZzSa17nt778tZeX4UhIjBEBIZI3MPsrecYPc5S6j1OMnv9TUmFISIwRASGSDyXtLeeY/Q4zNHf6eh9SQwlMEQEhsjp18OU0uegUqPnmlr3VCoMEYEhIjBEjMMUx4+2fiZlPQxDCQwRgSFiPUznuSDrYTg1gSEiMESMw+xs/5jaHqp3j6bCEBEYIgJDxDhM43GS0T1L7fWNw9CVwBARGCKnH4dpLb3+6HcLWA/DUAJDRGCInH4cJtX62exavXuykgpDRGCICAyRw43DlI723FKp9XNJvf9/FYaIwBARGCLV4zC9td5P5WjjNL3HffQwdCUwRASGSPV7q3u/3yc9f/Z6mtHPOo+mwhARGCICQ6S6hymNnkvZ29xW7VxYqvca3pIKQ0RgiAgMkeY9TG+zx1l6zxWVaseltphLoiuBISIwRA7Xw8weh9mb0fvRqDBEBIaIwBBp3sOM3n9ldk/T+v1IrdfLtO7JVBgiAkNEYIh4Lmln+7fMfi5qiwpDRGCICAyRuIfh3FQYIgJDZL1e3y+zvwTHcL2+X1QYIuuy/EvO7C/Cvt0yosIQ+R8YVYZHPmZjfXQAluVzJj7dkoSGm3tZeBoOo8Dn9KxovFRNBOccXrm7/AUh5CP3m1Ul6AAAAABJRU5ErkJggg==" alt="QR" style="width:120px;height:120px;border-radius:10px;display:block;margin:0 auto;">
+    <div style="font-size:9px;letter-spacing:4px;color:var(--muted);margin-top:8px;">SHARE</div>
+  </div>
+</footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script>
-new QRCode(document.getElementById("qr"), {
-  text: "https://takeshiuchimi.github.io/",
-  width: 140,
-  height: 140,
-  colorDark: "#000000",
-  colorLight: "#ffffff",
-  correctLevel: QRCode.CorrectLevel.M
-});
-</script>
 </body>
 </html>
