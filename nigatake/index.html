@@ -143,5 +143,39 @@ document.addEventListener('keydown',e=>{
 
 updateUI(0);resetTimer();
 </script>
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJwAAACcCAYAAACKuMJNAAAEI0lEQVR4nO3dQZLTMBAF0CTFIdiz5DAciDUH4jCzzJ5bwIKCosTMOI2kL3l4b4k9sSv86nTJkny9PODDh4/fHzmP/9v9/nQ9OufVEwSNf/Fa8J49IGiM8Fzwbu0/CBujPJel29EJ0KPN1O2lAzDKn9n66ycVZrpdLqob8/3KmApH1FV1I0mFI0rgiHpX/YOvX97PuI8Xffr8rXR+e3/t31ePH91P9fxW9fusXn+26v+PCkeUwBElcESVe7hW9Tf8SLUnGd2zHR0/Or96f63e61evV9XbM6pwRAkcUQJHVHcP1+odV6p+/uhxttHjcL1W92Cjr6/CESVwRAkcUcN7uLTZ41JH42BH0uNku1PhiBI4ogSOqNP3cKOfnVavd6R33O/I2XpAFY4ogSNK4Iga3sPN7ilm92yr55uNXgNR/fzZVDiiBI4ogSOqu4dLr4ucvYah1273t3rdakuFI0rgiBI4ok63XVfvmoPdjh95a/PnVDiiBI4ogSNq+rrU2T3Pbj1Z77rYqrM9K1bhiBI4ogSOqO5xuN16otk9VbpnG32/rdn73bVUOKIEjiiBI6r7PQ2re67Vzz53f29Dbw85etxQhSNK4IgSOKLKPdxuPVW6Z5v9bqzd95Prvb4KR5TAESVwRBmHGzyOVjV6v7nq56d7ShWOKIEjSuCIMg7X+b7Uqt49hWfvFWJNA2+KwBElcEQZhwuP443ukWbvVWI+HKcmcEQJHFHWpU5el7nbutnevzcfjlMROKIEjqhyD7e6p1o9jjZ7zUPV7Pl7oz9fhSNK4IgSOKKMw4XXfa4eVzsy+/tS4YgSOKIEjijz4cLPLneb/5Z+r4QKR5TAESVwRFmX2jmulH6WaX84KBA4ogSOKONw4XG00etae81e19pS4YgSOKIEjijjcIN7utE94O7z4apUOKIEjiiBI8o43OI1ENXP221+X5UKR5TAESVwRFmXOnjP2/Sz1vQ6WvPhOBWBI0rgiLI/3OY9XfV6vWb3hCocUQJHlMARdbpxuCOr58O1duu5VveoKhxRAkeUwBHVPR9u9vHV+6GNfvdWa3QPOHuvlF4qHFECR5TAEVXu4VqrnxWufrY6u2fbbQ9h61I5FYEjSuCI6u7hWrvtfbHbfLjRPeHscbPRVDiiBI4ogSNqeA832+4929H56fdAzH52XaXCESVwRAkcUafr4XYbhzuy27u7qtcffT0VjiiBI0rgiBrew83uMVbvNVK9vyPV689ep1u9vyoVjiiBI0rgiOru4VbPx9q9ZxvdM/V+3+n3SrRUOKIEjiiBI6p7fzioUOGIEjiibvf703X1TfB/uN+friocUbfL5WfyVt8Ib9uvjKlwRP0OnCrHLH9m6/bSARihzdRfP6lCxyjPZenVcHkKwb94rWg9VM0Ej0c88uv4A/DqAWZv1sVYAAAAAElFTkSuQmCC" alt="QR" style="width:120px;height:120px;border-radius:10px;display:block;margin:0 auto;">
+  <div style="font-size:9px;letter-spacing:4px;color:#6a6a7a;margin-top:8px;">SHARE</div>
+</div>
+
+<!-- QR オーバーレイ -->
+<style>
+#qr-btn{position:fixed;bottom:20px;right:20px;z-index:999;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,0.7);border:1px solid rgba(212,168,67,0.5);color:#d4a843;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);transition:all 0.2s;}
+#qr-btn:hover{background:rgba(212,168,67,0.2);border-color:#d4a843;}
+#qr-popup{position:fixed;bottom:74px;right:20px;z-index:998;background:rgba(20,20,20,0.95);border:1px solid rgba(212,168,67,0.3);border-radius:14px;padding:16px;text-align:center;display:none;backdrop-filter:blur(8px);}
+#qr-popup.show{display:block;animation:popIn 0.2s ease;}
+@keyframes popIn{from{opacity:0;transform:scale(0.85) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+#qr-popup .qr-label{font-size:10px;letter-spacing:3px;color:#d4a843;margin-bottom:10px;font-family:sans-serif;}
+#qr-popup .qr-share{font-size:8px;letter-spacing:3px;color:#6a6a7a;margin-top:8px;font-family:sans-serif;}
+</style>
+
+<button id="qr-btn" onclick="toggleQR()" title="QRコード">⊞</button>
+<div id="qr-popup">
+  <div class="qr-label">今夜苦竹で</div>
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJwAAACcCAYAAACKuMJNAAAEI0lEQVR4nO3dQZLTMBAF0CTFIdiz5DAciDUH4jCzzJ5bwIKCosTMOI2kL3l4b4k9sSv86nTJkny9PODDh4/fHzmP/9v9/nQ9OufVEwSNf/Fa8J49IGiM8Fzwbu0/CBujPJel29EJ0KPN1O2lAzDKn9n66ycVZrpdLqob8/3KmApH1FV1I0mFI0rgiHpX/YOvX97PuI8Xffr8rXR+e3/t31ePH91P9fxW9fusXn+26v+PCkeUwBElcESVe7hW9Tf8SLUnGd2zHR0/Or96f63e61evV9XbM6pwRAkcUQJHVHcP1+odV6p+/uhxttHjcL1W92Cjr6/CESVwRAkcUcN7uLTZ41JH42BH0uNku1PhiBI4ogSOqNP3cKOfnVavd6R33O/I2XpAFY4ogSNK4Iga3sPN7ilm92yr55uNXgNR/fzZVDiiBI4ogSOqu4dLr4ucvYah1273t3rdakuFI0rgiBI4ok63XVfvmoPdjh95a/PnVDiiBI4ogSNq+rrU2T3Pbj1Z77rYqrM9K1bhiBI4ogSOqO5xuN16otk9VbpnG32/rdn73bVUOKIEjiiBI6r7PQ2re67Vzz53f29Dbw85etxQhSNK4IgSOKLKPdxuPVW6Z5v9bqzd95Prvb4KR5TAESVwRBmHGzyOVjV6v7nq56d7ShWOKIEjSuCIMg7X+b7Uqt49hWfvFWJNA2+KwBElcEQZhwuP443ukWbvVWI+HKcmcEQJHFHWpU5el7nbutnevzcfjlMROKIEjqhyD7e6p1o9jjZ7zUPV7Pl7oz9fhSNK4IgSOKKMw4XXfa4eVzsy+/tS4YgSOKIEjijz4cLPLneb/5Z+r4QKR5TAESVwRFmX2jmulH6WaX84KBA4ogSOKONw4XG00etae81e19pS4YgSOKIEjijjcIN7utE94O7z4apUOKIEjiiBI8o43OI1ENXP221+X5UKR5TAESVwRFmXOnjP2/Sz1vQ6WvPhOBWBI0rgiLI/3OY9XfV6vWb3hCocUQJHlMARdbpxuCOr58O1duu5VveoKhxRAkeUwBHVPR9u9vHV+6GNfvdWa3QPOHuvlF4qHFECR5TAEVXu4VqrnxWufrY6u2fbbQ9h61I5FYEjSuCI6u7hWrvtfbHbfLjRPeHscbPRVDiiBI4ogSNqeA832+4929H56fdAzH52XaXCESVwRAkcUafr4XYbhzuy27u7qtcffT0VjiiBI0rgiBrew83uMVbvNVK9vyPV689ep1u9vyoVjiiBI0rgiOru4VbPx9q9ZxvdM/V+3+n3SrRUOKIEjiiBI6p7fzioUOGIEjiibvf703X1TfB/uN+friocUbfL5WfyVt8Ib9uvjKlwRP0OnCrHLH9m6/bSARihzdRfP6lCxyjPZenVcHkKwb94rWg9VM0Ej0c88uv4A/DqAWZv1sVYAAAAAElFTkSuQmCC" alt="QR" style="width:120px;height:120px;border-radius:8px;display:block;">
+  <div class="qr-share">SHARE</div>
+</div>
+<script>
+function toggleQR(){
+  document.getElementById('qr-popup').classList.toggle('show');
+}
+document.addEventListener('click',function(e){
+  const btn=document.getElementById('qr-btn');
+  const popup=document.getElementById('qr-popup');
+  if(!btn.contains(e.target)&&!popup.contains(e.target)){
+    popup.classList.remove('show');
+  }
+});
+</script>
+
 </body>
 </html>
