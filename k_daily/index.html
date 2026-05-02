@@ -446,18 +446,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // タイル：ダブルタップ
+  // タイル：シングル→セリフ、ダブル→ライトボックス
   document.querySelectorAll('.tile').forEach((tile, i) => {
+    let tapTimer = null;
     tile.addEventListener('click', e => {
       const now = Date.now();
       if(now - (tileLastTap[i]||0) < 350) {
+        // ダブルタップ
+        clearTimeout(tapTimer);
+        tileLastTap[i] = 0;
         collectItems();
         const visibleTiles = Array.from(document.querySelectorAll('.tile:not(.hidden)'));
         openLB(visibleTiles.indexOf(tile));
       } else {
-        toggleTile(tile);
+        // シングルタップ（少し待ってからダブルでないか確認）
+        tileLastTap[i] = now;
+        tapTimer = setTimeout(() => {
+          toggleTile(tile);
+        }, 360);
       }
-      tileLastTap[i] = now;
     });
   });
 
