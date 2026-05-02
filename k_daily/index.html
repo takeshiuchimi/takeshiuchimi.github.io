@@ -414,8 +414,9 @@ function filterDoku(level, btn) {
 }
 
 function toggleTile(el) {
-  document.querySelectorAll('.tile').forEach(t => { if(t!==el) t.classList.remove('open'); });
-  el.classList.toggle('open');
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.tile').forEach(t => t.classList.remove('open'));
+  if(!isOpen) el.classList.add('open');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -451,18 +452,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let tapTimer = null;
     tile.addEventListener('click', e => {
       const now = Date.now();
-      if(now - (tileLastTap[i]||0) < 350) {
-        // ダブルタップ
+      const isDouble = now - (tileLastTap[i]||0) < 350;
+      tileLastTap[i] = now;
+
+      if(isDouble) {
+        // ダブルタップ → ライトボックス
         clearTimeout(tapTimer);
-        tileLastTap[i] = 0;
+        tile.classList.remove('open');
         collectItems();
         const visibleTiles = Array.from(document.querySelectorAll('.tile:not(.hidden)'));
         openLB(visibleTiles.indexOf(tile));
       } else {
-        // シングルタップ（少し待ってからダブルでないか確認）
-        tileLastTap[i] = now;
+        // シングルタップ → セリフ表示（360ms後に確定）
         tapTimer = setTimeout(() => {
-          toggleTile(tile);
+          document.querySelectorAll('.tile').forEach(t => { if(t!==tile) t.classList.remove('open'); });
+          tile.classList.add('open');
         }, 360);
       }
     });
