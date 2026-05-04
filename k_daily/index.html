@@ -87,21 +87,31 @@ footer{text-align:center;padding:24px;font-size:10px;color:var(--muted);letter-s
 footer em{color:var(--k);font-style:normal;}
 
 /* ライトボックス */
-#lightbox{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.97);display:none;align-items:center;justify-content:center;}
+#lightbox{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.97);display:none;align-items:flex-start;justify-content:center;}
 #lightbox.on{display:flex;}
-#lb-scroll{overflow-y:auto;max-height:100vh;width:100%;padding:60px 16px 40px;display:flex;flex-direction:column;align-items:center;scrollbar-width:none;}
+#lb-scroll{overflow-y:auto;max-height:100vh;width:100%;max-width:480px;padding:56px 0 40px;scrollbar-width:none;}
 #lb-scroll::-webkit-scrollbar{display:none;}
-#lb-img{width:100%;max-width:420px;border-radius:10px;display:block;}
-#lb-serif{font-size:20px;font-weight:900;color:var(--text);text-align:center;margin-top:16px;line-height:1.6;padding:0 20px;letter-spacing:1px;border-left:3px solid var(--k);padding-left:14px;align-self:flex-start;margin-left:8px;}
-#lb-loc{font-size:11px;color:var(--muted2);margin-top:8px;text-align:left;align-self:flex-start;margin-left:8px;}
-#lb-doku{font-size:13px;margin-top:6px;align-self:flex-start;margin-left:8px;letter-spacing:2px;}
-#lb-text{font-size:12px;color:var(--text2);line-height:1.9;margin-top:10px;padding:12px 14px;background:var(--bg2);border-radius:8px;width:100%;max-width:420px;}
-#lb-tags{font-size:10px;color:var(--k);margin-top:8px;line-height:1.9;align-self:flex-start;margin-left:8px;}
-#lb-close{position:absolute;top:16px;right:20px;font-size:22px;color:var(--muted2);cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:50%;}
-#lb-prev,#lb-next{position:absolute;top:45%;transform:translateY(-50%);font-size:22px;color:var(--muted2);cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:50%;transition:all 0.2s;}
-#lb-prev{left:8px;}#lb-next{right:8px;}
+#lb-close{position:fixed;top:16px;right:16px;z-index:10000;font-size:22px;color:var(--muted2);cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:50%;}
+#lb-prev,#lb-next{position:fixed;top:45%;transform:translateY(-50%);font-size:22px;color:var(--muted2);cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:50%;transition:all 0.2s;z-index:10000;}
+#lb-prev{left:4px;}#lb-next{right:4px;}
 #lb-prev:hover,#lb-next:hover{color:var(--k2);background:var(--k-dim);}
-#lb-counter{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:2px;color:var(--muted2);}
+#lb-counter{position:fixed;top:20px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:2px;color:var(--muted2);z-index:10000;}
+
+/* ライトボックス内カード（リストと同じ構成） */
+#lb-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 14px;}
+#lb-header{display:flex;align-items:center;gap:10px;padding:12px 14px 10px;}
+#lb-avatar{font-size:18px;width:36px;height:36px;background:var(--bg3);border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid rgba(212,88,154,0.3);flex-shrink:0;}
+#lb-meta-wrap{flex:1;}
+#lb-name{font-size:13px;font-weight:700;color:var(--k2);}
+#lb-date{font-size:10px;color:var(--muted2);margin-top:1px;}
+#lb-loc{font-size:10px;color:var(--muted2);}
+#lb-img{width:100%;display:block;}
+#lb-serif{margin:12px 14px 0;background:var(--bg3);border-left:3px solid var(--k);border-radius:0 8px 8px 0;padding:10px 14px;font-size:18px;font-weight:900;color:var(--text);line-height:1.5;letter-spacing:1px;}
+#lb-body-wrap{padding:10px 14px 14px;}
+#lb-text{font-size:12px;color:var(--text2);line-height:1.9;}
+#lb-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+#lb-footer{padding:8px 14px 12px;border-top:1px solid var(--border);display:flex;gap:16px;}
+.lb-reaction{font-size:11px;color:var(--muted2);}
 .post-img,.tile-img,#lb-img{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;pointer-events:auto;}
 
 </style>
@@ -419,7 +429,8 @@ function collectItems() {
     const date = post.querySelector('.post-date');
     const badge = post.querySelector('.doku-badge');
     const text = post.querySelector('.post-text');
-    const tags = Array.from(post.querySelectorAll('.tag')).map(t=>t.textContent).join(' ');
+    const tags = Array.from(post.querySelectorAll('.tag')).map(t=>t.textContent);
+    const reactions = Array.from(post.querySelectorAll('.reaction')).map(r=>r.textContent);
     if(img) lbItems.push({
       src: img.src,
       serif: serif ? serif.textContent : '',
@@ -427,8 +438,10 @@ function collectItems() {
       date: date ? date.textContent : '',
       doku: badge ? badge.textContent : '',
       dokuColor: badge ? badge.style.color : '',
+      dokuBorder: badge ? badge.style.borderColor : '',
       text: text ? text.textContent : '',
-      tags: tags
+      tags: tags,
+      reactions: reactions
     });
   });
 }
@@ -444,13 +457,16 @@ function openLB(idx) {
 
 function updateLB() {
   const item = lbItems[lbIndex];
+  document.getElementById('lb-date').textContent = item.date;
+  document.getElementById('lb-loc').textContent = '📍 ' + item.loc;
+  const dokuEl = document.getElementById('lb-doku');
+  dokuEl.textContent = item.doku;
+  dokuEl.style.cssText = `color:${item.dokuColor};border-color:${item.dokuBorder};font-size:9px;letter-spacing:1px;padding:1px 7px;border-radius:20px;border:1px solid;margin-left:6px;font-family:'Oswald',sans-serif;vertical-align:middle;`;
   document.getElementById('lb-img').src = item.src;
   document.getElementById('lb-serif').textContent = item.serif;
-  document.getElementById('lb-loc').textContent = '📍 ' + item.loc + '　' + item.date;
-  document.getElementById('lb-doku').textContent = item.doku;
-  document.getElementById('lb-doku').style.color = item.dokuColor;
   document.getElementById('lb-text').textContent = item.text;
-  document.getElementById('lb-tags').textContent = item.tags;
+  document.getElementById('lb-tags').innerHTML = item.tags.map(t=>`<span class="tag">${t}</span>`).join('');
+  document.getElementById('lb-footer').innerHTML = item.reactions.map(r=>`<span class="lb-reaction">${r}</span>`).join('');
   document.getElementById('lb-counter').textContent = (lbIndex+1) + ' / ' + lbItems.length;
 }
 
@@ -556,12 +572,23 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="lb-close" onclick="closeLB()">✕</div>
   <div id="lb-prev" onclick="lbPrev()">‹</div>
   <div id="lb-scroll">
-    <img id="lb-img" src="" alt="">
-    <div id="lb-serif"></div>
-    <div id="lb-loc"></div>
-    <div id="lb-doku"></div>
-    <div id="lb-text"></div>
-    <div id="lb-tags"></div>
+    <div id="lb-card">
+      <div id="lb-header">
+        <div id="lb-avatar">👩</div>
+        <div id="lb-meta-wrap">
+          <div id="lb-name">K さん <span id="lb-doku"></span></div>
+          <div id="lb-date"></div>
+          <div id="lb-loc"></div>
+        </div>
+      </div>
+      <img id="lb-img" src="" alt="">
+      <div id="lb-serif"></div>
+      <div id="lb-body-wrap">
+        <div id="lb-text"></div>
+        <div id="lb-tags"></div>
+      </div>
+      <div id="lb-footer"></div>
+    </div>
   </div>
   <div id="lb-next" onclick="lbNext()">›</div>
 </div>
