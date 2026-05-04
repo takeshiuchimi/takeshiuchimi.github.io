@@ -42,6 +42,13 @@ header h1 em{color:var(--ramen2);font-style:normal;}
 .shop-menu{display:flex;flex-wrap:wrap;gap:4px;}
 .menu-item{font-size:10px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);padding:2px 8px;border-radius:6px;}
 .price{color:var(--ramen2);font-weight:700;margin-left:3px;}
+.shop-photos{display:flex;gap:6px;margin-top:10px;overflow-x:auto;padding-bottom:4px;}
+.shop-photos img{height:80px;width:auto;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid var(--border);cursor:pointer;transition:opacity 0.2s;}
+.shop-photos img:hover{opacity:0.85;}
+.photo-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:center;justify-content:center;}
+.photo-modal.on{display:flex;}
+.photo-modal img{max-width:95vw;max-height:90vh;border-radius:12px;object-fit:contain;}
+.photo-caption{position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:11px;color:var(--text2);letter-spacing:1px;}
 .note{font-size:10px;color:var(--muted);text-align:center;margin-top:16px;line-height:2;padding:12px;border:1px dashed var(--border);border-radius:var(--radius);}
 footer{text-align:center;padding:24px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2.2;}
 footer em{color:var(--ramen);font-style:normal;}
@@ -100,6 +107,10 @@ footer em{color:var(--ramen);font-style:normal;}
 
   <div class="note">※ 営業時間・定休日は変更になる場合があります。訪問前にご確認ください。</div>
 </div>
+<div class="photo-modal" id="photoModal" onclick="closeModal()">
+  <img id="modalImg" src="" alt="">
+  <div class="photo-caption" id="modalCaption"></div>
+</div>
 <footer>🍜 <em>内海渾身リスト</em> · ラーメン利府街道 · 2026
   <div style="margin-top:20px;">
     <div style="font-size:11px;font-weight:700;color:#e8651a;letter-spacing:3px;margin-bottom:10px;">ラーメン利府街道</div>
@@ -109,6 +120,69 @@ footer em{color:var(--ramen);font-style:normal;}
 </footer>
 <script>
 function tab(idx,btn){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));btn.classList.add('on');document.getElementById('p'+idx).classList.add('on');}
+
+function openModal(url, caption){
+  document.getElementById('modalImg').src = url;
+  document.getElementById('modalCaption').textContent = caption;
+  document.getElementById('photoModal').classList.add('on');
+}
+function closeModal(){
+  document.getElementById('photoModal').classList.remove('on');
+}
+
+// GitHub APIで写真一覧を取得して各店カードに挿入
+(async () => {
+  const REPO = 'takeshiuchimi/ramen';
+  const API  = `https://api.github.com/repos/${REPO}/contents/photos`;
+  const RAW  = `https://raw.githubusercontent.com/${REPO}/main/photos/`;
+  try {
+    const res = await fetch(API);
+    if (!res.ok) return;
+    const files = await res.json();
+
+    // 店番号ごとにグルーピング（例: "03_鶏中華大盛.jpg" → num="03"）
+    const photoMap = {};
+    files.forEach(f => {
+      if (!/\.(jpe?g|png|gif|webp)$/i.test(f.name)) return;
+      const m = f.name.match(/^(\d+)_(.+)\.(jpe?g|png|gif|webp)$/i);
+      if (!m) return;
+      const num = m[1].padStart(2,'0');
+      const label = m[2];
+      if (!photoMap[num]) photoMap[num] = [];
+      photoMap[num].push({ label, url: RAW + encodeURIComponent(f.name) });
+    });
+
+    // 各店カードに写真エリアを追加
+    Object.entries(photoMap).forEach(([num, photos]) => {
+      // shop-numの中身が num に一致する要素を探す
+      const numEls = document.querySelectorAll('.shop-num');
+      numEls.forEach(el => {
+        if (el.textContent.trim().padStart(2,'0') !== num) return;
+        const body = el.nextElementSibling;
+        if (!body) return;
+
+        // 重複挿入防止
+        if (body.querySelector('.shop-photos')) return;
+
+        const div = document.createElement('div');
+        div.className = 'shop-photos';
+        // 店番号・メニュー名順にソート
+        photos.sort((a,b) => a.label.localeCompare(b.label, 'ja'));
+        photos.forEach(p => {
+          const img = document.createElement('img');
+          img.src = p.url;
+          img.alt = p.label;
+          img.title = p.label;
+          img.onclick = () => openModal(p.url, p.label);
+          div.appendChild(img);
+        });
+        body.appendChild(div);
+      });
+    });
+  } catch(e) {
+    console.warn('写真取得失敗:', e);
+  }
+})();
 </script>
 </body>
 </html>
