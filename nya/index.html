@@ -70,6 +70,28 @@
   .game-card .stripe{width:40px;height:4px;border-radius:2px;margin-top:2px;background:linear-gradient(90deg,var(--player-accent),var(--cpu-accent));}
 
   .footnote{ font-size:11px; color:#b09a7a; text-align:center; margin-top:6px; }
+  .greeting-toggle{
+    font-size:12px;color:var(--brown-deep);text-align:center;cursor:pointer;
+    text-decoration:underline;margin:2px 0;
+  }
+  .greeting-thanks{ font-weight:bold; color:var(--player-accent); }
+  .greeting-sign{ text-align:right; font-size:11px; color:#b09a7a; }
+
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(74,59,42,.55);
+    display:flex;align-items:center;justify-content:center;
+    z-index:200;padding:16px;
+  }
+  .modal-overlay.hidden{ display:none; }
+  .modal-box{
+    background:#fff;border-radius:18px;padding:16px;
+    max-width:340px;width:100%;max-height:82vh;overflow-y:auto;
+    border:3px dashed var(--gold);
+  }
+  .modal-box h2{margin:0 0 8px;font-size:16px;color:var(--green-deep);text-align:center;}
+  .modal-box .rules-text{font-size:13px;line-height:1.7;margin-bottom:10px;}
+  .modal-box .rules-text p{ margin:0 0 8px; }
+  .modal-box .rules-text p:last-child{ margin-bottom:0; }
 
   /* ---- ゲーム表示エリア ---- */
   .player-wrap{
@@ -109,10 +131,25 @@
       <h1>🐾 ニャーズ ゲームセンター
         <span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集</span>
       </h1>
+      <div class="greeting-toggle" id="greetingToggle">💌 内海からの挨拶</div>
       <div class="card-grid" id="cardGrid"></div>
       <div class="footnote">机に置いたまま、2人で交互にタップして遊べます</div>
     </div>
     <button class="flip-btn" id="btnFlipBottom">🔄 反転する</button>
+  </div>
+
+  <div class="modal-overlay hidden" id="greetingModal">
+    <div class="modal-box">
+      <h2>💌 内海からの挨拶</h2>
+      <div class="rules-text">
+        <p>このシリーズはまだ VER0.3。これからも少しずつ増えていきます。</p>
+        <p>いつも一緒に働いてくれている事業所のスタッフの皆さん、利用者の皆さんに、ちょっとした息抜きの時間になれば嬉しいです。</p>
+        <p>そして、いつもお世話になっている居酒屋やカフェ、スナックのママさん、スタッフさん、お客さんにも、気軽に楽しんでもらえたらと思います。</p>
+        <p class="greeting-thanks">こんな足りない自分と、いつも関わってくれて本当にありがとうございます。🐾</p>
+        <p class="greeting-sign">— 内海</p>
+      </div>
+      <button class="btn wide" id="btnCloseGreeting" style="margin-top:8px;">閉じる</button>
+    </div>
   </div>
 
   <div class="player-wrap" id="playerScreen">
@@ -182,6 +219,12 @@ document.getElementById('btnBackBottom').addEventListener('click', backToMenu);
 function toggleMenuFlip(){ menuScreen.classList.toggle('flipped'); }
 document.getElementById('btnFlipTop').addEventListener('click', toggleMenuFlip);
 document.getElementById('btnFlipBottom').addEventListener('click', toggleMenuFlip);
+document.getElementById('greetingToggle').addEventListener('click', ()=>{
+  document.getElementById('greetingModal').classList.remove('hidden');
+});
+document.getElementById('btnCloseGreeting').addEventListener('click', ()=>{
+  document.getElementById('greetingModal').classList.add('hidden');
+});
 
 // 各ゲーム内から「別のゲームに誘う」等でメニューに戻る要求を受け取る
 window.addEventListener('message', (e)=>{
