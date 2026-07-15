@@ -122,6 +122,12 @@
     font-size:17px;margin:2px 0;color:var(--green-deep);
   }
   .list-title .sub{display:block;font-size:10px;color:var(--brown-deep);margin-top:2px;}
+  .list-block{ position:relative; }
+  .version-badge{
+    display:inline-block;font-size:10px;vertical-align:middle;
+    background:var(--gold);color:#fff;padding:2px 7px;border-radius:10px;
+    font-weight:bold;
+  }
 
   .title-block.top{ transform:rotate(180deg); margin-bottom:22px; }
   .title-block.bottom{ margin-top:22px; }
@@ -135,8 +141,8 @@
   /* ---- マスコット(招き猫) ---- */
   .mascot-cat{ width:56px; height:56px; flex-shrink:0; }
   .mascot-row{ display:flex; align-items:center; justify-content:center; gap:10px; margin:2px 0; }
-  .mascot-row-btns{ display:flex; flex-direction:column; gap:4px; }
-  .mascot-row-btns .util-btn{ margin:0; }
+  .mascot-row-col{ display:flex; flex-direction:column; gap:4px; justify-content:center; }
+  .mascot-row-col .util-btn{ margin:0; }
 
   .game-top-row{
     display:flex; align-items:center; gap:6px; margin-bottom:8px;
@@ -435,11 +441,14 @@
   <!-- ============ ゲーム一覧(トップ) ============ -->
   <div id="screen-list" class="card">
     <div class="list-block top">
-      <h1 class="list-title">🐾 ニャーズ ゲームセンター<span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集</span></h1>
+      <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span><span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集</span></h1>
       <div class="mascot-row">
         <div class="mascot-cat-slot" id="mascotSlotTop"></div>
-        <div class="mascot-row-btns">
+        <div class="mascot-row-col">
           <button class="util-btn" id="greetingToggleTop">💌 内海からの挨拶</button>
+          <button class="util-btn" id="techInfoToggleTop">🔧 技術情報</button>
+        </div>
+        <div class="mascot-row-col">
           <button class="util-btn" id="darkModeToggleTop">🌙 ダークモード</button>
         </div>
       </div>
@@ -450,11 +459,14 @@
       <div class="page-dots" id="pageDots"></div>
     </div>
     <div class="list-block bottom">
-      <h1 class="list-title">🐾 ニャーズ ゲームセンター<span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集</span></h1>
+      <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span><span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集</span></h1>
       <div class="mascot-row">
         <div class="mascot-cat-slot" id="mascotSlotBottom"></div>
-        <div class="mascot-row-btns">
+        <div class="mascot-row-col">
           <button class="util-btn" id="greetingToggleBottom">💌 内海からの挨拶</button>
+          <button class="util-btn" id="techInfoToggleBottom">🔧 技術情報</button>
+        </div>
+        <div class="mascot-row-col">
           <button class="util-btn" id="darkModeToggleBottom">🌙 ダークモード</button>
         </div>
       </div>
@@ -502,13 +514,41 @@
   <div class="modal-box" id="greetingModalBox">
     <h2>💌 内海からの挨拶</h2>
     <div class="rules-text">
-      <p>このシリーズはまだ VER0.3。これからも少しずつ増えていきます。</p>
+      <p>このシリーズはver0.4。土台を作り直して、これから50本くらいまで増やしていく予定です。</p>
       <p>いつも一緒に働いてくれている事業所のスタッフの皆さん、利用者の皆さんに、ちょっとした息抜きの時間になれば嬉しいです。</p>
       <p>そして、いつもお世話になっている居酒屋やカフェ、スナックのママさん、スタッフさん、お客さんにも、気軽に楽しんでもらえたらと思います。</p>
       <p class="greeting-thanks">こんな足りない自分と、いつも関わってくれて本当にありがとうございます。🐾</p>
       <p class="greeting-sign">— 内海</p>
     </div>
     <button class="btn wide" id="btnCloseGreeting" style="margin-top:8px;">閉じる</button>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="techInfoModal">
+  <div class="modal-box" id="techInfoModalBox">
+    <h2>🔧 技術情報(内海メソッド)</h2>
+    <div class="rules-text">
+      <p><b>なぜHTMLファイル1本に内包するか</b><br>
+      ブラウザさえあれば、サーバーもインストールも不要で動きます。USBメモリで渡しても、通信環境が無い場所でも開けます。施設のPCやタブレットでも、管理者権限を求められません。</p>
+      <p><b>なぜ枯れた技術を令和で使うか</b><br>
+      フレームワークは数年で廃れますが、素のHTML/CSS/JavaScriptの仕様はそう簡単には変わりません。ビルド不要・依存ライブラリ不要で、10年後も同じように開けることを優先しています。</p>
+      <p><b>なぜ小容量に拘るか、その方法論</b><br>
+      50本規模に増やす計画があるので、「同じコードのコピペ」を最大の敵としています。共通のエンジン部分とゲームごとの差分を分離し、重複を見つけたら都度、共通関数にまとめ直しています。</p>
+      <p><b>現在の容量内訳</b><br>
+      共通エンジン部分: 約47.6KB<br>
+      ニャーバツ: 約6.4KB<br>
+      ニャセロ: 約11.3KB<br>
+      ニャー将棋: 約13.5KB<br>
+      ニャージャン: 約14.6KB<br>
+      ニャーリス: 約23.6KB<br>
+      合計: 約117.0KB</p>
+      <p><b>その他の設計意図</b><br>
+      ・ダークモード: OLED端末のバッテリー節約のため。「目に優しい」は実は研究上はっきりしていません<br>
+      ・無限スクロール: ゲームが増えても一覧の端で迷わないように<br>
+      ・対面構造: どちらの席から見ても正しい向きで読めることを、盤面もボタンも例外なく徹底<br>
+      ・行の節約: スマホの狭い画面で、必要な情報を1行にまとめて見渡せる範囲を増やす</p>
+    </div>
+    <button class="btn wide" id="btnCloseTechInfo" style="margin-top:8px;">閉じる</button>
   </div>
 </div>
 
@@ -1097,6 +1137,10 @@ document.getElementById('greetingToggleTop').addEventListener('click', ()=>{
   document.getElementById('greetingModalBox').classList.add('rotated');
   document.getElementById('greetingModal').classList.remove('hidden');
 });
+document.getElementById('techInfoToggleTop').addEventListener('click', ()=>{
+  document.getElementById('techInfoModalBox').classList.add('rotated');
+  document.getElementById('techInfoModal').classList.remove('hidden');
+});
 const DARK_MODE_BTN_IDS_LONG = ['darkModeToggleTop','darkModeToggleBottom'];
 const DARK_MODE_BTN_IDS_SHORT = ['darkModeToggleGameTop','darkModeToggleGameBottom'];
 function updateDarkModeLabels(){
@@ -1125,8 +1169,15 @@ document.getElementById('greetingToggleBottom').addEventListener('click', ()=>{
   document.getElementById('greetingModalBox').classList.remove('rotated');
   document.getElementById('greetingModal').classList.remove('hidden');
 });
+document.getElementById('techInfoToggleBottom').addEventListener('click', ()=>{
+  document.getElementById('techInfoModalBox').classList.remove('rotated');
+  document.getElementById('techInfoModal').classList.remove('hidden');
+});
 document.getElementById('btnCloseGreeting').addEventListener('click', ()=>{
   document.getElementById('greetingModal').classList.add('hidden');
+});
+document.getElementById('btnCloseTechInfo').addEventListener('click', ()=>{
+  document.getElementById('techInfoModal').classList.add('hidden');
 });
 
 /* ============================================================
