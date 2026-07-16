@@ -452,7 +452,6 @@
           <button class="util-btn" id="darkModeToggleTop">🌙 ダークモード</button>
         </div>
       </div>
-      <div class="desc" style="margin-top:4px;">机に置いたまま、2人で交互にタップして遊べます</div>
     </div>
     <div class="card-pages-wrap" id="cardPagesWrap">
       <div class="card-pages" id="cardPages"></div>
@@ -470,7 +469,6 @@
           <button class="util-btn" id="darkModeToggleBottom">🌙 ダークモード</button>
         </div>
       </div>
-      <div class="desc" style="margin-top:4px;">机に置いたまま、2人で交互にタップして遊べます</div>
     </div>
   </div>
 
@@ -998,14 +996,16 @@ function makeTitleHalf(key, isTop){
 
   const rowModes = document.createElement('div');
   rowModes.className = 'row';
-  rowModes.style.flexDirection = 'column';
+  rowModes.style.flexWrap = 'nowrap';
   const btnCpu = document.createElement('button');
-  btnCpu.className = 'btn wide';
+  btnCpu.className = 'btn';
+  btnCpu.style.flex = '1';
   btnCpu.textContent = 'CPU対戦';
   btnCpu.addEventListener('click', ()=>{ currentGameKey = key; startCurrentGame('cpu'); });
   const btnPvp = document.createElement('button');
-  btnPvp.className = 'btn secondary wide';
-  btnPvp.textContent = '2人対戦（向かい合って）';
+  btnPvp.className = 'btn secondary';
+  btnPvp.style.flex = '1';
+  btnPvp.textContent = '2人対戦';
   btnPvp.addEventListener('click', ()=>{ currentGameKey = key; startCurrentGame('pvp'); });
   rowModes.appendChild(btnCpu);
   rowModes.appendChild(btnPvp);
