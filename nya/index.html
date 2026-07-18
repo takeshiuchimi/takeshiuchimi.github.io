@@ -27,6 +27,7 @@
     --line-dark:#3a2c20;
     --card-bg:#fff;
     --overlay-bg:rgba(255,255,255,.75);
+    --block-highlight:rgba(255,255,255,.3);
   }
   html.dark-mode{
     --cream:#181410;
@@ -44,6 +45,7 @@
     --pip:#F2874A;
     --line-dark:#241b12;
     --card-bg:#3d342a;
+    --block-highlight:rgba(0,0,0,.25);
     --overlay-bg:rgba(20,16,12,.8);
   }
   *{box-sizing:border-box;}
@@ -62,7 +64,7 @@
   h1.hidden{display:none;}
   .card{
     width:100%;background:var(--card-bg);border:3px dashed var(--gold);
-    border-radius:18px;padding:22px 10px;box-shadow:0 6px 0 rgba(139,111,71,.15);
+    border-radius:18px;padding:12px 10px;box-shadow:0 6px 0 rgba(139,111,71,.15);
   }
   .hidden{display:none !important;}
   .btn{
@@ -74,7 +76,7 @@
   .btn.secondary{background:var(--brown);box-shadow:0 3px 0 var(--brown-deep);}
   .btn.wide{width:100%;}
   .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
-  .desc{text-align:left;line-height:2.0;margin:0 0 16px;font-size:13px;}
+  .desc{text-align:left;line-height:1.6;margin:0 0 8px;font-size:13px;}
 
   /* ---- ゲーム一覧(タイトル画面) ---- */
   .game-card{
@@ -101,7 +103,12 @@
   .mini-tetromino .tc svg{ position:absolute; inset:0; width:100%; height:100%; }
   .mini-tetromino .tc .cat-ear, .mini-tetromino .tc .cat-face{ fill:var(--cell-color, #ccc); }
   .mini-tetromino .tc .cat-eye{ fill:var(--line-dark); }
-  .card-pages-wrap{ width:100%; overflow:hidden; touch-action:pan-y; }
+  .card-pages-wrap{ width:100%; overflow:hidden; touch-action:pan-y; position:relative; }
+  .edge-nav-btn{
+    position:absolute; top:0; bottom:0; width:22px; z-index:5; cursor:pointer;
+  }
+  .edge-nav-btn.left{ left:0; }
+  .edge-nav-btn.right{ right:0; }
   .card-pages{ display:flex; transition:transform .28s ease; }
   .card-page{
     flex:0 0 100%; width:100%; box-sizing:border-box;
@@ -128,20 +135,25 @@
     background:var(--gold);color:#fff;padding:2px 7px;border-radius:10px;
     font-weight:bold;
   }
+  .dev-build-badge{
+    display:inline-block;font-size:8px;vertical-align:middle;
+    color:var(--brown-deep);opacity:.5;margin-left:3px;
+  }
 
-  .title-block.top{ transform:rotate(180deg); margin-bottom:22px; }
-  .title-block.bottom{ margin-top:22px; }
-  .title-block-name{ font-size:16px; color:var(--green-deep); text-align:center; margin:2px 0 14px; }
+  .title-block.top{ transform:rotate(180deg); margin-bottom:10px; }
+  .title-block.bottom{ margin-top:10px; }
+  .title-block-name{ font-size:16px; color:var(--green-deep); text-align:center; margin:2px 0 6px; }
 
 
-  .title-pages-wrap{ width:100%; overflow:hidden; touch-action:pan-y; transition:height .2s ease; }
+  .title-pages-wrap{ width:100%; overflow:hidden; touch-action:pan-y; transition:height .2s ease; position:relative; }
   .title-pages{ display:flex; align-items:flex-start; transition:transform .28s ease; }
   .title-page{ flex:0 0 100%; width:100%; box-sizing:border-box; }
 
   /* ---- マスコット(招き猫) ---- */
   .mascot-cat{ width:56px; height:56px; flex-shrink:0; }
   .mascot-row{ display:flex; align-items:center; justify-content:center; gap:10px; margin:2px 0; }
-  .mascot-row-col{ display:flex; flex-direction:column; gap:4px; justify-content:center; }
+  .mascot-row > *{ flex:1; display:flex; justify-content:center; }
+  .mascot-row-col{ display:flex; flex-direction:column; gap:4px; justify-content:center; width:100%; }
   .mascot-row-col .util-btn{ margin:0; }
 
   .game-top-row{
@@ -149,7 +161,7 @@
   }
   .game-top-row.top{ transform:rotate(180deg); margin-bottom:0; margin-top:-4px; }
   .game-top-row .mini-title{ flex:1; margin:0; text-align:left; }
-  .game-top-row .util-btn{ margin:0; flex-shrink:0; }
+  .game-top-row .util-btn{ margin:0; flex:1; }
 
   /* ---- ミニタイトル(上下対称) ---- */
   .mini-title{
@@ -157,6 +169,10 @@
     margin-bottom:8px;
   }
   .mini-title.top{ transform:rotate(180deg); margin-bottom:0; margin-top:-4px; }
+  .mini-title-icon{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; overflow:hidden; vertical-align:middle; }
+  .mini-title-icon > *{ transform:scale(0.4); flex-shrink:0; }
+  .cpu-flip-icon{ transform:rotate(180deg); }
+  .mini-title-icon .cpu-flip-icon{ transform:rotate(180deg) scale(0.4); }
 
   /* ---- 結果バナー ---- */
   .msg-banner{
@@ -377,6 +393,20 @@
   .value-counter .vc-item.zero .vc-count{ background:#C0392B; }
   .hint-text{ text-align:center; font-size:11px; color:var(--brown-deep); margin:2px 0; }
 
+  /* ---- ニャモリー専用 ---- */
+  .nmem-board{
+    width:100%;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);
+    gap:6px;background:var(--brown);padding:8px;border-radius:12px;aspect-ratio:4/3;
+    margin:4px 0;
+  }
+  .nmem-cell{
+    background:var(--cream);border-radius:8px;cursor:pointer;position:relative;
+  }
+  .nmem-cell svg{ position:absolute; inset:0; width:78%; height:78%; margin:auto; }
+  .nmem-cell.revealed{ background:#fff; box-shadow:inset 0 0 0 2px var(--gold); }
+  .nmem-cell.revealed svg circle{ fill:var(--pip); }
+  .nmem-cell.matched{ background:transparent; box-shadow:none; cursor:default; }
+
   /* ---- ニャーリス専用 ---- */
   .status-bar{
     width:100%;display:flex;justify-content:space-between;align-items:center;
@@ -398,7 +428,7 @@
     touch-action:none;
   }
   .ris-cell{background:rgba(139,111,71,.08);border-radius:2px;position:relative;}
-  .ris-cell.filled{box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);}
+  .ris-cell.filled{box-shadow:inset 0 0 0 1px var(--block-highlight);}
   .ris-cell svg{
     position:absolute;inset:0;width:100%;height:100%;
     opacity:0;transition:opacity .06s;
@@ -441,32 +471,35 @@
   <!-- ============ ゲーム一覧(トップ) ============ -->
   <div id="screen-list" class="card">
     <div class="list-block top">
-      <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span><span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集</span></h1>
+      <div class="page-dots" id="pageDotsTop"></div>
+      <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span><span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">build 0718-1143</span></span></h1>
       <div class="mascot-row">
         <div class="mascot-cat-slot" id="mascotSlotTop"></div>
         <div class="mascot-row-col">
-          <button class="util-btn" id="greetingToggleTop">💌 内海からの挨拶</button>
+          <button class="util-btn" id="greetingToggleTop">💌 内海から</button>
           <button class="util-btn" id="techInfoToggleTop">🔧 技術情報</button>
         </div>
         <div class="mascot-row-col">
-          <button class="util-btn" id="darkModeToggleTop">🌙 ダークモード</button>
+          <button class="util-btn" id="darkModeToggleTop">🌙</button>
         </div>
       </div>
     </div>
     <div class="card-pages-wrap" id="cardPagesWrap">
+      <div class="edge-nav-btn left" id="cardEdgeLeft"></div>
+      <div class="edge-nav-btn right" id="cardEdgeRight"></div>
       <div class="card-pages" id="cardPages"></div>
-      <div class="page-dots" id="pageDots"></div>
     </div>
     <div class="list-block bottom">
-      <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span><span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集</span></h1>
+      <div class="page-dots" id="pageDotsBottom"></div>
+      <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span><span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">build 0718-1143</span></span></h1>
       <div class="mascot-row">
         <div class="mascot-cat-slot" id="mascotSlotBottom"></div>
         <div class="mascot-row-col">
-          <button class="util-btn" id="greetingToggleBottom">💌 内海からの挨拶</button>
+          <button class="util-btn" id="greetingToggleBottom">💌 内海から</button>
           <button class="util-btn" id="techInfoToggleBottom">🔧 技術情報</button>
         </div>
         <div class="mascot-row-col">
-          <button class="util-btn" id="darkModeToggleBottom">🌙 ダークモード</button>
+          <button class="util-btn" id="darkModeToggleBottom">🌙</button>
         </div>
       </div>
     </div>
@@ -475,6 +508,8 @@
   <!-- ============ ゲームごとのタイトル ============ -->
   <div id="screen-title" class="card hidden">
     <div class="title-pages-wrap" id="titlePagesWrap">
+      <div class="edge-nav-btn left" id="titleEdgeLeft"></div>
+      <div class="edge-nav-btn right" id="titleEdgeRight"></div>
       <div class="title-pages" id="titlePages"></div>
     </div>
   </div>
@@ -482,19 +517,17 @@
   <!-- ============ ゲーム画面 ============ -->
   <div id="screen-game" class="card hidden">
     <div class="game-top-row top">
-      <div class="mini-title" id="miniTitleTop" style="margin:0;"></div>
-      <button class="util-btn" id="darkModeToggleGameTop">🌙</button>
-      <button class="util-btn" id="btnGameTitleTop">📋 タイトル</button>
+      <button class="util-btn mini-title" id="miniTitleTop" style="margin:0;"></button>
       <button class="util-btn" id="btnBackToListTopGame">🏠 一覧</button>
+      <button class="util-btn" id="darkModeToggleGameTop">🌙</button>
     </div>
     <div class="msg-banner top hidden" id="msgBannerTop"></div>
     <div id="gameBoardArea"></div>
     <div class="msg-banner hidden" id="msgBannerBottom"></div>
     <div class="game-top-row">
-      <div class="mini-title" id="miniTitleBottom"></div>
-      <button class="util-btn" id="darkModeToggleGameBottom">🌙</button>
-      <button class="util-btn" id="btnGameTitleBottom">📋 タイトル</button>
+      <button class="util-btn mini-title" id="miniTitleBottom"></button>
       <button class="util-btn" id="btnBackToListBottomGame">🏠 一覧</button>
+      <button class="util-btn" id="darkModeToggleGameBottom">🌙</button>
     </div>
   </div>
 
@@ -511,13 +544,7 @@
 <div class="modal-overlay hidden" id="greetingModal">
   <div class="modal-box" id="greetingModalBox">
     <h2>💌 内海からの挨拶</h2>
-    <div class="rules-text">
-      <p>このシリーズはver0.4。土台を作り直して、これから50本くらいまで増やしていく予定です。</p>
-      <p>いつも一緒に働いてくれている事業所のスタッフの皆さん、利用者の皆さんに、ちょっとした息抜きの時間になれば嬉しいです。</p>
-      <p>そして、いつもお世話になっている居酒屋やカフェ、スナックのママさん、スタッフさん、お客さんにも、気軽に楽しんでもらえたらと思います。</p>
-      <p class="greeting-thanks">こんな足りない自分と、いつも関わってくれて本当にありがとうございます。🐾</p>
-      <p class="greeting-sign">— 内海</p>
-    </div>
+    <div class="rules-text" id="greetingBody"></div>
     <button class="btn wide" id="btnCloseGreeting" style="margin-top:8px;">閉じる</button>
   </div>
 </div>
@@ -525,30 +552,80 @@
 <div class="modal-overlay hidden" id="techInfoModal">
   <div class="modal-box" id="techInfoModalBox">
     <h2>🔧 技術情報(内海メソッド)</h2>
-    <div class="rules-text">
-      <p><b>なぜHTMLファイル1本に内包するか</b><br>
-      ブラウザさえあれば、サーバーもインストールも不要で動きます。USBメモリで渡しても、通信環境が無い場所でも開けます。施設のPCやタブレットでも、管理者権限を求められません。</p>
-      <p><b>なぜ枯れた技術を令和で使うか</b><br>
-      フレームワークは数年で廃れますが、素のHTML/CSS/JavaScriptの仕様はそう簡単には変わりません。ビルド不要・依存ライブラリ不要で、10年後も同じように開けることを優先しています。</p>
-      <p><b>なぜ小容量に拘るか、その方法論</b><br>
-      50本規模に増やす計画があるので、「同じコードのコピペ」を最大の敵としています。共通のエンジン部分とゲームごとの差分を分離し、重複を見つけたら都度、共通関数にまとめ直しています。</p>
-      <p><b>現在の容量内訳</b><br>
-      共通エンジン部分: 約47.6KB<br>
-      ニャーバツ: 約6.4KB<br>
-      ニャセロ: 約11.3KB<br>
-      ニャー将棋: 約13.5KB<br>
-      ニャージャン: 約14.6KB<br>
-      ニャーリス: 約23.6KB<br>
-      合計: 約117.0KB</p>
-      <p><b>その他の設計意図</b><br>
-      ・ダークモード: OLED端末のバッテリー節約のため。「目に優しい」は実は研究上はっきりしていません<br>
-      ・無限スクロール: ゲームが増えても一覧の端で迷わないように<br>
-      ・対面構造: どちらの席から見ても正しい向きで読めることを、盤面もボタンも例外なく徹底<br>
-      ・行の節約: スマホの狭い画面で、必要な情報を1行にまとめて見渡せる範囲を増やす</p>
-    </div>
+    <div class="rules-text" id="techInfoBody"></div>
     <button class="btn wide" id="btnCloseTechInfo" style="margin-top:8px;">閉じる</button>
   </div>
 </div>
+
+<script type="application/json" id="siteContentData">
+{
+  "greeting": {
+    "paragraphs": [
+      "このシリーズはver0.4。土台を作り直して、これから50本くらいまで増やしていく予定です。",
+      "いつも一緒に働いてくれている事業所のスタッフの皆さん、利用者の皆さんに、ちょっとした息抜きの時間になれば嬉しいです。",
+      "そして、いつもお世話になっている居酒屋やカフェ、スナックのママさん、スタッフさん、お客さんにも、気軽に楽しんでもらえたらと思います。"
+    ],
+    "thanks": "こんな足りない自分と、いつも関わってくれて本当にありがとうございます。🐾",
+    "sign": "— 内海"
+  },
+  "techInfo": {
+    "sections": [
+      { "heading": "なぜHTMLファイル1本に内包するか", "body": "ブラウザさえあれば、サーバーもインストールも不要で動きます。USBメモリで渡しても、通信環境が無い場所でも開けます。施設のPCやタブレットでも、管理者権限を求められません。" },
+      { "heading": "なぜ枯れた技術を令和で使うか", "body": "フレームワークは数年で廃れますが、素のHTML/CSS/JavaScriptの仕様はそう簡単には変わりません。ビルド不要・依存ライブラリ不要で、10年後も同じように開けることを優先しています。" },
+      { "heading": "なぜ小容量に拘るか、その方法論", "body": "50本規模に増やす計画があるので、「同じコードのコピペ」を最大の敵としています。共通のエンジン部分とゲームごとの差分を分離し、重複を見つけたら都度、共通関数にまとめ直しています。" },
+      { "heading": "ゲームデータの持ち方", "body": "挨拶・遊び方・技術情報・容量など、たまに書き換える可能性のある文章は、このJSONに1箇所にまとめてあります。更新のたびにコードの中を探し回らずに済むようにしています。" }
+    ],
+    "designNotes": [
+      "ダークモード: OLED端末のバッテリー節約のため。「目に優しい」は実は研究上はっきりしていません",
+      "無限スクロール: ゲームが増えても一覧の端で迷わないように",
+      "対面構造: どちらの席から見ても正しい向きで読めることを、盤面もボタンも例外なく徹底",
+      "行の節約: スマホの狭い画面で、必要な情報を1行にまとめて見渡せる範囲を増やす"
+    ]
+  },
+  "capacity": {
+    "engineKB": 47.6,
+    "games": {
+      "ニャーバツ": 6.4,
+      "ニャセロ": 11.3,
+      "ニャー将棋": 13.5,
+      "ニャージャン": 14.6,
+      "ニャーリス": 23.6
+    }
+  },
+  "howToPlay": {
+    "nyabatsu": {
+      "rules": "3×3マスの◯✕ゲーム。たて・よこ・ななめ、どれか一列そろえたら勝ちです。",
+      "intent": "一番シンプルなゲームだからこそ、CPUには絶対に手加減させませんでした（内海メソッド）。完全に読み切った相手と、まず一戦。",
+      "fun": "誰もが子供の頃に遊んだ「三目並べ」なのに、実は先読みすれば必ず引き分けに持ち込める「解けているゲーム」だと体感できます。",
+      "different": "シリーズで一番ルールが簡単。ニャーズシリーズの入り口として作りました。"
+    },
+    "nyasero": {
+      "rules": "4×4マスの小さなオセロ。相手の駒をはさんでひっくり返します。マスが埋まった時点で駒の多い方が勝ちです。",
+      "intent": "盤を4×4に小さくして、1局のテンポを速くしました。何度でも気軽に対戦できるようにしています。",
+      "fun": "盤が小さいぶん、1手の重みがとても大きいです。先読みの深さがそのまま勝敗に直結します。",
+      "different": "シリーズの中で唯一、勝敗が「陣地の広さ（駒の数）」で決まるゲームです。将棋のような捕獲や、麻雀のような役ではありません。"
+    },
+    "nyashogi": {
+      "rules": "3×4マスの小さな将棋。相手の「ボス猫」を捕まえるか、自分の「ボス猫」を一番奥の列まで進めれば勝ち。捕まえた猫は自分の持ち駒として盤に打てます。<br><br><b>ボス猫</b>：全方向に1マス（捕まると負け／最奥列に到達すると勝ち）<br><b>トラ猫</b>：斜め4方向に1マス<br><b>サバ猫</b>：縦横4方向に1マス<br><b>子猫</b>：前に1マス。最奥列に着くと「おとな猫」に成る<br><b>おとな猫</b>：縦横4方向＋前斜め2方向（後ろ斜めには進めない）",
+      "intent": "どうぶつしょうぎのルールをそのまま活かしつつ、駒を全部猫にして統一感を出しました。対面で座っても相手の駒がこちらを向くよう、駒だけを個別に回転させています。",
+      "fun": "盤が3×4と小さいので、一手のミスがすぐ致命傷になる緊張感があります。持ち駒を打てるので、終盤まで気が抜けません。",
+      "different": "シリーズの中で唯一、「捕まえた駒を自分のものとして使い回せる」ゲームです。盤の上の情報だけでなく、持ち駒という要素が加わります。"
+    },
+    "nyajan": {
+      "rules": "サイコロと同じ1〜6の目の猫牌を使ったミニ麻雀。同じ目の3枚組を2つ揃えたら上がりです。お互いの手牌は最初から見えたままで、相手の捨てた牌でも自分の手が完成するなら「ロン」で上がれます。",
+      "intent": "本来の麻雀は相手の手が見えない駆け引きが醍醐味ですが、あえて手牌を全部見せることで、読み合いよりも「その場の判断力」に焦点を当てました。CPUも見えている情報を使って、危険な牌（相手にロンされる牌）を切らないよう考えます。",
+      "fun": "相手の手牌が見えているのに、気を抜くと自分から振り込んでしまう緊張感があります。",
+      "different": "シリーズで唯一、「見えている情報をどう使うか」がテーマのゲームです。将棋やオセロのような読み合いとは別の面白さがあります。"
+    },
+    "nyaris": {
+      "rules": "対戦版テトリス。2人がそれぞれ自分の盤を同時にプレイします。タップで回転、ドラッグで移動。ライン消しは自分の盤を軽くするだけです。いらないピースは上に強くフリックすると相手の盤に送れます（無制限・送り返しも可）。盤が積み上がって新しいピースを置けなくなったら負けです。",
+      "intent": "テトリスの定番だった「ライン消しで相手を攻撃する」仕組みをやめて、「いらない駒を押し付け合う」という新しい攻撃手段にしました。",
+      "fun": "自分の盤を綺麗に保つことと、相手に厄介な駒を送るタイミングを同時に考える駆け引きがあります。",
+      "different": "シリーズで唯一のリアルタイムゲームです（他は全部、自分の番が来てから考えられる手番制）。攻撃手段も「ライン消し」ではなく「駒の押し付け」という珍しい設計です。"
+    }
+  }
+}
+</script>
 
 <script>
 /* ============================================================
@@ -556,6 +633,39 @@
    ここから下は全ゲーム共通。ゲーム固有のロジックは
    GAMES[key] = {...} という形でこのファイルの後半に追加していく。
    ============================================================ */
+
+// たまに書き換える可能性のある文章(挨拶・遊び方・技術情報・容量)はJSONに集約してある
+const SITE_DATA = JSON.parse(document.getElementById('siteContentData').textContent);
+
+function buildHowToPlayHtml(d){
+  return `
+  <div class="rules-text">${d.rules}</div>
+  <div class="intent-box"><b>ここが内海の意図</b>：${d.intent}</div>
+  <div class="intent-box"><b>ここが面白い</b>：${d.fun}</div>
+  <div class="intent-box"><b>ここが他のゲームと違う</b>：${d.different}</div>
+`;
+}
+
+function renderGreeting(){
+  const g = SITE_DATA.greeting;
+  const html = g.paragraphs.map(p=>`<p>${p}</p>`).join('')
+    + `<p class="greeting-thanks">${g.thanks}</p>`
+    + `<p class="greeting-sign">${g.sign}</p>`;
+  document.getElementById('greetingBody').innerHTML = html;
+}
+
+function renderTechInfo(){
+  const t = SITE_DATA.techInfo;
+  const c = SITE_DATA.capacity;
+  const gamesTotal = Object.values(c.games).reduce((a,b)=>a+b, 0);
+  const grandTotal = c.engineKB + gamesTotal;
+  let html = t.sections.map(s=>`<p><b>${s.heading}</b><br>${s.body}</p>`).join('');
+  html += `<p><b>現在の容量内訳</b><br>共通エンジン部分: 約${c.engineKB}KB<br>`;
+  html += Object.entries(c.games).map(([name,kb])=>`${name}: 約${kb}KB`).join('<br>');
+  html += `<br>合計: 約${grandTotal.toFixed(1)}KB</p>`;
+  html += `<p><b>その他の設計意図</b><br>` + t.designNotes.map(n=>'・'+n).join('<br>') + `</p>`;
+  document.getElementById('techInfoBody').innerHTML = html;
+}
 
 const GAMES = {};       // key -> ゲーム定義オブジェクト
 const GAME_ORDER = [];  // 一覧表示順
@@ -649,6 +759,28 @@ function renderTurnBadges(topEl, bottomEl, topActive, bottomActive, cpuThinking)
   bottomEl.className = 'turn-badge bottom owner-player' + (bottomActive ? ' active' : '');
   topEl.innerHTML = topLabel + (cpuThinking ? '<span class="think">考え中…</span>' : (topActive ? '<span class="think">▶ 番です</span>' : ''));
   bottomEl.innerHTML = bottomLabel + (bottomActive ? '<span class="think">▶ 番です</span>' : '');
+}
+
+/* ============================================================
+   【今後の容量削減メモ】
+   各ゲームモジュールの registerGame() には、テスト専用の _test プロパティ
+   (盤の状態を直接操作するための裏口)が含まれている。これは実際のゲーム
+   動作には一切使われておらず、本番配布の直前にビルドスクリプト側で
+   除去すれば、その分だけ容量を削減できる(現状で合計 約2.3KB相当)。
+   50本規模になった際に、まとめて対応することを検討する。
+   ============================================================ */
+
+// ---- サイコロ目のSVG描画: 複数ゲームで共通利用(180度回転しても同じ形に見える対称パターン) ----
+const DICE_PATTERNS_SHARED = { 1:[4], 2:[0,8], 3:[0,4,8], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8] };
+function pipGridSvg(value){
+  const filled = new Set(DICE_PATTERNS_SHARED[value] || []);
+  let circles = '';
+  for(let r=0;r<3;r++) for(let c=0;c<3;c++){
+    const idx = r*3+c;
+    if(!filled.has(idx)) continue;
+    circles += `<circle cx="${16+c*34}" cy="${16+r*34}" r="9"/>`;
+  }
+  return `<svg class="pipgrid" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${circles}</svg>`;
 }
 
 function registerGame(key, def){
@@ -838,8 +970,8 @@ function startCurrentGame(selectedMode){
   document.body.className = '';
   const def = GAMES[currentGameKey];
   showScreen('screen-game');
-  document.getElementById('miniTitleTop').textContent = def.emoji + ' ' + def.title;
-  document.getElementById('miniTitleBottom').textContent = def.emoji + ' ' + def.title;
+  document.getElementById('miniTitleTop').innerHTML = `<span class="mini-title-icon">${def.cardIconCpu || def.emoji}</span> ${def.title}`;
+  document.getElementById('miniTitleBottom').innerHTML = `<span class="mini-title-icon">${def.cardIconPlayer || def.emoji}</span> ${def.title}`;
   document.getElementById('msgBannerTop').classList.add('hidden');
   document.getElementById('msgBannerBottom').classList.add('hidden');
   document.getElementById('msgBannerTop').innerHTML = '';
@@ -892,9 +1024,11 @@ let pageDotEls = [];
 
 function buildCardGrid(){
   const pagesEl = document.getElementById('cardPages');
-  const dotsEl = document.getElementById('pageDots');
+  const dotsElTop = document.getElementById('pageDotsTop');
+  const dotsElBottom = document.getElementById('pageDotsBottom');
   pagesEl.innerHTML = '';
-  dotsEl.innerHTML = '';
+  dotsElTop.innerHTML = '';
+  dotsElBottom.innerHTML = '';
   pageDotEls = [];
   totalPages = Math.max(1, Math.ceil(GAME_ORDER.length / CARDS_PER_PAGE));
 
@@ -913,11 +1047,15 @@ function buildCardGrid(){
   pagesEl.appendChild(buildPageEl(0));
 
   for(let p=0; p<totalPages; p++){
-    const dot = document.createElement('div');
-    dot.className = 'dot' + (p===0 ? ' active' : '');
-    dot.addEventListener('click', ()=> jumpToPage(p));
-    dotsEl.appendChild(dot);
-    pageDotEls.push(dot);
+    const dotTop = document.createElement('div');
+    dotTop.className = 'dot' + (p===0 ? ' active' : '');
+    dotTop.addEventListener('click', ()=> jumpToPage(p));
+    dotsElTop.appendChild(dotTop);
+    const dotBottom = document.createElement('div');
+    dotBottom.className = 'dot' + (p===0 ? ' active' : '');
+    dotBottom.addEventListener('click', ()=> jumpToPage(p));
+    dotsElBottom.appendChild(dotBottom);
+    pageDotEls.push(dotTop, dotBottom);
   }
   currentSlide = 1;
   currentPage = 0;
@@ -936,7 +1074,7 @@ function stepPage(delta){
     if(currentSlide === 0){ currentSlide = totalPages; updatePagePosition(false); }
     else if(currentSlide === totalPages+1){ currentSlide = 1; updatePagePosition(false); }
     currentPage = currentSlide - 1;
-    pageDotEls.forEach((d,i)=> d.classList.toggle('active', i===currentPage));
+    pageDotEls.forEach((d,i)=> d.classList.toggle('active', Math.floor(i/2)===currentPage));
   };
   pagesEl.addEventListener('transitionend', onTransitionEnd);
 }
@@ -956,7 +1094,7 @@ function updatePagePosition(animated){
     void pagesEl.offsetHeight;
     pagesEl.style.transition = '';
   }
-  pageDotEls.forEach((d,i)=> d.classList.toggle('active', i===currentPage));
+  pageDotEls.forEach((d,i)=> d.classList.toggle('active', Math.floor(i/2)===currentPage));
 }
 
 let swipeReady = false;
@@ -973,6 +1111,8 @@ function setupPageSwipe(){
     if(dx > 40) stepPage(-1);
     else if(dx < -40) stepPage(1);
   });
+  document.getElementById('cardEdgeLeft').addEventListener('click', ()=> stepPage(-1));
+  document.getElementById('cardEdgeRight').addEventListener('click', ()=> stepPage(1));
 }
 
 /* ---- イベント紐付け(固定UI) ---- */
@@ -986,7 +1126,8 @@ function makeTitleHalf(key, isTop){
 
   const h2 = document.createElement('h2');
   h2.className = 'title-block-name';
-  h2.textContent = def.emoji + ' ' + def.title;
+  const titleIcon = isTop ? (def.cardIconCpu || def.emoji) : (def.cardIconPlayer || def.emoji);
+  h2.innerHTML = `<span class="mini-title-icon">${titleIcon}</span> ${def.title}`;
   half.appendChild(h2);
 
   const p = document.createElement('p');
@@ -1015,17 +1156,21 @@ function makeTitleHalf(key, isTop){
   rowUtil.className = 'row';
   rowUtil.style.marginTop = '10px';
   rowUtil.style.justifyContent = 'center';
+  rowUtil.style.flexWrap = 'nowrap';
   rowUtil.style.gap = '6px';
   const btnBack = document.createElement('button');
   btnBack.className = 'btn secondary';
+  btnBack.style.flex = '1';
   btnBack.textContent = '🏠 一覧';
   btnBack.addEventListener('click', ()=> goToGameList());
   const btnHowTo = document.createElement('button');
   btnHowTo.className = 'btn secondary';
+  btnHowTo.style.flex = '1';
   btnHowTo.textContent = '📖 遊び方';
   btnHowTo.addEventListener('click', ()=>{ currentGameKey = key; openHowToPlay(isTop); });
   const btnDark = document.createElement('button');
   btnDark.className = 'btn secondary';
+  btnDark.style.flex = '1';
   btnDark.textContent = '🌙';
   btnDark.addEventListener('click', toggleDarkMode);
   rowUtil.appendChild(btnBack);
@@ -1108,7 +1253,7 @@ function syncTitleWrapHeight(){
     const h = kids[i].scrollHeight || 0;
     if(h > maxH) maxH = h;
   }
-  if(maxH > 0) wrapEl.style.height = (maxH + 20) + 'px';
+  if(maxH > 0) wrapEl.style.height = (maxH + 10) + 'px';
 }
 
 let titleSwipeReady = false;
@@ -1125,12 +1270,14 @@ function setupTitleSwipe(){
     if(dx > 40) stepTitlePage(-1);
     else if(dx < -40) stepTitlePage(1);
   });
+  document.getElementById('titleEdgeLeft').addEventListener('click', ()=> stepTitlePage(-1));
+  document.getElementById('titleEdgeRight').addEventListener('click', ()=> stepTitlePage(1));
 }
 
 document.getElementById('btnBackToListTopGame').addEventListener('click', ()=> goToGameList());
 document.getElementById('btnBackToListBottomGame').addEventListener('click', ()=> goToGameList());
-document.getElementById('btnGameTitleTop').addEventListener('click', ()=> goToGameTitle());
-document.getElementById('btnGameTitleBottom').addEventListener('click', ()=> goToGameTitle());
+document.getElementById('miniTitleTop').addEventListener('click', ()=> goToGameTitle());
+document.getElementById('miniTitleBottom').addEventListener('click', ()=> goToGameTitle());
 
 document.getElementById('btnCloseHowTo').addEventListener('click', closeHowToPlay);
 document.getElementById('greetingToggleTop').addEventListener('click', ()=>{
@@ -1141,8 +1288,8 @@ document.getElementById('techInfoToggleTop').addEventListener('click', ()=>{
   document.getElementById('techInfoModalBox').classList.add('rotated');
   document.getElementById('techInfoModal').classList.remove('hidden');
 });
-const DARK_MODE_BTN_IDS_LONG = ['darkModeToggleTop','darkModeToggleBottom'];
-const DARK_MODE_BTN_IDS_SHORT = ['darkModeToggleGameTop','darkModeToggleGameBottom'];
+const DARK_MODE_BTN_IDS_LONG = [];
+const DARK_MODE_BTN_IDS_SHORT = ['darkModeToggleTop','darkModeToggleBottom','darkModeToggleGameTop','darkModeToggleGameBottom'];
 function updateDarkModeLabels(){
   const isDark = document.documentElement.classList.contains('dark-mode');
   const longLabel = isDark ? '☀️ ライトモード' : '🌙 ダークモード';
@@ -1326,12 +1473,7 @@ function getResultMessagePvp(resultKind){
   return (resultKind==='player' ? 'プレイヤー1(先手)' : 'プレイヤー2(後手)') + 'の勝ち! 🎉';
 }
 
-const howToPlayHtml = `
-  <div class="rules-text">3×3マスの◯✕ゲーム。たて・よこ・ななめ、どれか一列そろえたら勝ちです。</div>
-  <div class="intent-box"><b>ここが内海の意図</b>：一番シンプルなゲームだからこそ、CPUには絶対に手加減させませんでした（内海メソッド）。完全に読み切った相手と、まず一戦。</div>
-  <div class="intent-box"><b>ここが面白い</b>：誰もが子供の頃に遊んだ「三目並べ」なのに、実は先読みすれば必ず引き分けに持ち込める「解けているゲーム」だと体感できます。</div>
-  <div class="intent-box"><b>ここが他のゲームと違う</b>：シリーズで一番ルールが簡単。ニャーズシリーズの入り口として作りました。</div>
-`;
+const howToPlayHtml = buildHowToPlayHtml(SITE_DATA.howToPlay.nyabatsu);
 
 const cardIconPlayer = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="32" fill="none" stroke="var(--player-accent)" stroke-width="10"/></svg>`;
 const cardIconCpu = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="26" y1="26" x2="74" y2="74" stroke="var(--cpu-accent)" stroke-width="10" stroke-linecap="round"/><line x1="74" y1="26" x2="26" y2="74" stroke="var(--cpu-accent)" stroke-width="10" stroke-linecap="round"/></svg>`;
@@ -1592,6 +1734,23 @@ function init(selectedMode){
     cellEls.push(rowEls);
   }
 
+  // 隠し仕掛け: 手番表示を5回連続タップするとヒントの見え方を切り替える
+  // (盤面ごと作り直されるため、毎回ここで登録し直す)
+  let secretTapCount = 0;
+  let secretTapTimer = null;
+  function onSecretTap(){
+    secretTapCount++;
+    clearTimeout(secretTapTimer);
+    secretTapTimer = setTimeout(()=>{ secretTapCount = 0; }, 1500);
+    if(secretTapCount>=5){
+      secretTapCount = 0;
+      revealMode = !revealMode;
+      render();
+    }
+  }
+  turnTopEl.addEventListener('click', onSecretTap);
+  turnBottomEl.addEventListener('click', onSecretTap);
+
   board = makeInitialBoard();
   turn = (mode==='cpu') ? 'cpu' : 'player';
   gameOver = false;
@@ -1616,12 +1775,7 @@ function getResultMessagePvp(resultKind){
   return (resultKind==='player' ? 'プレイヤー1(先手)' : 'プレイヤー2(後手)') + `の勝ち! ${scoreText}`;
 }
 
-const howToPlayHtml = `
-  <div class="rules-text">4×4マスの小さなオセロ。相手の駒をはさんでひっくり返します。マスが埋まった時点で駒の多い方が勝ちです。</div>
-  <div class="intent-box"><b>ここが内海の意図</b>：盤を4×4に小さくして、1局のテンポを速くしました。何度でも気軽に対戦できるようにしています。</div>
-  <div class="intent-box"><b>ここが面白い</b>：盤が小さいぶん、1手の重みがとても大きいです。先読みの深さがそのまま勝敗に直結します。</div>
-  <div class="intent-box"><b>ここが他のゲームと違う</b>：シリーズの中で唯一、勝敗が「陣地の広さ（駒の数）」で決まるゲームです。将棋のような捕獲や、麻雀のような役ではありません。</div>
-`;
+const howToPlayHtml = buildHowToPlayHtml(SITE_DATA.howToPlay.nyasero);
 
 const cardIconPlayer = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#fff" stroke="#3a2c20" stroke-width="4"/></svg>`;
 const cardIconCpu = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#2b2620"/></svg>`;
@@ -1652,27 +1806,6 @@ registerGame('nyasero', {
   },
 });
 
-
-// 隠し仕掛け: タイトル表示を5回連続タップするとヒントの見え方を切り替える(nyasero表示中のみ)
-(function setupSecretToggle(){
-  let tapCount = 0;
-  let tapTimer = null;
-  function onTitleTap(){
-    if(currentGameKey !== 'nyasero') return;
-    tapCount++;
-    clearTimeout(tapTimer);
-    tapTimer = setTimeout(()=>{ tapCount = 0; }, 1500);
-    if(tapCount>=5){
-      tapCount = 0;
-      revealMode = !revealMode;
-      render();
-    }
-  }
-  const t1 = document.getElementById('miniTitleTop');
-  const t2 = document.getElementById('miniTitleBottom');
-  if(t1) t1.addEventListener('click', onTitleTap);
-  if(t2) t2.addEventListener('click', onTitleTap);
-})();
 
 })();
 
@@ -1993,22 +2126,10 @@ function getResultMessagePvp(resultKind){
   return (resultKind==='player' ? 'プレイヤー1(先手)' : 'プレイヤー2(後手)') + 'の勝ち! ' + reasonText;
 }
 
-const howToPlayHtml = `
-  <div class="rules-text">
-    3×4マスの小さな将棋。相手の「ボス猫」を捕まえるか、自分の「ボス猫」を一番奥の列まで進めれば勝ち。捕まえた猫は自分の持ち駒として盤に打てます。<br><br>
-    <b>ボス猫</b>：全方向に1マス（捕まると負け／最奥列に到達すると勝ち）<br>
-    <b>トラ猫</b>：斜め4方向に1マス<br>
-    <b>サバ猫</b>：縦横4方向に1マス<br>
-    <b>子猫</b>：前に1マス。最奥列に着くと「おとな猫」に成る<br>
-    <b>おとな猫</b>：縦横4方向＋前斜め2方向（後ろ斜めには進めない）
-  </div>
-  <div class="intent-box"><b>ここが内海の意図</b>：どうぶつしょうぎのルールをそのまま活かしつつ、駒を全部猫にして統一感を出しました。対面で座っても相手の駒がこちらを向くよう、駒だけを個別に回転させています。</div>
-  <div class="intent-box"><b>ここが面白い</b>：盤が3×4と小さいので、一手のミスがすぐ致命傷になる緊張感があります。持ち駒を打てるので、終盤まで気が抜けません。</div>
-  <div class="intent-box"><b>ここが他のゲームと違う</b>：シリーズの中で唯一、「捕まえた駒を自分のものとして使い回せる」ゲームです。盤の上の情報だけでなく、持ち駒という要素が加わります。</div>
-`;
+const howToPlayHtml = buildHowToPlayHtml(SITE_DATA.howToPlay.nyashogi);
 
 const cardIconPlayer = catSvg('lion','player').replace('<svg ', '<svg style="width:48px;height:48px;" ');
-const cardIconCpu = catSvg('lion','cpu').replace('<svg ', '<svg style="width:48px;height:48px;transform:rotate(180deg);" ');
+const cardIconCpu = catSvg('lion','cpu').replace('<svg ', '<svg class="cpu-flip-icon" style="width:48px;height:48px;" ');
 
 registerGame('nyashogi', {
   key: 'nyashogi',
@@ -2072,16 +2193,6 @@ const boardHtml = `
 const MAX_VALUE = 6, VALUES_COUNT = 4, SET_SIZE = 3, SETS_NEEDED = 2;
 const DICE_PATTERNS = { 1:[4], 2:[0,8], 3:[0,4,8], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8] };
 
-function pipGridSvg(value){
-  const filled = new Set(DICE_PATTERNS[value] || []);
-  let circles = '';
-  for(let r=0;r<3;r++) for(let c=0;c<3;c++){
-    const idx = r*3+c;
-    if(!filled.has(idx)) continue;
-    circles += `<circle cx="${16+c*34}" cy="${16+r*34}" r="9"/>`;
-  }
-  return `<svg class="pipgrid" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${circles}</svg>`;
-}
 function buildWall(){
   const tiles = [];
   for(let v=1; v<=MAX_VALUE; v++) for(let k=0;k<VALUES_COUNT;k++) tiles.push(v);
@@ -2369,12 +2480,7 @@ function getResultMessagePvp(resultKind){
   return (resultKind==='player' ? 'プレイヤー1(先手)' : 'プレイヤー2(後手)') + `の${kind}上がり! 🎉`;
 }
 
-const howToPlayHtml = `
-  <div class="rules-text">サイコロと同じ1〜6の目の猫牌を使ったミニ麻雀。同じ目の3枚組を2つ揃えたら上がりです。お互いの手牌は最初から見えたままで、相手の捨てた牌でも自分の手が完成するなら「ロン」で上がれます。</div>
-  <div class="intent-box"><b>ここが内海の意図</b>：本来の麻雀は相手の手が見えない駆け引きが醍醐味ですが、あえて手牌を全部見せることで、読み合いよりも「その場の判断力」に焦点を当てました。CPUも見えている情報を使って、危険な牌（相手にロンされる牌）を切らないよう考えます。</div>
-  <div class="intent-box"><b>ここが面白い</b>：相手の手牌が見えているのに、気を抜くと自分から振り込んでしまう緊張感があります。</div>
-  <div class="intent-box"><b>ここが他のゲームと違う</b>：シリーズで唯一、「見えている情報をどう使うか」がテーマのゲームです。将棋やオセロのような読み合いとは別の面白さがあります。</div>
-`;
+const howToPlayHtml = buildHowToPlayHtml(SITE_DATA.howToPlay.nyajan);
 
 const cardIconPlayer = `<div class="tile" style="width:26px;height:36px;margin:0 auto;">${pipGridSvg(2)}</div>`;
 const cardIconCpu = `<div class="tile" style="width:26px;height:36px;margin:0 auto;">${pipGridSvg(6)}</div>`;
@@ -2541,7 +2647,8 @@ function checkFullLines(grid){
 function commitClearLines(state, ownerLabel){
   const rows = (state.pendingClear || []).slice().sort((a,b)=>b-a);
   const count = rows.length;
-  rows.forEach(r=>{ state.grid.splice(r,1); state.grid.unshift(Array(COLS).fill(null)); });
+  rows.forEach(r=>{ state.grid.splice(r,1); });
+  for(let i=0;i<count;i++){ state.grid.unshift(Array(COLS).fill(null)); }
   if(count>0){
     const scoreTable = [0,10,30,50,80];
     state.score += (scoreTable[count]||count*20);
@@ -2943,12 +3050,7 @@ function getResultMessagePvp(resultKind){
   return (resultKind==='player' ? 'プレイヤー1' : 'プレイヤー2') + ' の勝ち! (相手の盤が満杯に)';
 }
 
-const howToPlayHtml = `
-  <div class="rules-text">対戦版テトリス。2人がそれぞれ自分の盤を同時にプレイします。タップで回転、ドラッグで移動。ライン消しは自分の盤を軽くするだけです。いらないピースは上に強くフリックすると相手の盤に送れます（無制限・送り返しも可）。盤が積み上がって新しいピースを置けなくなったら負けです。</div>
-  <div class="intent-box"><b>ここが内海の意図</b>：テトリスの定番だった「ライン消しで相手を攻撃する」仕組みをやめて、「いらない駒を押し付け合う」という新しい攻撃手段にしました。</div>
-  <div class="intent-box"><b>ここが面白い</b>：自分の盤を綺麗に保つことと、相手に厄介な駒を送るタイミングを同時に考える駆け引きがあります。</div>
-  <div class="intent-box"><b>ここが他のゲームと違う</b>：シリーズで唯一のリアルタイムゲームです（他は全部、自分の番が来てから考えられる手番制）。攻撃手段も「ライン消し」ではなく「駒の押し付け」という珍しい設計です。</div>
-`;
+const howToPlayHtml = buildHowToPlayHtml(SITE_DATA.howToPlay.nyaris);
 
 function tetrominoIcon(cells, color){
   let html = `<div class="mini-tetromino">`;
@@ -2996,6 +3098,7 @@ registerGame('nyaris', {
     tick, stepGravity, tryMove, tryRotate, hardDrop, spawnPiece,
     startEscapeAnim, stepEscapeAnims, finalizeEscape,
     findBestPlacement, shouldCpuFlip,
+    commitClearLines, checkFullLines, lockPiece,
     getBoardTopEl: ()=>boardTopEl, getBoardBottomEl: ()=>boardBottomEl,
     onBoardGameOver,
     isRunning: ()=>running,
@@ -3004,9 +3107,243 @@ registerGame('nyaris', {
 
 
 })();
+
+/* ============================================================
+   ニャモリー(神経衰弱) ゲームモジュール
+   カードの模様はサイコロ目(1〜6)を流用。この模様は180度回転
+   させても同じ形に見えるため、1つの共有盤をそのまま両側から
+   正しく読める(特別な反転描画が不要)。
+   ============================================================ */
+(function(){
+
+const boardHtml = `
+  <div class="status-bar top" id="nmemStatusTop">
+    <span id="nmemLabelTop">CPU</span>
+    <span>score <b id="nmemScoreTop">0</b></span>
+  </div>
+  <div class="nmem-board" id="nmemBoard"></div>
+  <div class="status-bar" id="nmemStatusBottom">
+    <span id="nmemLabelBottom">あなた</span>
+    <span>score <b id="nmemScoreBottom">0</b></span>
+  </div>
+`;
+
+const COLS = 4, ROWS = 3;
+const CARD_BACK_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="58" r="30" fill="var(--brown)"/>
+  <path d="M26 34 L36 56 L20 56 Z" fill="var(--brown)"/>
+  <path d="M74 34 L80 56 L64 56 Z" fill="var(--brown)"/>
+</svg>`;
+
+function makeDeck(){
+  const values = [];
+  for(let v=1;v<=6;v++){ values.push(v,v); }
+  for(let i=values.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [values[i],values[j]]=[values[j],values[i]];
+  }
+  return values.map(v=>({ value:v, revealed:false, matched:false }));
+}
+
+let deck, turn, gameOver, winner, score, flippedIdx, cpuMemory, cpuThinking;
+let boardEl, cellEls, scoreTopEl, scoreBottomEl, labelTopEl, labelBottomEl;
+
+function isInteractionAllowed(){
+  if(gameOver || cpuThinking) return false;
+  if(mode==='cpu' && turn!=='player') return false;
+  return true;
+}
+
+function render(){
+  deck.forEach((card, i)=>{
+    const el = cellEls[i];
+    if(card.matched){
+      el.className = 'nmem-cell matched';
+      el.innerHTML = '';
+    }else if(card.revealed){
+      el.className = 'nmem-cell revealed';
+      el.innerHTML = pipGridSvg(card.value);
+    }else{
+      el.className = 'nmem-cell';
+      el.innerHTML = CARD_BACK_SVG;
+    }
+  });
+  scoreTopEl.textContent = score.cpu;
+  scoreBottomEl.textContent = score.player;
+  labelTopEl.textContent = mode==='pvp' ? 'プレイヤー2' : 'CPU';
+  labelBottomEl.textContent = mode==='pvp' ? 'プレイヤー1' : 'あなた';
+}
+
+function onCardTap(i){
+  if(!isInteractionAllowed()) return;
+  const card = deck[i];
+  if(card.matched || card.revealed) return;
+  if(flippedIdx.length>=2) return;
+  card.revealed = true;
+  flippedIdx.push(i);
+  render();
+  if(flippedIdx.length===2) setTimeout(resolveFlip, 550);
+}
+
+function resolveFlip(){
+  const [a,b] = flippedIdx;
+  const cardA = deck[a], cardB = deck[b];
+  const ownerLabel = turn;
+  if(cardA.value===cardB.value){
+    cardA.matched = true; cardB.matched = true;
+    score[ownerLabel] += 1;
+    flippedIdx = [];
+    render();
+    checkGameEnd();
+    if(!gameOver && mode==='cpu' && turn==='cpu'){
+      cpuThinking = true; render();
+      setTimeout(cpuTakeTurn, 500);
+    }
+  }else{
+    cardA.revealed = false; cardB.revealed = false;
+    flippedIdx = [];
+    turn = turn==='player' ? 'cpu' : 'player';
+    render();
+    if(mode==='cpu' && turn==='cpu'){
+      cpuThinking = true; render();
+      setTimeout(cpuTakeTurn, 500);
+    }
+  }
+}
+
+function checkGameEnd(){
+  if(deck.every(c=>c.matched)){
+    gameOver = true;
+    if(score.player>score.cpu) winner='player';
+    else if(score.cpu>score.player) winner='cpu';
+    else winner='draw';
+    setTimeout(()=> showResult(winner), 200);
+  }
+}
+
+function cpuTakeTurn(){
+  cpuThinking = false;
+  if(gameOver) return;
+  // 既知のペアがあれば狙う。無ければ未知のカードからランダムに1枚
+  const knownPairs = {};
+  cpuMemory.forEach((v,i)=>{
+    if(v==null || deck[i].matched) return;
+    if(!knownPairs[v]) knownPairs[v] = [];
+    knownPairs[v].push(i);
+  });
+  let pickA=null, pickB=null;
+  for(const v in knownPairs){
+    if(knownPairs[v].length>=2){ pickA=knownPairs[v][0]; pickB=knownPairs[v][1]; break; }
+  }
+  if(pickA==null){
+    const unknownIdx = deck.map((c,i)=>i).filter(i=>!deck[i].matched && cpuMemory[i]==null);
+    const knownIdx = deck.map((c,i)=>i).filter(i=>!deck[i].matched && cpuMemory[i]!=null);
+    pickA = unknownIdx.length>0 ? unknownIdx[Math.floor(Math.random()*unknownIdx.length)] : knownIdx[0];
+  }
+  revealForCpu(pickA);
+  setTimeout(()=>{
+    if(pickB==null){
+      const remaining = deck.map((c,i)=>i).filter(i=>!deck[i].matched && i!==pickA);
+      const matchIdx = remaining.find(i=> cpuMemory[i]===deck[pickA].value);
+      const unknownIdx2 = remaining.filter(i=>cpuMemory[i]==null);
+      pickB = matchIdx!==undefined ? matchIdx : (unknownIdx2.length>0 ? unknownIdx2[Math.floor(Math.random()*unknownIdx2.length)] : remaining[0]);
+    }
+    revealForCpu(pickB);
+    setTimeout(resolveFlip, 550);
+  }, 550);
+}
+function revealForCpu(i){
+  deck[i].revealed = true;
+  cpuMemory[i] = deck[i].value;
+  flippedIdx.push(i);
+  render();
+}
+
+function onReveal(i){
+  cpuMemory[i] = deck[i].value;
+}
+
+function init(selectedMode){
+  boardEl = document.getElementById('nmemBoard');
+  scoreTopEl = document.getElementById('nmemScoreTop');
+  scoreBottomEl = document.getElementById('nmemScoreBottom');
+  labelTopEl = document.getElementById('nmemLabelTop');
+  labelBottomEl = document.getElementById('nmemLabelBottom');
+
+  boardEl.innerHTML = '';
+  cellEls = [];
+  deck = makeDeck();
+  for(let i=0;i<deck.length;i++){
+    const d = document.createElement('div');
+    d.className = 'nmem-cell';
+    d.innerHTML = CARD_BACK_SVG;
+    d.addEventListener('click', ()=>onCardTap(i));
+    boardEl.appendChild(d);
+    cellEls.push(d);
+  }
+  turn = 'player';
+  gameOver = false;
+  winner = null;
+  score = { player:0, cpu:0 };
+  flippedIdx = [];
+  cpuMemory = new Array(deck.length).fill(null);
+  cpuThinking = false;
+  render();
+}
+
+function getResultMessageCpu(resultKind){
+  if(resultKind==='draw') return `🤝 引き分け! (${score.player} - ${score.cpu})`;
+  return resultKind==='player' ? `🎉 あなたの勝ち! (${score.player} - ${score.cpu})` : `🐾 CPUの勝ち… (${score.player} - ${score.cpu})`;
+}
+function getResultMessagePvp(resultKind){
+  if(resultKind==='draw') return `🤝 引き分け! (${score.player} - ${score.cpu})`;
+  return (resultKind==='player' ? 'プレイヤー1' : 'プレイヤー2') + ` の勝ち! (${score.player} - ${score.cpu})`;
+}
+
+const howToPlayHtml = buildHowToPlayHtml({
+  rules: '4×3マスの神経衰弱。同じ目の札を2枚めくって揃えたら、その札をもらえて、もう一度自分の番になります。揃わなければ相手の番に。全部のペアが無くなった時点で、多く取った方が勝ちです。',
+  intent: 'カードの模様はニャージャンと同じサイコロ目を使っています。この模様は180度回転させても同じ形に見えるので、1つの盤を両側どちらからでも正しく読めます。',
+  fun: 'CPUは自分がめくったカードの位置と柄を全部覚えています。人間相手にも記憶力で真剣勝負できます。',
+  different: 'シリーズで唯一、盤の中身が両者共通の「記憶」そのものが勝負を分けるゲームです。'
+});
+
+const cardIconPlayer = `<div class="tile" style="width:26px;height:36px;margin:0 auto;">${pipGridSvg(3)}</div>`;
+const cardIconCpu = cardIconPlayer;
+
+registerGame('nyamemory', {
+  key: 'nyamemory',
+  emoji: '🀄',
+  cardIconPlayer,
+  cardIconCpu,
+  title: 'ニャモリー',
+  desc: '4×3マスの神経衰弱。同じ目の札を2枚揃えたらもらえて、もう一度自分の番。揃わなければ相手の番です。多く取った方が勝ち!',
+  boardHtml,
+  howToPlayHtml,
+  init,
+  getResultMessageCpu,
+  getResultMessagePvp,
+  _test: {
+    getDeck: ()=>deck,
+    setDeck: (d)=>{ deck = d; },
+    getTurn: ()=>turn, setTurn: (t)=>{ turn = t; },
+    getScore: ()=>score,
+    getGameOver: ()=>gameOver,
+    getWinner: ()=>winner,
+    getFlippedIdx: ()=>flippedIdx,
+    getCpuMemory: ()=>cpuMemory,
+    getCpuThinking: ()=>cpuThinking,
+    onCardTap, resolveFlip, cpuTakeTurn,
+  },
+});
+
+})();
+
+
 buildCardGrid();
 buildTitleSlides();
 renderMascots();
+renderGreeting();
+renderTechInfo();
 showScreen('screen-list');
 
 </script>
