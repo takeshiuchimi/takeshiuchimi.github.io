@@ -472,7 +472,7 @@
   <div id="screen-list" class="card">
     <div class="list-block top">
       <div class="page-dots" id="pageDotsTop"></div>
-      <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span><span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">build 0718-1143</span></span></h1>
+      <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span><span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">build 0719-1319</span></span></h1>
       <div class="mascot-row">
         <div class="mascot-cat-slot" id="mascotSlotTop"></div>
         <div class="mascot-row-col">
@@ -491,7 +491,7 @@
     </div>
     <div class="list-block bottom">
       <div class="page-dots" id="pageDotsBottom"></div>
-      <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span><span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">build 0718-1143</span></span></h1>
+      <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span><span class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">build 0719-1319</span></span></h1>
       <div class="mascot-row">
         <div class="mascot-cat-slot" id="mascotSlotBottom"></div>
         <div class="mascot-row-col">
@@ -573,7 +573,8 @@
       { "heading": "なぜHTMLファイル1本に内包するか", "body": "ブラウザさえあれば、サーバーもインストールも不要で動きます。USBメモリで渡しても、通信環境が無い場所でも開けます。施設のPCやタブレットでも、管理者権限を求められません。" },
       { "heading": "なぜ枯れた技術を令和で使うか", "body": "フレームワークは数年で廃れますが、素のHTML/CSS/JavaScriptの仕様はそう簡単には変わりません。ビルド不要・依存ライブラリ不要で、10年後も同じように開けることを優先しています。" },
       { "heading": "なぜ小容量に拘るか、その方法論", "body": "50本規模に増やす計画があるので、「同じコードのコピペ」を最大の敵としています。共通のエンジン部分とゲームごとの差分を分離し、重複を見つけたら都度、共通関数にまとめ直しています。" },
-      { "heading": "ゲームデータの持ち方", "body": "挨拶・遊び方・技術情報・容量など、たまに書き換える可能性のある文章は、このJSONに1箇所にまとめてあります。更新のたびにコードの中を探し回らずに済むようにしています。" }
+      { "heading": "ゲームデータの持ち方", "body": "挨拶・遊び方・技術情報・容量など、たまに書き換える可能性のある文章は、このJSONに1箇所にまとめてあります。更新のたびにコードの中を探し回らずに済むようにしています。" },
+      { "heading": "大規模リファクタは避けている", "body": "「全ゲームを1つの共通エンジンに集約し直せば大幅に軽くなる」という提案を検討したことがあります。しかし実際に中身を確認すると、共通化できる部分(手番管理・CPU思考表示・勝敗判定・ダークモード等)は既に共通関数として切り出し済みで、残りの大半は各ゲーム固有のロジック(探索・役判定・物理演算等)でした。無理に共通の型へ押し込んでも容量はほとんど減らず、動いているものを壊すリスクだけが増えます。派手な一括改修より、重複を見つけたら都度、地道に共通化する方を選んでいます。我々は手の切れるような仕事をしています。" }
     ],
     "designNotes": [
       "ダークモード: OLED端末のバッテリー節約のため。「目に優しい」は実は研究上はっきりしていません",
@@ -589,7 +590,8 @@
       "ニャセロ": 11.3,
       "ニャー将棋": 13.5,
       "ニャージャン": 14.6,
-      "ニャーリス": 23.6
+      "ニャーリス": 23.6,
+      "ニャモリー": 8.6
     }
   },
   "howToPlay": {
@@ -821,6 +823,16 @@ function rollCpuMood(result){
 }
 
 /* ---- 決着後バナー(全ゲーム共通の骨組み。文言だけゲーム側から渡す) ---- */
+// ---- 振動フィードバック(共通、音は無し) ----
+function vibrate(pattern){
+  try{ if(typeof navigator!=='undefined' && navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
+}
+function feedbackTap(){ vibrate([10]); }
+function feedbackWin(){ vibrate([15,40,15,40,40]); }
+function feedbackLose(){ vibrate([60,40,80]); }
+function feedbackDraw(){ vibrate([30,30,30]); }
+function feedbackInvalid(){ vibrate([20,20,20]); }
+
 function showResult(resultKind /* 'player'|'cpu'|'draw' */){
   stopEngineLoop();
   const def = GAMES[currentGameKey];
@@ -830,6 +842,10 @@ function showResult(resultKind /* 'player'|'cpu'|'draw' */){
     lastResultMessage = def.getResultMessageCpu(resultKind);
     cpuMood = rollCpuMood(resultKind);
   }
+  if(resultKind==='draw') feedbackDraw();
+  else if(mode==='pvp') feedbackWin();
+  else if(resultKind==='player') feedbackWin();
+  else feedbackLose();
   rematchState = { phase:'result', requester:null, reason:null };
   renderEndBanners();
   if(typeof window!=='undefined' && window.scrollTo) window.scrollTo(0,0);
@@ -1001,6 +1017,68 @@ function closeHowToPlay(){
   document.getElementById('howToPlayModal').classList.add('hidden');
 }
 
+// ---- 汎用: 3枚窓リサイクル方式の無限カルーセル ----
+// クローンを並べて端で位置をリセットする方式(枚数に上限がある)ではなく、
+// 常に[前・現在・次]の3枚だけを保持し、1段階移動するたびにその場で中身を
+// 組み替えて位置を即座にリセットする。DOM要素数がページ数に依存しないため、
+// どれだけ連続でフリックしても理論上絶対に空白にならない。
+function makeInfiniteCarousel(cfg){
+  const state = { logicalIndex: 0, transitioning: false };
+  function mod(n,m){ return ((n%m)+m)%m; }
+  function pagesEl(){ return document.getElementById(cfg.pagesElId); }
+
+  function rebuildWindow(){
+    const el = pagesEl();
+    el.innerHTML = '';
+    const total = Math.max(1, cfg.totalPages());
+    const prevIdx = mod(state.logicalIndex-1, total);
+    const curIdx = mod(state.logicalIndex, total);
+    const nextIdx = mod(state.logicalIndex+1, total);
+    el.appendChild(cfg.buildSlide(prevIdx));
+    el.appendChild(cfg.buildSlide(curIdx));
+    el.appendChild(cfg.buildSlide(nextIdx));
+    setPos(false);
+  }
+
+  function setPos(animated){
+    const el = pagesEl();
+    el.style.transition = animated ? '' : 'none';
+    el.style.transform = 'translateX(-100%)';
+    if(!animated){ void el.offsetHeight; el.style.transition = ''; }
+  }
+
+  function step(delta){
+    if(state.transitioning) return;
+    const total = Math.max(1, cfg.totalPages());
+    state.transitioning = true;
+    const el = pagesEl();
+    el.style.transform = `translateX(${delta>0 ? '-200%' : '0%'})`;
+    const onEnd = ()=>{
+      el.removeEventListener('transitionend', onEnd);
+      state.logicalIndex = mod(state.logicalIndex + delta, total);
+      rebuildWindow();
+      state.transitioning = false;
+      if(cfg.onSettle) cfg.onSettle(state.logicalIndex);
+    };
+    el.addEventListener('transitionend', onEnd);
+  }
+
+  function jumpTo(idx){
+    const total = Math.max(1, cfg.totalPages());
+    state.logicalIndex = mod(idx, total);
+    rebuildWindow();
+    if(cfg.onSettle) cfg.onSettle(state.logicalIndex);
+  }
+
+  function build(){
+    state.logicalIndex = 0;
+    rebuildWindow();
+    if(cfg.onSettle) cfg.onSettle(state.logicalIndex);
+  }
+
+  return { step, jumpTo, build, getIndex: ()=>state.logicalIndex };
+}
+
 /* ---- ゲーム一覧カードの構築(6件ずつページ分割 + 左右スワイプ) ---- */
 const CARDS_PER_PAGE = 6;
 let currentPage = 0;
@@ -1022,79 +1100,44 @@ function makeCard(key){
 
 let pageDotEls = [];
 
-function buildCardGrid(){
-  const pagesEl = document.getElementById('cardPages');
-  const dotsElTop = document.getElementById('pageDotsTop');
-  const dotsElBottom = document.getElementById('pageDotsBottom');
-  pagesEl.innerHTML = '';
-  dotsElTop.innerHTML = '';
-  dotsElBottom.innerHTML = '';
-  pageDotEls = [];
-  totalPages = Math.max(1, Math.ceil(GAME_ORDER.length / CARDS_PER_PAGE));
-
-  function buildPageEl(pageIndex){
+const cardCarousel = makeInfiniteCarousel({
+  pagesElId: 'cardPages',
+  totalPages: ()=> totalPages,
+  buildSlide: (pageIndex)=>{
     const pageEl = document.createElement('div');
     pageEl.className = 'card-page';
     GAME_ORDER.slice(pageIndex*CARDS_PER_PAGE, pageIndex*CARDS_PER_PAGE+CARDS_PER_PAGE).forEach(key=>{
       pageEl.appendChild(makeCard(key));
     });
     return pageEl;
-  }
+  },
+  onSettle: (idx)=>{
+    currentPage = idx;
+    pageDotEls.forEach((d,i)=> d.classList.toggle('active', Math.floor(i/2)===idx));
+  },
+});
 
-  // 無限スライダー: [最終ページの複製, page0, page1, ..., pageN-1, 先頭ページの複製]
-  pagesEl.appendChild(buildPageEl(totalPages-1));
-  for(let p=0; p<totalPages; p++) pagesEl.appendChild(buildPageEl(p));
-  pagesEl.appendChild(buildPageEl(0));
+function buildCardGrid(){
+  const dotsElTop = document.getElementById('pageDotsTop');
+  const dotsElBottom = document.getElementById('pageDotsBottom');
+  dotsElTop.innerHTML = '';
+  dotsElBottom.innerHTML = '';
+  pageDotEls = [];
+  totalPages = Math.max(1, Math.ceil(GAME_ORDER.length / CARDS_PER_PAGE));
 
   for(let p=0; p<totalPages; p++){
     const dotTop = document.createElement('div');
     dotTop.className = 'dot' + (p===0 ? ' active' : '');
-    dotTop.addEventListener('click', ()=> jumpToPage(p));
+    dotTop.addEventListener('click', ()=> cardCarousel.jumpTo(p));
     dotsElTop.appendChild(dotTop);
     const dotBottom = document.createElement('div');
     dotBottom.className = 'dot' + (p===0 ? ' active' : '');
-    dotBottom.addEventListener('click', ()=> jumpToPage(p));
+    dotBottom.addEventListener('click', ()=> cardCarousel.jumpTo(p));
     dotsElBottom.appendChild(dotBottom);
     pageDotEls.push(dotTop, dotBottom);
   }
-  currentSlide = 1;
-  currentPage = 0;
+  cardCarousel.build();
   setupPageSwipe();
-  updatePagePosition(false);
-}
-
-let currentSlide = 1;
-
-function stepPage(delta){
-  currentSlide += delta;
-  updatePagePosition(true);
-  const pagesEl = document.getElementById('cardPages');
-  const onTransitionEnd = ()=>{
-    pagesEl.removeEventListener('transitionend', onTransitionEnd);
-    if(currentSlide === 0){ currentSlide = totalPages; updatePagePosition(false); }
-    else if(currentSlide === totalPages+1){ currentSlide = 1; updatePagePosition(false); }
-    currentPage = currentSlide - 1;
-    pageDotEls.forEach((d,i)=> d.classList.toggle('active', Math.floor(i/2)===currentPage));
-  };
-  pagesEl.addEventListener('transitionend', onTransitionEnd);
-}
-
-function jumpToPage(p){
-  currentSlide = p + 1;
-  currentPage = p;
-  updatePagePosition(false);
-}
-
-function updatePagePosition(animated){
-  const pagesEl = document.getElementById('cardPages');
-  pagesEl.style.transition = animated ? '' : 'none';
-  pagesEl.style.transform = `translateX(-${currentSlide*100}%)`;
-  if(!animated){
-    // 強制リフローでtransition:noneを確実に反映させてから元に戻す
-    void pagesEl.offsetHeight;
-    pagesEl.style.transition = '';
-  }
-  pageDotEls.forEach((d,i)=> d.classList.toggle('active', Math.floor(i/2)===currentPage));
 }
 
 let swipeReady = false;
@@ -1108,11 +1151,11 @@ function setupPageSwipe(){
     if(startX===null) return;
     const dx = e.clientX - startX;
     startX = null;
-    if(dx > 40) stepPage(-1);
-    else if(dx < -40) stepPage(1);
+    if(dx > 40) cardCarousel.step(-1);
+    else if(dx < -40) cardCarousel.step(1);
   });
-  document.getElementById('cardEdgeLeft').addEventListener('click', ()=> stepPage(-1));
-  document.getElementById('cardEdgeRight').addEventListener('click', ()=> stepPage(1));
+  document.getElementById('cardEdgeLeft').addEventListener('click', ()=> cardCarousel.step(-1));
+  document.getElementById('cardEdgeRight').addEventListener('click', ()=> cardCarousel.step(1));
 }
 
 /* ---- イベント紐付け(固定UI) ---- */
@@ -1193,54 +1236,32 @@ function makeTitleSlide(key){
   return slide;
 }
 
-let currentTitleSlide = 1;
 let currentTitlePageIdx = 0;
-let totalTitlePages = 1;
+
+const titleCarousel = makeInfiniteCarousel({
+  pagesElId: 'titlePages',
+  totalPages: ()=> Math.max(1, GAME_ORDER.length),
+  buildSlide: (idx)=> makeTitleSlide(GAME_ORDER[idx]),
+  onSettle: (idx)=>{
+    currentTitlePageIdx = idx;
+    currentGameKey = GAME_ORDER[idx];
+    syncTitleWrapHeight();
+  },
+});
 
 function buildTitleSlides(){
-  const pagesEl = document.getElementById('titlePages');
-  pagesEl.innerHTML = '';
   titleDarkModeBtns = [];
-  totalTitlePages = Math.max(1, GAME_ORDER.length);
-  pagesEl.appendChild(makeTitleSlide(GAME_ORDER[totalTitlePages-1]));
-  GAME_ORDER.forEach(key=> pagesEl.appendChild(makeTitleSlide(key)));
-  pagesEl.appendChild(makeTitleSlide(GAME_ORDER[0]));
-  currentTitleSlide = 1;
-  currentTitlePageIdx = 0;
+  titleCarousel.build();
   setupTitleSwipe();
-  updateTitlePagePosition(false);
-  syncTitleWrapHeight();
 }
 
 function jumpToTitlePage(idx){
-  currentTitleSlide = idx + 1;
-  currentTitlePageIdx = idx;
-  currentGameKey = GAME_ORDER[idx];
-  updateTitlePagePosition(false);
+  titleDarkModeBtns = [];
+  titleCarousel.jumpTo(idx);
 }
 
 function stepTitlePage(delta){
-  currentTitleSlide += delta;
-  updateTitlePagePosition(true);
-  const pagesEl = document.getElementById('titlePages');
-  const onEnd = ()=>{
-    pagesEl.removeEventListener('transitionend', onEnd);
-    if(currentTitleSlide === 0){ currentTitleSlide = totalTitlePages; updateTitlePagePosition(false); }
-    else if(currentTitleSlide === totalTitlePages+1){ currentTitleSlide = 1; updateTitlePagePosition(false); }
-    currentTitlePageIdx = currentTitleSlide - 1;
-    currentGameKey = GAME_ORDER[currentTitlePageIdx];
-  };
-  pagesEl.addEventListener('transitionend', onEnd);
-}
-
-function updateTitlePagePosition(animated){
-  const pagesEl = document.getElementById('titlePages');
-  pagesEl.style.transition = animated ? '' : 'none';
-  pagesEl.style.transform = `translateX(-${currentTitleSlide*100}%)`;
-  if(!animated){
-    void pagesEl.offsetHeight;
-    pagesEl.style.transition = '';
-  }
+  titleCarousel.step(delta);
 }
 
 function syncTitleWrapHeight(){
@@ -1267,11 +1288,11 @@ function setupTitleSwipe(){
     if(startX===null) return;
     const dx = e.clientX - startX;
     startX = null;
-    if(dx > 40) stepTitlePage(-1);
-    else if(dx < -40) stepTitlePage(1);
+    if(dx > 40) titleCarousel.step(-1);
+    else if(dx < -40) titleCarousel.step(1);
   });
-  document.getElementById('titleEdgeLeft').addEventListener('click', ()=> stepTitlePage(-1));
-  document.getElementById('titleEdgeRight').addEventListener('click', ()=> stepTitlePage(1));
+  document.getElementById('titleEdgeLeft').addEventListener('click', ()=> titleCarousel.step(-1));
+  document.getElementById('titleEdgeRight').addEventListener('click', ()=> titleCarousel.step(1));
 }
 
 document.getElementById('btnBackToListTopGame').addEventListener('click', ()=> goToGameList());
@@ -1409,7 +1430,7 @@ function isInteractionAllowed(owner){
 
 function onCellTap(i){
   if(board[i]) return;
-  if(!isInteractionAllowed(turn)) return;
+  if(!isInteractionAllowed(turn)){ feedbackInvalid(); return; }
   board[i] = turn;
   const result = checkResult(board);
   if(result){
@@ -1638,7 +1659,7 @@ function render(){
   currentLegal = (!gameOver) ? legalMoves(board, turn) : [];
   let hintCell = null;
   if(mode==='cpu' && !gameOver && turn==='player' && isInteractionAllowed('player')){
-    const mv = bestMoveForPlayer(board, 6);
+    const mv = bestMoveForPlayer(board, 9);
     if(mv) hintCell = { r: mv.r, c: mv.c };
   }
   for(let r=0;r<SIZE;r++){
@@ -1685,7 +1706,7 @@ function endGame(){
 }
 
 function onCellTap(r,c){
-  if(!isInteractionAllowed(turn)) return;
+  if(!isInteractionAllowed(turn)){ feedbackInvalid(); return; }
   const flips = getFlips(board, r, c, turn);
   if(flips.length===0) return;
   board = applyMoveToBoard(board, r, c, turn, flips);
@@ -1700,7 +1721,7 @@ function afterMove(){
   cpuThinking = true;
   render();
   setTimeout(()=>{
-    const mv = chooseCpuMove(board, 6);
+    const mv = chooseCpuMove(board, 9);
     cpuThinking = false;
     if(mv) board = applyMoveToBoard(board, mv.r, mv.c, 'cpu', mv.flips);
     turn = 'player';
@@ -2031,7 +2052,7 @@ function isInteractionAllowed(owner){
 }
 
 function onHandTap(pieceType, owner){
-  if(!isInteractionAllowed(owner)) return;
+  if(!isInteractionAllowed(owner)){ feedbackInvalid(); return; }
   if(selected && selected.kind==='hand' && selected.pieceType===pieceType){
     clearSelection();
   }else{
@@ -2044,7 +2065,7 @@ function onHandTap(pieceType, owner){
 function onCellTap(r,c){
   const cell = state.board[r][c];
   if(selected){
-    if(!isInteractionAllowed(state.turn)) return;
+    if(!isInteractionAllowed(state.turn)){ feedbackInvalid(); return; }
     const isLegal = legalTargets.some(t=>t.r===r && t.c===c);
     if(isLegal){
       const move = selected.kind==='board'
@@ -2080,7 +2101,7 @@ function afterMove(){
     cpuThinking = true;
     render();
     setTimeout(()=>{
-      const mv = chooseCpuMove(state, 5);
+      const mv = chooseCpuMove(state, 7);
       if(mv) state = applyMove(state, mv);
       cpuThinking = false;
       render();
@@ -2307,7 +2328,7 @@ function render(){
 
 function onWallTap(){
   if(gameOver || cpuThinking || phase!=='needDraw' || pendingRon) return;
-  if(!isInteractionAllowed(turn)) return;
+  if(!isInteractionAllowed(turn)){ feedbackInvalid(); return; }
   drawForCurrentTurn();
 }
 
@@ -3117,6 +3138,7 @@ registerGame('nyaris', {
 (function(){
 
 const boardHtml = `
+  <div class="turn-badge top" id="nmemTurnTop">後手</div>
   <div class="status-bar top" id="nmemStatusTop">
     <span id="nmemLabelTop">CPU</span>
     <span>score <b id="nmemScoreTop">0</b></span>
@@ -3126,6 +3148,7 @@ const boardHtml = `
     <span id="nmemLabelBottom">あなた</span>
     <span>score <b id="nmemScoreBottom">0</b></span>
   </div>
+  <div class="turn-badge bottom" id="nmemTurnBottom">先手</div>
 `;
 
 const COLS = 4, ROWS = 3;
@@ -3133,6 +3156,9 @@ const CARD_BACK_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/
   <circle cx="50" cy="58" r="30" fill="var(--brown)"/>
   <path d="M26 34 L36 56 L20 56 Z" fill="var(--brown)"/>
   <path d="M74 34 L80 56 L64 56 Z" fill="var(--brown)"/>
+  <circle cx="40" cy="56" r="3.2" fill="var(--cream)"/>
+  <circle cx="60" cy="56" r="3.2" fill="var(--cream)"/>
+  <path d="M45 66 Q50 70 55 66" stroke="var(--cream)" stroke-width="2" fill="none" stroke-linecap="round"/>
 </svg>`;
 
 function makeDeck(){
@@ -3146,12 +3172,10 @@ function makeDeck(){
 }
 
 let deck, turn, gameOver, winner, score, flippedIdx, cpuMemory, cpuThinking;
-let boardEl, cellEls, scoreTopEl, scoreBottomEl, labelTopEl, labelBottomEl;
+let boardEl, cellEls, scoreTopEl, scoreBottomEl, labelTopEl, labelBottomEl, turnTopEl, turnBottomEl;
 
 function isInteractionAllowed(){
-  if(gameOver || cpuThinking) return false;
-  if(mode==='cpu' && turn!=='player') return false;
-  return true;
+  return checkInteractionAllowed(turn, gameOver, turn, cpuThinking);
 }
 
 function render(){
@@ -3172,10 +3196,13 @@ function render(){
   scoreBottomEl.textContent = score.player;
   labelTopEl.textContent = mode==='pvp' ? 'プレイヤー2' : 'CPU';
   labelBottomEl.textContent = mode==='pvp' ? 'プレイヤー1' : 'あなた';
+  const topActive = !gameOver && turn==='cpu';
+  const bottomActive = !gameOver && turn==='player';
+  renderTurnBadges(turnTopEl, turnBottomEl, topActive, bottomActive, cpuThinking);
 }
 
 function onCardTap(i){
-  if(!isInteractionAllowed()) return;
+  if(!isInteractionAllowed()){ feedbackInvalid(); return; }
   const card = deck[i];
   if(card.matched || card.revealed) return;
   if(flippedIdx.length>=2) return;
@@ -3269,6 +3296,8 @@ function init(selectedMode){
   scoreBottomEl = document.getElementById('nmemScoreBottom');
   labelTopEl = document.getElementById('nmemLabelTop');
   labelBottomEl = document.getElementById('nmemLabelBottom');
+  turnTopEl = document.getElementById('nmemTurnTop');
+  turnBottomEl = document.getElementById('nmemTurnBottom');
 
   boardEl.innerHTML = '';
   cellEls = [];
@@ -3338,6 +3367,19 @@ registerGame('nyamemory', {
 
 })();
 
+
+// 全体のタップ操作に軽い音・振動フィードバックを付ける(ボタン・カード・盤面のマス全般)
+if(typeof document !== 'undefined' && document.addEventListener){
+  document.addEventListener('click', (e)=>{
+    const t = e.target;
+    if(!t) return;
+    const tag = t.tagName;
+    const cls = t.className || '';
+    if(tag==='BUTTON' || (typeof cls==='string' && (cls.includes('game-cell') || cls.includes('game-card') || cls.includes('nmem-cell') || cls.includes('nario-cell') || cls.includes('ris-cell') || cls.includes('tile') || cls.includes('hand-piece') || cls.includes('dot') || cls.includes('chip')))){
+      feedbackTap();
+    }
+  }, true);
+}
 
 buildCardGrid();
 buildTitleSlides();
