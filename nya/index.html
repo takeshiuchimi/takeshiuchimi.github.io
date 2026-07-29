@@ -221,6 +221,8 @@
   .modal-box.rotated{ transform:rotate(180deg); }
   .modal-box h2{margin:0 0 8px;font-size:16px;color:var(--green-deep);text-align:center;}
   .modal-box .rules-text{font-size:13px;line-height:1.7;margin-bottom:10px;}
+  .tech-group-heading{ font-size:14px; color:var(--green-deep); margin:12px 0 4px; border-bottom:2px dashed var(--gold); padding-bottom:3px; }
+  .tech-group-heading:first-child{ margin-top:0; }
   .modal-box .rules-text p{ margin:0 0 8px; }
   .modal-box .rules-text p:last-child{ margin-bottom:0; }
   .intent-box{
@@ -402,6 +404,39 @@
   .hint-text{ text-align:center; font-size:11px; color:var(--brown-deep); margin:2px 0; }
 
   /* ---- ニャモリー専用 ---- */
+  /* ---- WheelPicker(共通部品) ---- */
+  .wp{
+    position:relative; overflow:hidden; user-select:none;
+    touch-action:pan-x; -webkit-user-select:none; margin:0 auto;
+    background:var(--card-bg); border-radius:12px;
+  }
+  .wp-track{ position:absolute; left:0; right:0; top:0; will-change:transform; }
+  .wp-item{
+    position:absolute; left:0; right:0; top:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; letter-spacing:.01em; color:var(--brown-deep); font-weight:600;
+    pointer-events:auto; cursor:pointer; will-change:transform,opacity;
+    text-align:center; padding:0 8px; line-height:1.3;
+  }
+  .wp-item.is-center{ color:var(--green-deep); font-weight:bold; font-size:16px; }
+  .wp-item .wp-sub{ display:block; font-size:9px; font-weight:normal; color:var(--brown-deep); margin-top:1px; }
+  .wp-item .pipgrid{ width:28px; height:28px; }
+  .wp-item .pipgrid circle{ fill:var(--brown-deep); }
+  .wp-item.is-center .pipgrid circle{ fill:var(--pip); }
+  .wp-target-line{
+    position:absolute; left:6px; right:6px;
+    border-top:1px solid var(--gold); border-bottom:1px solid var(--gold);
+    background:rgba(224,188,74,.12); pointer-events:none; border-radius:9px;
+  }
+  .wp-fade-top, .wp-fade-bottom{ position:absolute; left:0; right:0; height:38%; pointer-events:none; z-index:2; }
+  .wp-fade-top{ top:0; background:linear-gradient(180deg, var(--card-bg), rgba(255,255,255,0)); }
+  .wp-fade-bottom{ bottom:0; background:linear-gradient(0deg, var(--card-bg), rgba(255,255,255,0)); }
+  .wp-tick-flash{ animation:wpTick .12s ease-out; }
+  @keyframes wpTick{
+    0%{ transform:translateY(var(--ty,0)) scale(1.08); }
+    100%{ transform:translateY(var(--ty,0)) scale(1); }
+  }
+
   .nmem-board{
     width:100%;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);
     gap:6px;background:var(--brown);padding:8px;border-radius:12px;aspect-ratio:4/3;
@@ -414,6 +449,114 @@
   .nmem-cell.revealed{ background:#fff; box-shadow:inset 0 0 0 2px var(--gold); }
   .nmem-cell.revealed svg circle{ fill:var(--pip); }
   .nmem-cell.matched{ background:transparent; box-shadow:none; cursor:default; }
+
+  /* ---- ニャーロク専用 ---- */
+  .nsei-board{
+    position:relative; width:100%; aspect-ratio:6/4.3; display:grid;
+    grid-template-columns:repeat(6,1fr); grid-template-rows:repeat(4,1fr);
+    gap:4px; background:var(--brown); padding:6px; border-radius:10px; margin:4px 0;
+  }
+  .nsei-cell{
+    background:var(--cream); border-radius:6px; position:relative;
+    display:flex; align-items:center; justify-content:center; gap:2px;
+    overflow:hidden;
+  }
+  .nsei-cell.event{ background:var(--gold); }
+  .nsei-num{ position:absolute; font-size:8px; color:var(--brown-deep); opacity:.7; line-height:1; z-index:2; }
+  .nsei-num.near{ top:1px; left:2px; }
+  .nsei-num.far{ bottom:1px; right:2px; transform:rotate(180deg); }
+  .nsei-arrow{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size:22px; color:var(--brown-deep); opacity:.35; line-height:1; z-index:0;
+    font-weight:bold; pointer-events:none;
+  }
+  .nsei-label-big{
+    position:absolute; font-size:17px; font-weight:bold;
+    color:var(--green-deep); z-index:0; line-height:1; pointer-events:none;
+  }
+  .nsei-label-big.near{ left:32%; top:68%; transform:translate(-50%,-50%); }
+  .nsei-label-big.far{ left:68%; top:32%; transform:translate(-50%,-50%) rotate(180deg); }
+  .nsei-label-big.center{ left:50%; top:50%; font-size:22px; transform:translate(-50%,-50%); }
+  .nsei-token{ width:40%; height:40%; position:absolute; z-index:1; }
+  .nsei-token.player{ left:62%; top:38%; transform:translate(-50%,-50%); }
+  .nsei-token.cpu{ left:38%; top:62%; transform:translate(-50%,-50%); }
+  .nsei-token svg{ width:100%; height:100%; }
+  .nsei-blink{ animation:nseiBlink .35s steps(1) 5; }
+  @keyframes nseiBlink{
+    0%, 100%{ opacity:1; }
+    50%{ opacity:0; }
+  }
+  .nsei-wheel-row{ display:flex; align-items:center; gap:8px; margin:4px 0; }
+  .nsei-wheel-row .wp{ flex:1; }
+  .nsei-wheel-row .btn{ flex-shrink:0; font-size:12px; padding:6px 8px; }
+  .nsei-wheel-row.top{ transform:rotate(180deg); }
+
+  /* ---- ニャーホッケー専用 ---- */
+  .nypon-field{
+    position:relative; width:100%; aspect-ratio:100/150;
+    background:var(--cream); border:3px solid var(--brown); border-radius:10px;
+    margin:4px 0; overflow:hidden; touch-action:none;
+    background-image:linear-gradient(0deg, transparent 49%, var(--cream-deep) 49%, var(--cream-deep) 51%, transparent 51%);
+  }
+  .nypon-ball{
+    position:absolute; width:6%; height:4%; transform:translate(-50%,-50%);
+    background:var(--brown-deep); border-radius:50%; z-index:2;
+  }
+  .nypon-paddle{
+    position:absolute; width:32%; height:3.4%; transform:translate(-50%,-50%);
+    border-radius:6px; z-index:1;
+  }
+  .nypon-paddle.top{ top:6.5%; background:var(--cpu-body); box-shadow:0 0 0 1.5px var(--cpu-accent); }
+  .nypon-paddle.bottom{ top:93.5%; background:var(--player-body); box-shadow:0 0 0 1.5px var(--player-accent); }
+  .nypon-wall{
+    position:absolute; height:4px; background:var(--brown); z-index:0;
+    border-radius:2px;
+  }
+  .nypon-wall.left{ left:0; width:30%; }
+  .nypon-wall.right{ right:0; width:30%; }
+  .nypon-wall.top{ top:0; }
+  .nypon-wall.bottom{ bottom:0; }
+  .nypon-goal-mark{
+    position:absolute; left:30%; width:40%; height:4px;
+    border-top:2px dashed var(--gold); z-index:0; opacity:.9;
+  }
+  .nypon-goal-mark.top{ top:0; }
+  .nypon-goal-mark.bottom{ bottom:0; }
+  .nypon-center-line{
+    position:absolute; left:0; right:0; top:50%; height:1px;
+    background:var(--brown); opacity:.4; z-index:0;
+  }
+  .nypon-center-circle{
+    position:absolute; left:50%; top:50%; width:22%; aspect-ratio:1/1;
+    border:2px solid var(--brown); border-radius:50%; opacity:.4;
+    transform:translate(-50%,-50%); z-index:0;
+  }
+  .nypon-callout{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(0.7);
+    font-size:26px; font-weight:bold; color:var(--gold);
+    text-shadow:0 0 6px rgba(0,0,0,.5), 0 0 2px #fff;
+    z-index:3; opacity:0; pointer-events:none;
+    transition:opacity .15s ease, transform .15s ease;
+    text-align:center; width:90%; line-height:1.2;
+  }
+  .nypon-callout.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .nypon-paw{
+    position:absolute; width:11%; height:8%; transform:translate(-50%,-50%);
+    left:50%; z-index:0; opacity:.85; pointer-events:none;
+  }
+  .nypon-paw.top{ top:2%; }
+  .nypon-paw.bottom{ top:98%; }
+  .nypon-paw svg{ width:100%; height:100%; }
+  .nsei-preview{
+    position:relative; min-height:20px;
+    margin:2px 0; font-size:11px; font-weight:bold; color:#fff;
+    background:var(--gold); border-radius:8px; padding:0 8px;
+    opacity:0; height:0; overflow:hidden;
+    white-space:nowrap; text-align:center; line-height:22px;
+    transition:opacity .2s ease, height .2s ease, min-height .2s ease;
+  }
+  .nsei-preview.show{ opacity:1; height:22px; min-height:22px; }
+  .nsei-preview.top{ transform:rotate(180deg); }
 
   /* ---- ニャーリス専用 ---- */
   .status-bar{
@@ -484,7 +627,7 @@
         <div class="mascot-cat-slot" id="mascotSlotTop"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0720-0131</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0729-1157</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -504,7 +647,7 @@
         <div class="mascot-cat-slot" id="mascotSlotBottom"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0720-0131</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0729-1157</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -580,29 +723,38 @@
     "sign": "— 内海"
   },
   "techInfo": {
-    "sections": [
+    "featureSections": [
+      { "heading": "対面構造(点対称設計)", "body": "盤もボタンも例外なく、上下どちらの席から見ても正しい向きで読めるように作っています。ニャモリーのカード柄(サイコロ目)は、180度回転させても同じ形に見える模様をあえて選んでいて、1つの共有した盤をそのまま両側から読める仕組みの土台になっています。" },
+      { "heading": "CPUが手加減しない(内海メソッド)", "body": "一番シンプルなニャーバツから、CPUには絶対に手加減させていません。勝てる人が増えてきたので、探索の深さはむしろ強化しています(ニャセロ・ニャー将棋等)。手加減されない相手と、まず一戦。" },
+      { "heading": "無限スワイプ(3枚窓リサイクル方式)", "body": "ゲーム一覧・タイトル画面は、どれだけ連続でフリックしても絶対に空白にならない仕組みにしています。常に「前・現在・次」の3枚だけを保持し、1段階動くたびに中身を組み替えて位置を瞬時にリセットする方式です。ページ数が増えてもDOM要素は常に3枚だけなので軽いままです。" },
+      { "heading": "振動フィードバック(音は無し)", "body": "タップ・勝利・敗北・引き分け・無効な操作、それぞれ違う振動パターンを用意しています。音は削って振動だけにしました。落ち着いた場所でも周りを気にせず使えるようにしています。" },
+      { "heading": "ダークモード", "body": "OLED端末のバッテリー節約のために用意しています。「目に優しい」は実は研究上はっきりしていませんが、暗い場所でのプレイにも向いています。" },
+      { "heading": "QRコードでの配布", "body": "誤り訂正レベルを最高にしてあるので、多少の汚れや欠けでも読み取れます。周りの人に気軽に広めてもらえるようにという狙いです。" },
+      { "heading": "フェイスオフ(ニャーホッケー)", "body": "試合開始は「3・2・1・フェイスオフ!」の掛け声とともに、パックがセンターサークル内のランダムな位置に現れます。両者がパドルを寄せて先に触れた方が最初のシュートを打てる、五分五分の駆け引きです。" },
+      { "heading": "保持→タップ/フリックでサーブ(ニャーホッケー)", "body": "パックを持った状態から始まり、時間制限なく好きな位置に構えられます。軽くタップすれば通常のシュート、素早くフリックすれば強さと向きが乗ったシュートになります。" },
+      { "heading": "人間もCPUと同じ速度制限(ニャーホッケー)", "body": "当初はプレイヤーだけタップした場所へ瞬間移動できてしまい、CPUだけが速度制限を受ける不公平な状態でした。プレイヤー側にも同じ速度上限を設け、双方が同じルールで動くようにしています。" }
+    ],
+    "techSections": [
       { "heading": "なぜHTMLファイル1本に内包するか", "body": "ブラウザさえあれば、サーバーもインストールも不要で動きます。USBメモリで渡しても、通信環境が無い場所でも開けます。施設のPCやタブレットでも、管理者権限を求められません。" },
       { "heading": "なぜ枯れた技術を令和で使うか", "body": "フレームワークは数年で廃れますが、素のHTML/CSS/JavaScriptの仕様はそう簡単には変わりません。ビルド不要・依存ライブラリ不要で、10年後も同じように開けることを優先しています。" },
       { "heading": "なぜ小容量に拘るか、その方法論", "body": "50本規模に増やす計画があるので、「同じコードのコピペ」を最大の敵としています。共通のエンジン部分とゲームごとの差分を分離し、重複を見つけたら都度、共通関数にまとめ直しています。" },
       { "heading": "ゲームデータの持ち方", "body": "挨拶・遊び方・技術情報・容量など、たまに書き換える可能性のある文章は、このJSONに1箇所にまとめてあります。更新のたびにコードの中を探し回らずに済むようにしています。" },
-      { "heading": "大規模リファクタは避けている", "body": "「全ゲームを1つの共通エンジンに集約し直せば大幅に軽くなる」という提案を検討したことがあります。しかし実際に中身を確認すると、共通化できる部分(手番管理・CPU思考表示・勝敗判定・ダークモード等)は既に共通関数として切り出し済みで、残りの大半は各ゲーム固有のロジック(探索・役判定・物理演算等)でした。無理に共通の型へ押し込んでも容量はほとんど減らず、動いているものを壊すリスクだけが増えます。派手な一括改修より、重複を見つけたら都度、地道に共通化する方を選んでいます。我々は手の切れるような仕事をしています。" }
-    ],
-    "designNotes": [
-      "ダークモード: OLED端末のバッテリー節約のため。「目に優しい」は実は研究上はっきりしていません",
-      "無限スクロール: ゲームが増えても一覧の端で迷わないように",
-      "対面構造: どちらの席から見ても正しい向きで読めることを、盤面もボタンも例外なく徹底",
-      "行の節約: スマホの狭い画面で、必要な情報を1行にまとめて見渡せる範囲を増やす"
+      { "heading": "大規模リファクタは避けている", "body": "「全ゲームを1つの共通エンジンに集約し直せば大幅に軽くなる」という提案を検討したことがあります。しかし実際に中身を確認すると、共通化できる部分(手番管理・CPU思考表示・勝敗判定・ダークモード等)は既に共通関数として切り出し済みで、残りの大半は各ゲーム固有のロジック(探索・役判定・物理演算等)でした。無理に共通の型へ押し込んでも容量はほとんど減らず、動いているものを壊すリスクだけが増えます。派手な一括改修より、重複を見つけたら都度、地道に共通化する方を選んでいます。我々は手の切れるような仕事をしています。" },
+      { "heading": "圧縮(minify)は試して、あえて採用していない", "body": "変数名を短くし、改行・コメントを削って読み込みを軽くする「圧縮」を実際に試し、容量が確実に減ることは確認済みです(約32%減)。それでも採用していないのは、容量よりも「渡した相手が中身を読んで意図を理解できること」を優先しているためです。再配布や改変は自由にしてもらって構いませんが、その際にこのあたりの意図も汲み取ってもらえたら嬉しいです。どんなAIが読んでも、我々の意図を理解した上でゲームを増やしたり改善したりできるように、あえて読みやすいコードのままにしています。いくら良い物でも、広まらなければ意味がありません。" },
+      { "heading": "WheelPicker共通部品の使い回し", "body": "フリックで回して選ぶ無限スクロールホイールを共通部品として作り、ニャーロクのサイコロ表示と着地イベント文の両方に使い回しています。1つの部品を複数の役割に使い回すことで、ゲームが増えても土台のコードが際限なく膨らまないようにしています。" }
     ]
   },
   "capacity": {
-    "engineKB": 47.6,
+    "engineKB": 57.3,
     "games": {
       "ニャーバツ": 6.4,
       "ニャセロ": 11.3,
       "ニャー将棋": 13.5,
       "ニャージャン": 14.6,
       "ニャーリス": 23.6,
-      "ニャモリー": 8.6
+      "ニャモリー": 8.6,
+      "ニャーロク": 12.2,
+      "ニャーホッケー": 18.8
     }
   },
   "howToPlay": {
@@ -613,13 +765,13 @@
       "different": "シリーズで一番ルールが簡単。ニャーズシリーズの入り口として作りました。"
     },
     "nyasero": {
-      "rules": "4×4マスの小さなオセロ。相手の駒をはさんでひっくり返します。マスが埋まった時点で駒の多い方が勝ちです。",
+      "rules": "4×4マスの小さなオセロ。相手の駒をはさんでひっくり返します。両者とも置ける場所がなくなった時点で、駒の多い方が勝ちです。",
       "intent": "盤を4×4に小さくして、1局のテンポを速くしました。何度でも気軽に対戦できるようにしています。",
       "fun": "盤が小さいぶん、1手の重みがとても大きいです。先読みの深さがそのまま勝敗に直結します。",
       "different": "シリーズの中で唯一、勝敗が「陣地の広さ（駒の数）」で決まるゲームです。将棋のような捕獲や、麻雀のような役ではありません。"
     },
     "nyashogi": {
-      "rules": "3×4マスの小さな将棋。相手の「ボス猫」を捕まえるか、自分の「ボス猫」を一番奥の列まで進めれば勝ち。捕まえた猫は自分の持ち駒として盤に打てます。<br><br><b>ボス猫</b>：全方向に1マス（捕まると負け／最奥列に到達すると勝ち）<br><b>トラ猫</b>：斜め4方向に1マス<br><b>サバ猫</b>：縦横4方向に1マス<br><b>子猫</b>：前に1マス。最奥列に着くと「おとな猫」に成る<br><b>おとな猫</b>：縦横4方向＋前斜め2方向（後ろ斜めには進めない）",
+      "rules": "3×4マスの小さな将棋。相手の「ボス猫」を捕まえるか、自分の「ボス猫」を一番奥の列まで進めれば勝ち。捕まえた猫は自分の持ち駒として盤に打てます(「おとな猫」を捕まえた場合は「子猫」に戻ります)。<br><br><b>ボス猫</b>：全方向に1マス（捕まると負け／最奥列に到達すると勝ち）<br><b>トラ猫</b>：斜め4方向に1マス<br><b>サバ猫</b>：縦横4方向に1マス<br><b>子猫</b>：前に1マス。最奥列に着くと「おとな猫」に成る<br><b>おとな猫</b>：縦横4方向＋前斜め2方向（後ろ斜めには進めない）",
       "intent": "どうぶつしょうぎのルールをそのまま活かしつつ、駒を全部猫にして統一感を出しました。対面で座っても相手の駒がこちらを向くよう、駒だけを個別に回転させています。",
       "fun": "盤が3×4と小さいので、一手のミスがすぐ致命傷になる緊張感があります。持ち駒を打てるので、終盤まで気が抜けません。",
       "different": "シリーズの中で唯一、「捕まえた駒を自分のものとして使い回せる」ゲームです。盤の上の情報だけでなく、持ち駒という要素が加わります。"
@@ -676,12 +828,13 @@ function renderTechInfo(){
   const c = SITE_DATA.capacity;
   const gamesTotal = Object.values(c.games).reduce((a,b)=>a+b, 0);
   const grandTotal = c.engineKB + gamesTotal;
-  let html = t.sections.map(s=>`<p><b>${s.heading}</b><br>${s.body}</p>`).join('');
+  let html = '<h3 class="tech-group-heading">🎮 採り入れた機能</h3>';
+  html += t.featureSections.map(s=>`<p><b>${s.heading}</b><br>${s.body}</p>`).join('');
+  html += '<h3 class="tech-group-heading">⚙️ 技術的な話</h3>';
+  html += t.techSections.map(s=>`<p><b>${s.heading}</b><br>${s.body}</p>`).join('');
   html += `<p><b>現在の容量内訳</b><br>共通エンジン部分: 約${c.engineKB}KB<br>`;
   html += Object.entries(c.games).map(([name,kb])=>`${name}: 約${kb}KB`).join('<br>');
   html += `<br>合計: 約${grandTotal.toFixed(1)}KB</p>`;
-  html += `<p><b>圧縮(minify)は試して、あえて採用していません</b><br>変数名を短くし、改行・コメントを削って読み込みを軽くする「圧縮」を実際に試し、容量が確実に減ることは確認済みです(約32%減)。それでも採用していないのは、容量よりも「渡した相手が中身を読んで意図を理解できること」を優先しているためです。再配布や改変は自由にしてもらって構いませんが、その際にこのあたりの意図も汲み取ってもらえたら嬉しいです。どんなAIが読んでも、我々の意図を理解した上でゲームを増やしたり改善したりできるように、あえて読みやすいコードのままにしています。いくら良い物でも、広まらなければ意味がありません。</p>`;
-  html += `<p><b>その他の設計意図</b><br>` + t.designNotes.map(n=>'・'+n).join('<br>') + `</p>`;
   document.getElementById('techInfoBody').innerHTML = html;
 }
 
@@ -709,6 +862,8 @@ function catSvg(type, owner){
     scale = 0.8;
   }else if(type==='hen'){
     scale = 1.12;
+    extra = `<path d="M30 26 L34 18 L38 26" stroke="${accent}" stroke-width="3" fill="none" stroke-linecap="round"/>
+             <path d="M62 26 L66 18 L70 26" stroke="${accent}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
   }else{
     // 種類指定なし(ニャーバツ・ニャセロの無地の猫マーク): 眉毛を付ける
     extra = `<path d="M32 22 Q38 14 44 22" stroke="${accent}" stroke-width="3" fill="none"/>
@@ -735,6 +890,56 @@ function catSvg(type, owner){
   </svg>`;
 }
 function catMark(owner){ return catSvg('', owner); }
+
+// ---- 猫の肉球アイコン(色違い): 共通で使い回す駒デザイン ----
+function pawSvg(owner){
+  const body = owner==='player' ? 'var(--player-body)' : 'var(--cpu-body)';
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="62" r="26" fill="${body}"/>
+    <circle cx="24" cy="38" r="13" fill="${body}"/>
+    <circle cx="50" cy="24" r="13" fill="${body}"/>
+    <circle cx="76" cy="38" r="13" fill="${body}"/>
+  </svg>`;
+}
+
+// ---- ニャーロク専用アイコン: 肉球の中心にサイコロの6の目 ----
+function pawDiceSvg(owner){
+  const body = owner==='player' ? 'var(--player-body)' : 'var(--cpu-body)';
+  const pip = owner==='player' ? 'var(--player-accent)' : 'var(--cpu-accent)';
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="62" r="26" fill="${body}"/>
+    <circle cx="24" cy="38" r="13" fill="${body}"/>
+    <circle cx="50" cy="24" r="13" fill="${body}"/>
+    <circle cx="76" cy="38" r="13" fill="${body}"/>
+    <circle cx="40" cy="52" r="3.6" fill="${pip}"/>
+    <circle cx="60" cy="52" r="3.6" fill="${pip}"/>
+    <circle cx="40" cy="62" r="3.6" fill="${pip}"/>
+    <circle cx="60" cy="62" r="3.6" fill="${pip}"/>
+    <circle cx="40" cy="72" r="3.6" fill="${pip}"/>
+    <circle cx="60" cy="72" r="3.6" fill="${pip}"/>
+  </svg>`;
+}
+
+// ---- ニャーホッケー専用アイコン: 向き合う2つの肉球と玉 ----
+function pawPongSvg(owner){
+  const body = owner==='player' ? 'var(--player-body)' : 'var(--cpu-body)';
+  const accent = owner==='player' ? 'var(--player-accent)' : 'var(--cpu-accent)';
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(10,58) scale(0.55)">
+      <circle cx="50" cy="62" r="26" fill="${body}"/>
+      <circle cx="24" cy="38" r="13" fill="${body}"/>
+      <circle cx="50" cy="24" r="13" fill="${body}"/>
+      <circle cx="76" cy="38" r="13" fill="${body}"/>
+    </g>
+    <g transform="translate(90,42) scale(-0.55,0.55) rotate(180 50 50)">
+      <circle cx="50" cy="62" r="26" fill="${body}"/>
+      <circle cx="24" cy="38" r="13" fill="${body}"/>
+      <circle cx="50" cy="24" r="13" fill="${body}"/>
+      <circle cx="76" cy="38" r="13" fill="${body}"/>
+    </g>
+    <circle cx="50" cy="50" r="9" fill="${accent}"/>
+  </svg>`;
+}
 
 const MASCOT_CAT_SVG = `<svg class="mascot-cat" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
   <ellipse cx="50" cy="88" rx="30" ry="26" fill="#F7C99B"/>
@@ -799,6 +1004,350 @@ function pipGridSvg(value){
     circles += `<circle cx="${16+c*34}" cy="${16+r*34}" r="9"/>`;
   }
   return `<svg class="pipgrid" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${circles}</svg>`;
+}
+
+/* ============================================================
+   WheelPicker(共通部品): フリックで回して選ぶ無限スクロールホイール。
+   iOSの日付ピッカーのような慣性・吸着の物理を持つ。
+   ニャーロクでは、サイコロの目を出す用途と、着地したマスの
+   イベント文を表示する用途の両方に、同じホイールを使い回す。
+   ============================================================ */
+class WheelPicker{
+  constructor(container, options){
+    this.el = typeof container === 'string' ? document.querySelector(container) : container;
+    this.items = (options.items || []).slice();
+    this.itemHeight = options.itemHeight || 44;
+    this.visibleCount = options.visibleCount || 3;
+    this.buffer = options.buffer != null ? options.buffer : 2;
+    this.onChange = options.onChange || function(){};
+    this.renderItem = options.renderItem || null;
+    this.renderItemHtml = options.renderItemHtml || null;
+    this.friction = options.friction != null ? options.friction : 0.0025;
+    this.maxVelocity = options.maxVelocity != null ? options.maxVelocity : 0.03;
+    this.snapDuration = options.snapDuration || 260;
+    this.disabled = !!options.disabled;
+
+    this.slotCount = this.visibleCount + this.buffer * 2;
+    this.position = options.initialIndex || 0;
+    this.velocity = 0;
+    this.dragging = false;
+    this.animMode = null;
+    this.snapFrom = 0; this.snapTo = 0; this.snapStart = 0;
+    this.rafId = null;
+    this.samples = [];
+    this._lastEmittedIndex = null;
+    this._pointerId = null;
+
+    this._buildDom();
+    this._bindEvents();
+    this._layout();
+    this._draw();
+    this._emitChange(true);
+  }
+
+  get value(){ return this.items[this._mod(Math.round(this.position))]; }
+  get index(){ return this._mod(Math.round(this.position)); }
+
+  setItems(items, keepIndex){
+    const cur = this.index;
+    this.items = items.slice();
+    this.position = keepIndex ? Math.min(cur, this.items.length - 1) : 0;
+    this._lastEmittedIndex = null;
+    this._draw();
+    this._emitChange(true);
+  }
+
+  setDisabled(v){ this.disabled = !!v; }
+
+  scrollToIndex(index, animated){
+    this._stopAnim();
+    if(animated === false){
+      this.position = index;
+      this._draw();
+      this._emitChange();
+      return;
+    }
+    this._startSnap(index);
+  }
+
+  spinRandom(minLaps, maxLaps){
+    if(this.items.length===0) return;
+    const target = Math.floor(Math.random()*this.items.length);
+    const laps = minLaps + Math.random()*(maxLaps-minLaps);
+    const current = this.position;
+    const currentMod = this._mod(Math.round(current));
+    let delta = target - currentMod;
+    delta = delta - Math.round(delta/this.items.length)*this.items.length;
+    const finalTarget = Math.round(current) + delta + Math.round(laps)*this.items.length;
+    this._stopAnim();
+    this.velocity = 0;
+    this._startSnap(finalTarget, 900);
+  }
+
+  destroy(){
+    this._stopAnim();
+    this._unbindEvents();
+    this.el.innerHTML = '';
+  }
+
+  _buildDom(){
+    this.el.classList.add('wp');
+    this.el.innerHTML = '';
+    const h = this.itemHeight * this.visibleCount;
+    this.el.style.height = h + 'px';
+
+    this.track = document.createElement('div');
+    this.track.className = 'wp-track';
+    this.track.style.left = '0'; this.track.style.right = '0';
+    this.el.appendChild(this.track);
+
+    this.targetLine = document.createElement('div');
+    this.targetLine.className = 'wp-target-line';
+    this.targetLine.style.height = this.itemHeight + 'px';
+    this.targetLine.style.top = (h - this.itemHeight) / 2 + 'px';
+    this.el.appendChild(this.targetLine);
+
+    const fadeTop = document.createElement('div'); fadeTop.className = 'wp-fade-top';
+    const fadeBottom = document.createElement('div'); fadeBottom.className = 'wp-fade-bottom';
+    this.el.appendChild(fadeTop); this.el.appendChild(fadeBottom);
+
+    this.slots = [];
+    for(let i = 0; i < this.slotCount; i++){
+      const slot = document.createElement('div');
+      slot.className = 'wp-item';
+      slot.style.height = this.itemHeight + 'px';
+      this.track.appendChild(slot);
+      this.slots.push(slot);
+    }
+  }
+
+  _layout(){
+    const h = this.itemHeight * this.visibleCount;
+    this.centerY = h / 2 - this.itemHeight / 2;
+  }
+
+  _bindEvents(){
+    this._onDown = this._onPointerDown.bind(this);
+    this._onMove = this._onPointerMove.bind(this);
+    this._onUp = this._onPointerUp.bind(this);
+    this.el.addEventListener('pointerdown', this._onDown);
+    window.addEventListener('pointermove', this._onMove);
+    window.addEventListener('pointerup', this._onUp);
+  }
+  _unbindEvents(){
+    this.el.removeEventListener('pointerdown', this._onDown);
+    window.removeEventListener('pointermove', this._onMove);
+    window.removeEventListener('pointerup', this._onUp);
+  }
+
+  _onPointerDown(e){
+    if(this.disabled) return;
+    this._stopAnim();
+    this.velocity = 0;
+    this.dragging = true;
+    this._pointerId = e.pointerId;
+    this._dragStartY = e.clientY;
+    this._lastY = e.clientY;
+    this._lastT = performance.now();
+    this.samples = [{ t: this._lastT, y: e.clientY }];
+    const slot = e.target.closest ? e.target.closest('.wp-item') : null;
+    this._tappedSlot = slot;
+    if(this.el.setPointerCapture){ try{ this.el.setPointerCapture(e.pointerId); }catch(err){} }
+  }
+
+  _onPointerMove(e){
+    if(!this.dragging || e.pointerId !== this._pointerId) return;
+    const now = performance.now();
+    const dy = e.clientY - this._lastY;
+    this._lastY = e.clientY;
+    this._lastT = now;
+
+    this.position -= dy / this.itemHeight;
+    this._draw();
+
+    this.samples.push({ t: now, y: e.clientY });
+    while(this.samples.length > 2 && now - this.samples[0].t > 120) this.samples.shift();
+
+    if(Math.abs(e.clientY - this._dragStartY) > 6) this._tappedSlot = null;
+  }
+
+  _onPointerUp(e){
+    if(e.pointerId !== this._pointerId) return;
+    this._pointerId = null;
+    if(!this.dragging) return;
+    this.dragging = false;
+
+    const totalMove = Math.abs(e.clientY - this._dragStartY);
+    if(totalMove < 6 && this._tappedSlot){
+      const targetIndex = parseFloat(this._tappedSlot.dataset.virtualIndex);
+      if(!isNaN(targetIndex)){
+        this._startSnap(targetIndex);
+        return;
+      }
+    }
+
+    const now = performance.now();
+    let v = 0;
+    if(this.samples.length >= 2){
+      const first = this.samples[0];
+      const last = this.samples[this.samples.length - 1];
+      const dt = last.t - first.t;
+      if(dt > 0){
+        const pxPerMs = (last.y - first.y) / dt;
+        v = -pxPerMs / this.itemHeight;
+      }
+    }
+    v = Math.max(-this.maxVelocity, Math.min(this.maxVelocity, v));
+    this.velocity = v;
+
+    if(Math.abs(v) < 0.0008){
+      this._startSnap(Math.round(this.position));
+    }else{
+      this._startMomentum();
+    }
+  }
+
+  _startMomentum(){
+    this.animMode = 'momentum';
+    this._lastFrameT = performance.now();
+    this._passedInt = Math.round(this.position);
+    this._tick();
+  }
+
+  _startSnap(targetIndex, duration){
+    this.animMode = 'snap';
+    this.snapFrom = this.position;
+    this.snapTo = targetIndex;
+    this.snapStart = performance.now();
+    this._snapDur = duration || this.snapDuration;
+    this._tick();
+  }
+
+  _stopAnim(){
+    this.animMode = null;
+    if(this.rafId){ cancelAnimationFrame(this.rafId); this.rafId = null; }
+  }
+
+  _tick(){
+    this.rafId = requestAnimationFrame((now) => this._frame(now));
+  }
+
+  _frame(now){
+    if(this.animMode === 'momentum'){
+      const dt = Math.min(48, now - this._lastFrameT);
+      this._lastFrameT = now;
+
+      this.position += this.velocity * dt;
+      this.velocity *= Math.exp(-this.friction * dt);
+
+      const curInt = Math.round(this.position);
+      if(curInt !== this._passedInt){
+        this._passedInt = curInt;
+        this._pulseCenter();
+      }
+
+      this._draw();
+
+      if(Math.abs(this.velocity) < 0.001){
+        this._startSnap(Math.round(this.position));
+        return;
+      }
+      this.rafId = requestAnimationFrame((t) => this._frame(t));
+    }else if(this.animMode === 'snap'){
+      const dur = this._snapDur || this.snapDuration;
+      const t = Math.min(1, (now - this.snapStart) / dur);
+      const eased = 1 - Math.pow(1 - t, 3);
+      this.position = this.snapFrom + (this.snapTo - this.snapFrom) * eased;
+      this._draw();
+      if(t >= 1){
+        this.position = this.snapTo;
+        this._draw();
+        this.animMode = null;
+        this._pulseCenter();
+        this._emitChange(true);
+        return;
+      }
+      this.rafId = requestAnimationFrame((tm) => this._frame(tm));
+    }
+  }
+
+  _pulseCenter(){
+    const centerSlot = this.slots.find(s => s.classList.contains('is-center'));
+    if(!centerSlot) return;
+    centerSlot.classList.remove('wp-tick-flash');
+    void centerSlot.offsetWidth;
+    centerSlot.classList.add('wp-tick-flash');
+  }
+
+  _draw(){
+    const half = Math.floor(this.slotCount / 2);
+    const base = Math.round(this.position);
+    const visibleHalf = (this.visibleCount - 1) / 2 + 0.55;
+
+    for(let i = 0; i < this.slotCount; i++){
+      const virtualIndex = base - half + i;
+      const offset = virtualIndex - this.position;
+      const dist = Math.abs(offset);
+
+      const slot = this.slots[i];
+      const dataIndex = this._mod(virtualIndex);
+      const item = this.items[dataIndex];
+
+      const translateY = this.centerY + offset * this.itemHeight;
+      const scale = Math.max(0.62, 1 - dist * 0.16);
+      let opacity = 1 - Math.max(0, dist - 0.15) * 0.62;
+      opacity = Math.max(0, Math.min(1, opacity));
+      if(dist > visibleHalf) opacity = Math.max(0, opacity - 0.4);
+
+      slot.style.setProperty('--ty', `${translateY}px`);
+      slot.style.transform = `translateY(${translateY}px) scale(${scale})`;
+      slot.style.opacity = opacity;
+      slot.style.zIndex = String(100 - Math.round(dist * 10));
+      slot.dataset.virtualIndex = virtualIndex;
+
+      const isCenter = dist < 0.001 && !this.dragging && this.animMode !== 'momentum'
+        ? true
+        : Math.round(this.position) === virtualIndex && dist < 0.5;
+      slot.classList.toggle('is-center', isCenter);
+
+      if(item !== undefined){
+        if(this.renderItemHtml){
+          slot.innerHTML = this.renderItemHtml(item, dataIndex);
+        }else if(this.renderItem){
+          const r = this.renderItem(item, dataIndex);
+          if(r.html !== undefined){
+            slot.innerHTML = r.html;
+          }else{
+            slot.innerHTML = r.sub
+              ? `<span>${this._esc(r.text)}<span class="wp-sub">${this._esc(r.sub)}</span></span>`
+              : this._esc(r.text);
+          }
+        }else{
+          slot.textContent = String(item);
+        }
+        slot.style.visibility = 'visible';
+      }else{
+        slot.style.visibility = 'hidden';
+      }
+    }
+  }
+
+  _emitChange(force){
+    const idx = this.index;
+    if(force || idx !== this._lastEmittedIndex){
+      this._lastEmittedIndex = idx;
+      this.onChange(this.items[idx], idx);
+    }
+  }
+
+  _mod(n){
+    const len = this.items.length;
+    if(len === 0) return 0;
+    return ((n % len) + len) % len;
+  }
+  _esc(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
 }
 
 function registerGame(key, def){
@@ -1823,7 +2372,7 @@ registerGame('nyasero', {
   cardIconPlayer,
   cardIconCpu,
   title: 'ニャセロ',
-  desc: '4×4マスの小さなオセロ。相手の駒をはさんでひっくり返そう!マスが埋まった時点で駒の多い方が勝ちです。盤が小さい分、一手ごとの重みが増します。',
+  desc: '4×4マスの小さなオセロ。相手の駒をはさんでひっくり返そう!両者とも置ける場所がなくなった時点で駒の多い方が勝ちです。盤が小さい分、一手ごとの重みが増します。',
   boardHtml,
   howToPlayHtml,
   init,
@@ -3383,8 +3932,803 @@ registerGame('nyamemory', {
 
 })();
 
+/* ============================================================
+   ニャーロク: すごろく形式。長期決戦タイプとして設計したが、実際は短期決戦寄りのテンポに。
+   WheelPickerを、サイコロの目を出す用途と、着地したマスの
+   イベント文を表示する用途の両方に使い回す。
+   ============================================================ */
+(function(){
 
-// 全体のタップ操作に軽い音・振動フィードバックを付ける(ボタン・カード・盤面のマス全般)
+const TRACK_LENGTH = 24; // マスの総数(0スタート)
+const GOAL_INDEX = TRACK_LENGTH - 1; // 「24」のマス自体がゴール
+const EVENTS = {
+  4:  { text: '日向ぼっこが気持ちよくて2マス進む!', apply: (pos)=> pos+2 },
+  8:  { text: '毛づくろいに夢中で1回休み', apply: (pos, ctx)=>{ ctx.skipNext = true; return pos; } },
+  12: { text: '毛玉を吐いて3マス戻る…', apply: (pos)=> Math.max(0, pos-3) },
+  16: { text: 'またたびで大興奮!もう一度サイコロ', apply: (pos, ctx)=>{ ctx.rollAgain = true; return pos; } },
+  20: { text: '取っ組み合いになって場所を入れ替わる!', apply: (pos, ctx)=>{ const opp = ctx.getOpponentPos(); ctx.setOpponentPos(ctx.myPos); return opp; } },
+};
+const ROWS = 4, COLS = 6; // 24マスを4行6列の蛇行(スネーク)配置で表示
+
+function cellRC(idx){
+  const row = Math.floor(idx / COLS);
+  let col = idx % COLS;
+  if(row % 2 === 1) col = COLS - 1 - col; // 奇数行は逆順(スネーク)
+  return { row, col };
+}
+
+let boardEl, cellEls, wheelTopEl, wheelBottomEl, rollBtnTop, rollBtnBottom;
+let previewTopEl, previewBottomEl, previewTimer, previewMarqueeInterval;
+let wpTop, wpBottom;
+let pos, turn, gameOver, winner, skipNext, cpuThinking;
+let turnTopEl, turnBottomEl;
+
+function isInteractionAllowed(owner){
+  return checkInteractionAllowed(owner, gameOver, turn, cpuThinking);
+}
+
+function showEventPreview(idx){
+  const ev = EVENTS[idx];
+  if(!ev) return;
+  runPreviewTicker(ev.text, 5200);
+}
+
+function runPreviewTicker(text, showDuration){
+  clearTimeout(previewTimer);
+  clearInterval(previewMarqueeInterval);
+  [previewTopEl, previewBottomEl].forEach(el=>{
+    el.style.whiteSpace = 'nowrap';
+    el.style.overflow = 'hidden';
+    el.style.textOverflow = 'clip';
+    el.style.display = 'block';
+  });
+  const WINDOW = 14; // 一度に見せる文字数
+  const padded = text + '　　　　　　' + text; // 1周分の余白+繰り返しでループ感を出す
+  let offset = 0;
+  function tick(){
+    const slice = padded.slice(offset, offset + WINDOW);
+    previewTopEl.textContent = slice;
+    previewBottomEl.textContent = slice;
+    offset = (offset + 1) % text.length;
+  }
+  tick();
+  previewMarqueeInterval = setInterval(tick, 260);
+  previewTopEl.classList.add('show');
+  previewBottomEl.classList.add('show');
+  previewTimer = setTimeout(()=>{
+    clearInterval(previewMarqueeInterval);
+    previewTopEl.classList.remove('show');
+    previewBottomEl.classList.remove('show');
+  }, showDuration);
+}
+
+function renderBoard(){
+  for(let i=0;i<TRACK_LENGTH;i++){
+    const el = cellEls[i];
+    const isEvent = !!EVENTS[i];
+    const hasPlayer = pos.player === i;
+    const hasCpu = pos.cpu === i;
+    const isStart = i===0;
+    const isGoal = i===GOAL_INDEX;
+    el.className = 'nsei-cell' + (isEvent ? ' event' : '') + (isGoal ? ' goal-cell' : '') + (isStart ? ' start-cell' : '');
+    if(isStart){
+      el.innerHTML = `<span class="nsei-label-big center">S</span>`;
+    }else if(isGoal){
+      el.innerHTML = `<span class="nsei-label-big near">G</span><span class="nsei-label-big far">G</span>`;
+    }else{
+      const {row} = cellRC(i);
+      const isRowEnd = (i % COLS) === COLS - 1;
+      const arrow = isRowEnd ? '↓' : (row % 2 === 0 ? '→' : '←');
+      el.innerHTML = `<span class="nsei-num near">${i+1}</span><span class="nsei-num far">${i+1}</span><span class="nsei-arrow">${arrow}</span>`;
+    }
+    if(hasPlayer){
+      const t = document.createElement('div');
+      t.className = 'nsei-token player';
+      t.innerHTML = pawSvg('player');
+      el.appendChild(t);
+    }
+    if(hasCpu){
+      const t = document.createElement('div');
+      t.className = 'nsei-token cpu';
+      t.innerHTML = pawSvg('cpu');
+      el.appendChild(t);
+    }
+  }
+
+  const topActive = !gameOver && turn==='cpu';
+  const bottomActive = !gameOver && turn==='player';
+  renderTurnBadges(turnTopEl, turnBottomEl, topActive, bottomActive, cpuThinking);
+
+  wpTop.setDisabled(!isInteractionAllowed('cpu'));
+  wpBottom.setDisabled(!isInteractionAllowed('player'));
+  rollBtnTop.disabled = !isInteractionAllowed('cpu');
+  rollBtnBottom.disabled = !isInteractionAllowed('player');
+}
+
+function moveContextFor(owner){
+  return {
+    myPos: pos[owner],
+    getOpponentPos: ()=> owner==='player' ? pos.cpu : pos.player,
+    setOpponentPos: (v)=>{ if(owner==='player') pos.cpu = v; else pos.player = v; },
+    skipNext: false, rollAgain: false,
+  };
+}
+
+function applyRoll(owner, roll, wp){
+  const startPos = pos[owner];
+  const targetPos = Math.min(GOAL_INDEX, startPos + roll);
+  animateSteps(owner, startPos, targetPos, ()=> resolveLanding(owner, targetPos, wp));
+}
+
+function animateSteps(owner, from, to, onDone){
+  let current = from;
+  function stepOnce(){
+    if(current >= to){ onDone(); return; }
+    current++;
+    pos[owner] = current;
+    renderBoard();
+    feedbackTap();
+    setTimeout(stepOnce, 350);
+  }
+  stepOnce();
+}
+
+function resolveLanding(owner, newPos, wp){
+  if(newPos >= GOAL_INDEX){
+    gameOver = true; winner = owner;
+    renderBoard();
+    const goalCellEl = cellEls[GOAL_INDEX];
+    const tokenEl = goalCellEl.querySelectorAll ? goalCellEl.querySelectorAll('.nsei-token.' + owner)[0] : null;
+    if(tokenEl) tokenEl.classList.add('nsei-blink');
+    setTimeout(()=> showResult(winner), 1900);
+    return;
+  }
+
+  const ev = EVENTS[newPos];
+  if(ev){
+    setTimeout(()=>{
+      const ctx = moveContextFor(owner);
+      const resultPos = ev.apply(pos[owner], ctx);
+      pos[owner] = Math.max(0, Math.min(GOAL_INDEX, resultPos));
+      skipNext = ctx.skipNext ? owner : null;
+      runPreviewTicker(ev.text, 1400);
+      renderBoard();
+      if(pos[owner] >= GOAL_INDEX){
+        gameOver = true; winner = owner;
+        renderBoard();
+        setTimeout(()=> showResult(winner), 600);
+        return;
+      }
+      setTimeout(()=>{
+        if(ctx.rollAgain){
+          renderBoard();
+          if(owner==='cpu') setTimeout(cpuTakeTurn, 500);
+        }else{
+          endTurn();
+        }
+      }, 1200);
+    }, 250);
+  }else{
+    setTimeout(endTurn, 250);
+  }
+}
+
+function endTurn(){
+  const next = turn==='player' ? 'cpu' : 'player';
+  if(skipNext===next){
+    skipNext = null;
+    turn = next;
+    renderBoard();
+    setTimeout(endTurn, 500);
+    return;
+  }
+  turn = next;
+  renderBoard();
+  if(mode==='cpu' && turn==='cpu') setTimeout(cpuTakeTurn, 500);
+}
+
+function doRoll(owner, wp){
+  if(!isInteractionAllowed(owner)) { feedbackInvalid(); return; }
+  wp.setDisabled(true);
+  wp.spinRandom(2, 3);
+}
+
+function cpuTakeTurn(){
+  if(gameOver) return;
+  cpuThinking = true;
+  renderBoard();
+  setTimeout(()=>{
+    cpuThinking = false;
+    wpTop.setDisabled(true);
+    wpTop.spinRandom(2, 3);
+  }, 400);
+}
+
+function init(selectedMode){
+  boardEl = document.getElementById('nseiBoard');
+  wheelTopEl = document.getElementById('nseiWheelTop');
+  wheelBottomEl = document.getElementById('nseiWheelBottom');
+  rollBtnTop = document.getElementById('nseiRollTop');
+  rollBtnBottom = document.getElementById('nseiRollBottom');
+  turnTopEl = document.getElementById('nseiTurnTop');
+  turnBottomEl = document.getElementById('nseiTurnBottom');
+
+  boardEl.innerHTML = '';
+  cellEls = [];
+  previewTopEl = document.getElementById('nseiPreviewTop');
+  previewBottomEl = document.getElementById('nseiPreviewBottom');
+  for(let i=0;i<TRACK_LENGTH;i++){
+    const {row,col} = cellRC(i);
+    const el = document.createElement('div');
+    el.className = 'nsei-cell';
+    el.style.gridRow = (row+1);
+    el.style.gridColumn = (col+1);
+    el.addEventListener('click', ()=> showEventPreview(i));
+    boardEl.appendChild(el);
+    cellEls.push(el);
+  }
+
+  pos = { player:0, cpu:0 };
+  turn = 'player';
+  gameOver = false;
+  winner = null;
+  skipNext = null;
+  cpuThinking = false;
+
+  if(wpTop) wpTop.destroy();
+  if(wpBottom) wpBottom.destroy();
+  let topReady = false, bottomReady = false;
+  let suppressTop = false, suppressBottom = false;
+  wpTop = new WheelPicker(wheelTopEl, {
+    items:[1,2,3,4,5,6], itemHeight:36, visibleCount:1,
+    renderItem: (item)=> typeof item==='number' ? { html: pipGridSvg(item) } : { text: item },
+    onChange: (val, idx)=>{
+      if(!topReady){ topReady = true; return; }
+      if(suppressTop){ suppressTop = false; return; }
+      if(typeof val==='number' && !gameOver){
+        wpTop.setDisabled(true);
+        applyRoll('cpu', val, wpTop);
+      }
+    }
+  });
+  wpBottom = new WheelPicker(wheelBottomEl, {
+    items:[1,2,3,4,5,6], itemHeight:36, visibleCount:1,
+    renderItem: (item)=> typeof item==='number' ? { html: pipGridSvg(item) } : { text: item },
+    onChange: (val, idx)=>{
+      if(!bottomReady){ bottomReady = true; return; }
+      if(suppressBottom){ suppressBottom = false; return; }
+      if(typeof val==='number' && !gameOver){
+        wpBottom.setDisabled(true);
+        applyRoll('player', val, wpBottom);
+      }
+    }
+  });
+
+  wpTop._suppressNext = ()=>{ suppressTop = true; };
+  wpBottom._suppressNext = ()=>{ suppressBottom = true; };
+
+  rollBtnTop.addEventListener('click', ()=> doRoll('cpu', wpTop));
+  rollBtnBottom.addEventListener('click', ()=> doRoll('player', wpBottom));
+
+  renderBoard();
+}
+
+function getResultMessageCpu(resultKind){
+  return resultKind==='player' ? '🎉 あなたの勝ち! ゴール到達!' : '🐾 CPUの勝ち… 先にゴールされました';
+}
+function getResultMessagePvp(resultKind){
+  return (resultKind==='player' ? 'プレイヤー1' : 'プレイヤー2') + ' の勝ち! ゴール到達!';
+}
+
+const howToPlayHtml = buildHowToPlayHtml({
+  rules: '24マスのすごろく。ホイールをフリックして(またはロールボタンで)サイコロの目を出し、出た数だけ進みます。星のマスに止まると、同じホイールにイベント文が表示されて効果が発動します。先にゴールした方の勝ちです。',
+  intent: 'サイコロもイベント表示も、同じホイール部品を使い回しています。「回して選ぶ」という1つの動きに、進行も驚きも両方乗せられないかという実験です。',
+  fun: '一直線に進むだけでなく、戻る・休む・入れ替わるといった逆転要素があるので、最後までどちらが勝つか分かりません。',
+  different: 'シリーズで唯一の「すごろく」型です。長期決戦タイプとして設計しましたが、実際に遊んでみると平均6ロール前後で決着する、短期決戦タイプ寄りのテンポの良さになりました。'
+});
+
+registerGame('nyansei', {
+  key: 'nyansei',
+  emoji: '🎲',
+  cardIconPlayer: `<div style="width:34px;height:34px;">${pawDiceSvg('player')}</div>`,
+  cardIconCpu: `<div style="width:34px;height:34px;">${pawDiceSvg('cpu')}</div>`,
+  title: 'ニャーロク',
+  desc: '24マスのすごろく。ホイールを回してサイコロの目を出し、星のマスに止まるとイベント発生。先にゴールした方の勝ち!テンポよく決着する新顔です。',
+  boardHtml: `
+  <div class="turn-badge top" id="nseiTurnTop">後手</div>
+  <div class="nsei-wheel-row top">
+    <button class="btn secondary" id="nseiRollTop">🎲 ロール</button>
+    <div class="wp" id="nseiWheelTop"></div>
+  </div>
+  <div class="nsei-preview top" id="nseiPreviewTop"></div>
+  <div class="nsei-board" id="nseiBoard"></div>
+  <div class="nsei-preview" id="nseiPreviewBottom"></div>
+  <div class="nsei-wheel-row">
+    <button class="btn secondary" id="nseiRollBottom">🎲 ロール</button>
+    <div class="wp" id="nseiWheelBottom"></div>
+  </div>
+  <div class="turn-badge bottom" id="nseiTurnBottom">先手</div>
+`,
+  howToPlayHtml,
+  init,
+  getResultMessageCpu,
+  getResultMessagePvp,
+  _test: {
+    getPos: ()=>pos,
+    setPos: (p)=>{ pos = p; },
+    getTurn: ()=>turn, setTurn: (t)=>{ turn = t; },
+    getGameOver: ()=>gameOver,
+    getWinner: ()=>winner,
+    getSkipNext: ()=>skipNext,
+    getCpuThinking: ()=>cpuThinking,
+    applyRoll, doRoll, endTurn, cpuTakeTurn,
+    getWpTop: ()=>wpTop, getWpBottom: ()=>wpBottom,
+    EVENTS, TRACK_LENGTH,
+  },
+});
+
+})();
+
+/* ============================================================
+   ニャーホッケー: 対戦ポン。じゃれ合いタイプ(リアルタイム・ラリー)。
+   7点先取で勝敗... の予定だったが、テストの結果5点先取に調整。パドルはドラッグで操作。
+   ============================================================ */
+(function(){
+
+const FIELD_W = 100, FIELD_H = 150;
+const PADDLE_W = 32, PADDLE_H = 5;
+const PADDLE_Y_TOP = 10, PADDLE_Y_BOTTOM = FIELD_H - 10;
+const PLAYER_Y_MIN = FIELD_H * 0.54; // 前進できる限界(中央付近まで)
+const CPU_Y_MAX = FIELD_H * 0.46;
+const BALL_R = 3;
+const MAX_BALL_SPEED = 9;
+const WIN_SCORE = 5;
+const GOAL_W = 40; // 世間の相場は25〜33%程度だが、あえて40%に(守りやすいがゼロではない)
+const GOAL_LEFT = (FIELD_W - GOAL_W) / 2;
+const GOAL_RIGHT = (FIELD_W + GOAL_W) / 2;
+
+const boardHtml = `
+  <div class="status-bar top" id="nyponStatusTop">
+    <span id="nyponLabelTop">CPU</span>
+    <span>score <b id="nyponScoreTop">0</b></span>
+  </div>
+  <div class="nypon-field" id="nyponField">
+    <div class="nypon-wall top left"></div>
+    <div class="nypon-wall top right"></div>
+    <div class="nypon-goal-mark top"></div>
+    <div class="nypon-wall bottom left"></div>
+    <div class="nypon-wall bottom right"></div>
+    <div class="nypon-goal-mark bottom"></div>
+    <div class="nypon-center-line"></div>
+    <div class="nypon-center-circle"></div>
+    <div class="nypon-paw top" id="nyponPawTop"></div>
+    <div class="nypon-paddle top" id="nyponPaddleTop"></div>
+    <div class="nypon-ball" id="nyponBall"></div>
+    <div class="nypon-paddle bottom" id="nyponPaddleBottom"></div>
+    <div class="nypon-paw bottom" id="nyponPawBottom"></div>
+    <div class="nypon-callout" id="nyponCallout"></div>
+  </div>
+  <div class="hint-row">ドラッグで構え、タップ or フリックでシュート!当てる瞬間に動かすとスピンがかかる</div>
+  <div class="status-bar" id="nyponStatusBottom">
+    <span id="nyponLabelBottom">あなた</span>
+    <span>score <b id="nyponScoreBottom">0</b></span>
+  </div>
+`;
+
+let fieldEl, ballEl, paddleTopEl, paddleBottomEl, pawTopEl, pawBottomEl;
+let ball, playerPaddleX, cpuPaddleX, playerPaddleY, cpuPaddleY, score, gameOver, winner;
+let playerTargetX, playerTargetY, cpuTargetX, cpuTargetY;
+let prevPlayerPaddleX, prevCpuPaddleX, cpuHoldTicks;
+let playerLunge = 0, cpuLunge = 0;
+
+function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+function moveToward(current, target, speed){
+  if(target === undefined) return current;
+  if(current < target) return Math.min(target, current + speed);
+  if(current > target) return Math.max(target, current - speed);
+  return current;
+}
+
+function resetBall(heldBy){
+  ball = {
+    x: heldBy==='player' ? playerPaddleX : cpuPaddleX,
+    y: heldBy==='player' ? playerPaddleY - BALL_R - 1 : cpuPaddleY + BALL_R + 1,
+    vx: 0, vy: 0,
+    held: heldBy,
+  };
+  cpuHoldTicks = 0;
+}
+
+const FACEOFF_WAIT_TICKS = 60; // 3秒(50ms*60) = 「3」「2」「1」の掛け声用
+const FACEOFF_CIRCLE_R = 11; // センターサークルの半径(CSSのwidth:22%と対応)
+
+function startFaceoff(){
+  ball = { x: FIELD_W/2, y: FIELD_H/2, vx: 0, vy: 0, held: null, faceoff: true, pending: true };
+  faceoffCountdown = FACEOFF_WAIT_TICKS;
+  cpuFaceoffDelay = Math.floor(Math.random() * 8); // 審判の笛のタイミングのようにブレを持たせる
+  showCallout('3', 700);
+}
+
+function releaseBall(flickVx, flickVy){
+  if(!ball || !ball.held) return;
+  const dir = ball.held==='player' ? -1 : 1;
+  if(flickVx !== undefined){
+    const power = clamp(Math.abs(flickVy) * 0.9, 3.2, 8);
+    ball.vy = dir * power;
+    ball.vx = clamp(flickVx * 0.9, -6, 6);
+    if(ball.held==='player') playerLunge = 1; else cpuLunge = 1;
+  }else{
+    ball.vy = dir * 4.2;
+    ball.vx = (Math.random()*2-1) * 1.0;
+  }
+  ball.held = null;
+}
+
+function scorePoint(owner){
+  score[owner]++;
+  showCallout('ゴーーール!', 1200);
+  render();
+  if(score[owner] >= WIN_SCORE){
+    gameOver = true; winner = owner;
+    stopEngineLoop();
+    setTimeout(()=> showCallout('ゲームセット!', 1400), 1200);
+    setTimeout(()=> showResult(winner), 2600);
+    return;
+  }
+  resetBall(owner==='player' ? 'cpu' : 'player');
+}
+
+let cpuShotPlan = null;
+let cpuFaceoffDelay = 0;
+let faceoffCountdown = 0;
+let cpuLastBallVy = 0;
+
+function tick(){
+  if(gameOver) return;
+
+  const playerVelocity = playerPaddleX - prevPlayerPaddleX;
+  const cpuVelocity = cpuPaddleX - prevCpuPaddleX;
+  prevPlayerPaddleX = playerPaddleX;
+  prevCpuPaddleX = cpuPaddleX;
+  playerLunge *= 0.82;
+  cpuLunge *= 0.82;
+
+  if(ball.vy < 0 && cpuLastBallVy >= 0){
+    // 玉がCPU方向へ向き始めた瞬間、狙いを新しく決める
+    const plans = ['center', 'left', 'right', 'spin'];
+    cpuShotPlan = plans[Math.floor(Math.random()*plans.length)];
+  }
+  cpuLastBallVy = ball.vy;
+
+  if(mode==='cpu' && ball.held!=='cpu'){
+    let targetX = ball.x;
+    let targetY = PADDLE_Y_TOP;
+    let cpuSpeed = 2.5;
+    if(ball.faceoff){
+      // フェイスオフ中は反応に遅延を持たせ、突撃速度もランダムにブレさせる
+      if(cpuFaceoffDelay > 0){
+        cpuFaceoffDelay--;
+        targetX = cpuPaddleX; targetY = cpuPaddleY; // 反応前はまだ動かない
+        cpuSpeed = 0;
+      }else{
+        targetX = FIELD_W/2 + (Math.random()-0.5) * 4; // わずかな乱れ
+        targetY = CPU_Y_MAX;
+        cpuSpeed = 2.6 + Math.random() * 1.2; // 2.6〜3.8のブレ
+      }
+    }else if(ball.vy < 0){
+      // 玉がこちらへ向かっている間は前に出て迎え撃つ(氷上の格闘技らしく)
+      targetY = CPU_Y_MAX;
+      if(cpuShotPlan==='left') targetX = ball.x + PADDLE_W * 0.4;
+      else if(cpuShotPlan==='right') targetX = ball.x - PADDLE_W * 0.4;
+      else if(cpuShotPlan==='spin'){
+        targetX = ball.x + (Math.random()<0.5 ? 1 : -1) * PADDLE_W * 0.4;
+        cpuSpeed = 4.2; // 素早く動いてスピンを乗せる
+      }
+      // 'center'はtargetX=ball.xのまま(ど真ん中直撃)
+    }
+    if(cpuPaddleX < targetX) cpuPaddleX = Math.min(targetX, cpuPaddleX + cpuSpeed);
+    else if(cpuPaddleX > targetX) cpuPaddleX = Math.max(targetX, cpuPaddleX - cpuSpeed);
+    cpuPaddleX = clamp(cpuPaddleX, PADDLE_W/2, FIELD_W - PADDLE_W/2);
+    if(cpuPaddleY < targetY) cpuPaddleY = Math.min(targetY, cpuPaddleY + cpuSpeed);
+    else if(cpuPaddleY > targetY) cpuPaddleY = Math.max(targetY, cpuPaddleY - cpuSpeed);
+    cpuPaddleY = clamp(cpuPaddleY, PADDLE_Y_TOP, CPU_Y_MAX);
+  }
+
+  // 人間側の操作もCPUと同じ速度上限で、目標地点へ近づける(瞬間移動させない)
+  const HUMAN_SPEED = 2.5;
+  playerPaddleX = moveToward(playerPaddleX, playerTargetX, HUMAN_SPEED);
+  playerPaddleY = moveToward(playerPaddleY, playerTargetY, HUMAN_SPEED);
+  if(mode==='pvp'){
+    cpuPaddleX = moveToward(cpuPaddleX, cpuTargetX, HUMAN_SPEED);
+    cpuPaddleY = moveToward(cpuPaddleY, cpuTargetY, HUMAN_SPEED);
+  }
+
+  if(ball.faceoff){
+    if(ball.pending){
+      faceoffCountdown--;
+      if(faceoffCountdown === 40) showCallout('2', 700);
+      else if(faceoffCountdown === 20) showCallout('1', 700);
+      if(faceoffCountdown <= 0){
+        const angle = Math.random() * Math.PI * 2;
+        const r = Math.random() * FACEOFF_CIRCLE_R;
+        ball.x = clamp(FIELD_W/2 + Math.cos(angle) * r, BALL_R, FIELD_W - BALL_R);
+        ball.y = clamp(FIELD_H/2 + Math.sin(angle) * r, BALL_R, FIELD_H - BALL_R);
+        ball.pending = false;
+        showCallout('フェイスオフ!', 700);
+      }
+      render();
+      return;
+    }
+    const playerDist = Math.hypot(ball.x - playerPaddleX, ball.y - playerPaddleY);
+    const cpuDist = Math.hypot(ball.x - cpuPaddleX, ball.y - cpuPaddleY);
+    const reach = PADDLE_W/2 + BALL_R;
+    if(playerDist <= reach){
+      const hitOffset = clamp((ball.x - playerPaddleX) / (PADDLE_W/2), -1, 1);
+      ball.vy = -4.3;
+      ball.vx = clamp(hitOffset * 2.6 + playerVelocity * 1.6, -5, 5);
+      ball.faceoff = false;
+      feedbackTap();
+    }else if(cpuDist <= reach){
+      const hitOffset = clamp((ball.x - cpuPaddleX) / (PADDLE_W/2), -1, 1);
+      ball.vy = 4.3;
+      ball.vx = clamp(hitOffset * 2.6 + cpuVelocity * 1.6, -5, 5);
+      ball.faceoff = false;
+    }
+    render();
+    return;
+  }
+
+  if(ball.held){
+    if(ball.held==='player'){
+      ball.x = playerPaddleX;
+      ball.y = playerPaddleY - BALL_R - 1;
+    }else{
+      ball.x = cpuPaddleX;
+      ball.y = cpuPaddleY + BALL_R + 1;
+      if(mode==='cpu'){
+        cpuHoldTicks++;
+        if(cpuHoldTicks > 16) releaseBall();
+      }
+    }
+    render();
+    return;
+  }
+
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  if(ball.x <= BALL_R){ ball.x = BALL_R; ball.vx = Math.abs(ball.vx); }
+  if(ball.x >= FIELD_W - BALL_R){ ball.x = FIELD_W - BALL_R; ball.vx = -Math.abs(ball.vx); }
+
+  // 下端(プレイヤー側): パドルの現在位置(前進していれば手前)で判定。隙間を作らない
+  if(ball.vy > 0 && ball.y >= playerPaddleY - BALL_R){
+    if(Math.abs(ball.x - playerPaddleX) <= PADDLE_W/2 + BALL_R){
+      const hitOffset = clamp((ball.x - playerPaddleX) / (PADDLE_W/2), -1, 1);
+      ball.vy = clamp(-Math.abs(ball.vy) * 1.03, -MAX_BALL_SPEED, MAX_BALL_SPEED);
+      ball.vx = clamp(hitOffset * 2.6 + playerVelocity * 1.6, -5, 5);
+      ball.y = playerPaddleY - BALL_R;
+      feedbackTap();
+    }else if(ball.y >= FIELD_H - BALL_R){
+      if(ball.x >= GOAL_LEFT && ball.x <= GOAL_RIGHT){
+        scorePoint('cpu');
+        return;
+      }else{
+        ball.y = FIELD_H - BALL_R;
+        ball.vy = -Math.abs(ball.vy);
+      }
+    }
+  }
+  // 上端(CPU側): 同様にパドルの現在位置で判定
+  if(ball.vy < 0 && ball.y <= cpuPaddleY + BALL_R){
+    if(Math.abs(ball.x - cpuPaddleX) <= PADDLE_W/2 + BALL_R){
+      const hitOffset = clamp((ball.x - cpuPaddleX) / (PADDLE_W/2), -1, 1);
+      const speedMul = cpuShotPlan==='center' ? 1.35 : 1.03;
+      ball.vy = clamp(Math.abs(ball.vy) * speedMul, -MAX_BALL_SPEED, MAX_BALL_SPEED);
+      ball.vx = clamp(hitOffset * 2.6 + cpuVelocity * 1.6, -5, 5);
+      ball.y = cpuPaddleY + BALL_R;
+      cpuShotPlan = null;
+    }else if(ball.y <= BALL_R){
+      if(ball.x >= GOAL_LEFT && ball.x <= GOAL_RIGHT){
+        scorePoint('player');
+        return;
+      }else{
+        ball.y = BALL_R;
+        ball.vy = Math.abs(ball.vy);
+      }
+    }
+  }
+
+  render();
+}
+
+let calloutEl, calloutTimer;
+function showCallout(text, duration){
+  if(!calloutEl) return;
+  clearTimeout(calloutTimer);
+  calloutEl.textContent = text;
+  calloutEl.classList.add('show');
+  calloutTimer = setTimeout(()=>{ calloutEl.classList.remove('show'); }, duration || 900);
+}
+
+function render(){
+  if(!fieldEl) return;
+  ballEl.style.opacity = ball.pending ? '0' : '1';
+  ballEl.style.left = (ball.x / FIELD_W * 100) + '%';
+  ballEl.style.top = (ball.y / FIELD_H * 100) + '%';
+  paddleBottomEl.style.left = (playerPaddleX / FIELD_W * 100) + '%';
+  paddleTopEl.style.left = (cpuPaddleX / FIELD_W * 100) + '%';
+  paddleBottomEl.style.top = (playerPaddleY / FIELD_H * 100 - playerLunge * 5) + '%';
+  paddleTopEl.style.top = (cpuPaddleY / FIELD_H * 100 + cpuLunge * 5) + '%';
+  pawBottomEl.style.left = (playerPaddleX / FIELD_W * 100) + '%';
+  pawTopEl.style.left = (cpuPaddleX / FIELD_W * 100) + '%';
+  pawBottomEl.style.top = (Math.min(FIELD_H, playerPaddleY + 8) / FIELD_H * 100) + '%';
+  pawTopEl.style.top = (Math.max(0, cpuPaddleY - 8) / FIELD_H * 100) + '%';
+  document.getElementById('nyponScoreTop').textContent = score.cpu;
+  document.getElementById('nyponScoreBottom').textContent = score.player;
+}
+
+function onFieldPointer(clientX, clientY){
+  if(gameOver) return;
+  const rect = fieldEl.getBoundingClientRect();
+  const ratioX = clamp((clientX - rect.left) / rect.width, 0, 1);
+  const x = clamp(ratioX * FIELD_W, PADDLE_W/2, FIELD_W - PADDLE_W/2);
+  const ratioY = clamp((clientY - rect.top) / rect.height, 0, 1);
+  const yRaw = ratioY * FIELD_H;
+  if(mode==='pvp'){
+    if(ratioY < 0.5){
+      cpuTargetX = x;
+      cpuTargetY = clamp(yRaw, PADDLE_Y_TOP, CPU_Y_MAX);
+    }else{
+      playerTargetX = x;
+      playerTargetY = clamp(yRaw, PLAYER_Y_MIN, PADDLE_Y_BOTTOM);
+    }
+  }else{
+    playerTargetX = x;
+    playerTargetY = clamp(yRaw, PLAYER_Y_MIN, PADDLE_Y_BOTTOM);
+  }
+}
+
+
+function init(selectedMode){
+  fieldEl = document.getElementById('nyponField');
+  ballEl = document.getElementById('nyponBall');
+  paddleTopEl = document.getElementById('nyponPaddleTop');
+  paddleBottomEl = document.getElementById('nyponPaddleBottom');
+  pawTopEl = document.getElementById('nyponPawTop');
+  pawBottomEl = document.getElementById('nyponPawBottom');
+  pawTopEl.innerHTML = pawSvg('cpu');
+  calloutEl = document.getElementById('nyponCallout');
+  pawBottomEl.innerHTML = pawSvg('player');
+  document.getElementById('nyponLabelTop').textContent = mode==='pvp' ? 'プレイヤー2' : 'CPU';
+  document.getElementById('nyponLabelBottom').textContent = mode==='pvp' ? 'プレイヤー1' : 'あなた';
+
+  score = { player:0, cpu:0 };
+  playerPaddleX = FIELD_W/2;
+  cpuPaddleX = FIELD_W/2;
+  playerPaddleY = PADDLE_Y_BOTTOM;
+  cpuPaddleY = PADDLE_Y_TOP;
+  playerTargetX = FIELD_W/2;
+  playerTargetY = PADDLE_Y_BOTTOM;
+  cpuTargetX = FIELD_W/2;
+  cpuTargetY = PADDLE_Y_TOP;
+  prevPlayerPaddleX = FIELD_W/2;
+  prevCpuPaddleX = FIELD_W/2;
+  playerLunge = 0;
+  cpuLunge = 0;
+  cpuShotPlan = null;
+  cpuLastBallVy = 0;
+  gameOver = false;
+  winner = null;
+  startFaceoff();
+
+  let dragging = false;
+  let downX = 0, downY = 0, moved = false;
+  let samples = [];
+  fieldEl.addEventListener('pointerdown', (e)=>{
+    dragging = true;
+    downX = e.clientX; downY = e.clientY; moved = false;
+    samples = [{ t: performance.now(), x: e.clientX, y: e.clientY }];
+    onFieldPointer(e.clientX, e.clientY);
+    if(fieldEl.setPointerCapture){ try{ fieldEl.setPointerCapture(e.pointerId); }catch(err){} }
+  });
+  fieldEl.addEventListener('pointermove', (e)=>{
+    if(!dragging) return;
+    if(Math.abs(e.clientX-downX)>6 || Math.abs(e.clientY-downY)>6) moved = true;
+    const now = performance.now();
+    samples.push({ t: now, x: e.clientX, y: e.clientY });
+    while(samples.length>2 && now - samples[0].t > 140) samples.shift();
+    onFieldPointer(e.clientX, e.clientY);
+  });
+  fieldEl.addEventListener('pointerup', (e)=>{
+    dragging = false;
+    if(gameOver) return;
+    const heldSide = mode==='pvp'
+      ? (()=>{ const rect = fieldEl.getBoundingClientRect(); const ratioY = clamp((e.clientY-rect.top)/rect.height,0,1); return ratioY<0.5 ? 'cpu' : 'player'; })()
+      : 'player';
+    if(ball.held !== heldSide) return;
+    if(!moved){
+      releaseBall(); // タップ=通常サーブ
+      return;
+    }
+    // フリック判定: 直近のサンプルから速度を算出
+    const now = performance.now();
+    let flickVx = 0, flickVy = 0;
+    if(samples.length>=2){
+      const first = samples[0], last = samples[samples.length-1];
+      const dt = last.t - first.t;
+      if(dt>0){
+        flickVx = (last.x-first.x)/dt * 16; // px/ms → ゲーム内速度スケールに変換
+        flickVy = (last.y-first.y)/dt * 16;
+      }
+    }
+    const flickStrength = Math.hypot(flickVx, flickVy);
+    if(flickStrength > 2.2){
+      releaseBall(flickVx, flickVy); // フリックサーブ: 強さと向きを反映
+    }
+    // 弱いドラッグの終了はただの位置調整として扱い、何もしない
+  });
+  fieldEl.addEventListener('pointercancel', ()=>{ dragging = false; });
+
+  render();
+}
+
+function getResultMessageCpu(resultKind){
+  return resultKind==='player' ? `🎉 あなたの勝ち! ${WIN_SCORE}点先取!` : `🐾 CPUの勝ち… ラリー負けです`;
+}
+function getResultMessagePvp(resultKind){
+  return (resultKind==='player' ? 'プレイヤー1' : 'プレイヤー2') + ` の勝ち! ${WIN_SCORE}点先取!`;
+}
+
+const howToPlayHtml = buildHowToPlayHtml({
+  rules: '試合開始は「3・2・1・フェイスオフ!」の掛け声とともに、パックがセンターサークル内のランダムな位置に現れます。お互いパドルを中央へ寄せて、先に触れた方が最初のシュートを打てます(まれに真ん中に出て両者とも触れることも)。フィールドを左右・前後にドラッグして構え、タップで軽いシュート、素早くフリックすると強さと向きが乗ったシュートになります。パドルは指を離した場所へ瞬間移動せず、CPUと同じ速さでじわっと追いつきます。以降は飛んできたパックをはじき返し合い、上下にある狭いゴールに通したら1点、5点先取で勝ちです。ゴール以外の壁に当たったパックは、その場で跳ね返ります。パドルの端に当てると角度がつき、はじき返す瞬間に左右へ動かすとスピンがかかって軌道が曲がります。',
+  intent: '「じゃれ合いタイプ」の1本目です。手数や決着の速さを競う他のゲームと違って、ラリーが続く時間そのものを楽しんでもらえたらと思っています。',
+  fun: 'パドルのどこに当てるかで返球の角度が変わるので、狙って角を切ることもできます。CPUの反応速度にはあえて上限を設けているので、揺さぶれば十分に崩せます。ゴールが壁の切れ目だけなので、狙いすましたシュートがより重要になります。',
+  different: 'シリーズで唯一のリアルタイム1vs1アクションです。ターン制のゲームが多い中、ここだけ「今」の反射神経で勝負します。'
+});
+
+registerGame('nyapon', {
+  key: 'nyapon',
+  emoji: '🏓',
+  cardIconPlayer: `<div style="width:34px;height:34px;">${pawPongSvg('player')}</div>`,
+  cardIconCpu: `<div style="width:34px;height:34px;">${pawPongSvg('cpu')}</div>`,
+  title: 'ニャーホッケー',
+  desc: '対戦エアホッケー。ドラッグで構えてタップ/フリックでシュート、パックをはじき返し合います。ゴールは壁の切れ目だけ。5点先取で勝敗。シリーズ唯一のリアルタイムアクションです。',
+  boardHtml,
+  howToPlayHtml,
+  init,
+  tick,
+  tickInterval: 50,
+  getResultMessageCpu,
+  getResultMessagePvp,
+  _test: {
+    getBall: ()=>ball,
+    setBall: (b)=>{ ball = b; },
+    getScore: ()=>score,
+    setScore: (s)=>{ score = s; },
+    getPlayerPaddleX: ()=>playerPaddleX,
+    setPlayerPaddleX: (x)=>{ playerPaddleX = x; },
+    getCpuPaddleX: ()=>cpuPaddleX,
+    getPlayerPaddleY: ()=>playerPaddleY,
+    setPlayerPaddleY: (y)=>{ playerPaddleY = y; },
+    getCpuPaddleY: ()=>cpuPaddleY,
+    setCpuPaddleY: (y)=>{ cpuPaddleY = y; },
+    getGameOver: ()=>gameOver,
+    getWinner: ()=>winner,
+    onFieldPointer,
+    getCpuShotPlan: ()=>cpuShotPlan,
+    setCpuShotPlan: (p)=>{ cpuShotPlan = p; },
+    tick, scorePoint, resetBall, releaseBall, startFaceoff,
+    getCpuFaceoffDelay: ()=>cpuFaceoffDelay,
+    getFaceoffCountdown: ()=>faceoffCountdown,
+    getCalloutText: ()=> calloutEl ? calloutEl.textContent : null,
+    getCalloutShowing: ()=> calloutEl ? calloutEl.classList.contains('show') : false,
+    FIELD_W, FIELD_H, PADDLE_W, WIN_SCORE, PLAYER_Y_MIN, CPU_Y_MAX,
+  },
+});
+
+})();
+
+
 if(typeof document !== 'undefined' && document.addEventListener){
   document.addEventListener('click', (e)=>{
     const t = e.target;
