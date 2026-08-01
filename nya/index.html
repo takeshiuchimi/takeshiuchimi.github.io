@@ -166,8 +166,8 @@
     display:flex; align-items:center; gap:6px; margin-bottom:8px;
   }
   .game-top-row.top{ transform:rotate(180deg); margin-bottom:0; margin-top:-4px; }
-  .game-top-row .mini-title{ flex:1; margin:0; text-align:left; }
   .game-top-row .util-btn{ margin:0; flex:1; }
+  .game-top-row .mini-title{ flex:2; margin:0; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
   /* ---- ミニタイトル(上下対称) ---- */
   .mini-title{
@@ -249,6 +249,13 @@
     background:rgba(212,175,55,.6);
   }
   .game-cell.highlight{ box-shadow:inset 0 0 0 3px var(--gold); }
+  .sero-pass-callout{
+    text-align:center; font-size:12px; font-weight:bold; color:#fff;
+    background:var(--brown); border-radius:8px;
+    height:0; opacity:0; overflow:hidden;
+    transition:height .2s ease, opacity .2s ease;
+  }
+  .sero-pass-callout.show{ height:24px; opacity:1; line-height:24px; margin:4px 0; }
 
   .util-btn{
     font-family:inherit;font-size:11px;background:var(--brown);color:#fff;
@@ -304,6 +311,18 @@
     aspect-ratio:1/1;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);
     margin:4px 0;
   }
+  .legal-dot{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:32%; height:32%; border-radius:50%; z-index:1; pointer-events:none;
+  }
+  .legal-dot.legal-dot-player{
+    background:rgba(217,98,43,.22);
+    box-shadow:inset 0 0 0 2px var(--player-accent);
+  }
+  .legal-dot.legal-dot-cpu{
+    background:rgba(92,122,148,.22);
+    box-shadow:inset 0 0 0 2px var(--cpu-accent);
+  }
   .sero-cell.hint::before{
     content:'';position:absolute;top:3px;left:3px;
     width:3px;height:3px;border-radius:50%;
@@ -315,6 +334,18 @@
     width:60%;height:60%;
     background:rgba(212,175,55,.35);
     box-shadow:0 0 8px rgba(212,175,55,.9), inset 0 0 0 2px var(--gold);
+  }
+  .sero-cell.hint-top::after{
+    content:'';position:absolute;bottom:3px;right:3px;
+    width:3px;height:3px;border-radius:50%;
+    background:rgba(140,140,140,.5);
+    z-index:2;
+  }
+  .sero-cell.hint-top.reveal-top::after{
+    top:50%;left:50%;bottom:auto;right:auto;transform:translate(-50%,-50%);
+    width:60%;height:60%;
+    background:rgba(140,140,140,.35);
+    box-shadow:0 0 8px rgba(140,140,140,.9), inset 0 0 0 2px #888;
   }
 
   /* ---- ニャー将棋専用 ---- */
@@ -614,6 +645,8 @@
   /* リアルタイムゲームなので、プレイ中は結果バナーの常時スペース確保をしない(共通ルールの上書き) */
   body.nyaris-active .msg-banner{ min-height:0; }
   body.nyaris-active .msg-banner.hidden{ display:none !important; visibility:visible; opacity:1; pointer-events:auto; }
+  body.nypon-active .msg-banner{ min-height:0; }
+  body.nypon-active .msg-banner.hidden{ display:none !important; visibility:visible; opacity:1; pointer-events:auto; }
 </style>
 </head>
 <body>
@@ -627,7 +660,7 @@
         <div class="mascot-cat-slot" id="mascotSlotTop"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0729-1217</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0731-2359</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -647,7 +680,7 @@
         <div class="mascot-cat-slot" id="mascotSlotBottom"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0729-1217</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0731-2359</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -717,9 +750,13 @@
       "このシリーズはver0.4。土台を作り直して、これから50本くらいまで増やしていく予定です。",
       "いつも一緒に働いてくれている事業所のスタッフの皆さん、利用者の皆さんに、ちょっとした息抜きの時間になれば嬉しいです。",
       "そして、いつもお世話になっている居酒屋やカフェ、スナックのママさん、スタッフさん、お客さんにも、気軽に楽しんでもらえたらと思います。",
-      "新しく「ニャーロク」(すごろく)と「ニャーホッケー」(対戦エアホッケー)を追加しました。特にニャーホッケーはフェイスオフから始まる、シリーズ初のガチのリアルタイム対戦です。",
-      "先日、退職される方から「めっちゃ本格的でした、これからも遊ばせて頂きます、周りにも広めていきますね」というメッセージをもらいました。ここまで作ってきて、こういう言葉が一番嬉しいです。広めてもらえるなら、こんなに作った甲斐があることはありません。今までありがとうございました。またどこかで。"
+      "新しく「ニャーロク」(すごろく)と「ニャーホッケー」(対戦エアホッケー)を追加しました。特にニャーホッケーはフェイスオフから始まる、シリーズ初のガチのリアルタイム対戦です。"
     ],
+    "fanVoices": [
+      { "from": "退職される方", "message": "めっちゃ本格的でした、これからも遊ばせて頂きます、周りにも広めていきますね" },
+      { "from": "山形に転居した飲み友達", "message": "前回より使いやすくなってる!! これいいね!" }
+    ],
+    "fanVoicesReply": "こういう言葉が一番嬉しいです。広めてもらえるなら、こんなに作った甲斐があることはありません。今後もゲームを増やしつつ、操作感アップ・視認性アップを目指していきます。いつもありがとうございます。",
     "distributeMessage": "このゲームセンターは自由に配布・改変してもらって構いません。QRコードを読み取って、周りの人にも気軽に広めてもらえたら嬉しいです。",
     "thanks": "こんな足りない自分と、いつも関わってくれて本当にありがとうございます。🐾",
     "sign": "— 内海"
@@ -747,16 +784,20 @@
     ]
   },
   "capacity": {
-    "engineKB": 57.3,
+    "htmlKB": 4.4,
+    "cssKB": 28.2,
+    "jsonKB": 13.4,
+    "engineKB": 58.1,
+    "testKB": 4.0,
     "games": {
-      "ニャーバツ": 6.4,
-      "ニャセロ": 11.3,
-      "ニャー将棋": 13.5,
-      "ニャージャン": 14.6,
-      "ニャーリス": 23.6,
-      "ニャモリー": 8.6,
-      "ニャーロク": 12.2,
-      "ニャーホッケー": 18.8
+      "ニャーバツ": 5.3,
+      "ニャセロ": 11.4,
+      "ニャー将棋": 11.7,
+      "ニャージャン": 12.4,
+      "ニャーリス": 21.6,
+      "ニャモリー": 8.2,
+      "ニャーロク": 11.9,
+      "ニャーホッケー": 18.4
     }
   },
   "howToPlay": {
@@ -817,8 +858,13 @@ const QR_CODE_SVG = `<svg viewBox="0 0 45 45" xmlns="http://www.w3.org/2000/svg"
 
 function renderGreeting(){
   const g = SITE_DATA.greeting;
-  const html = g.paragraphs.map(p=>`<p>${p}</p>`).join('')
-    + `<p>${g.distributeMessage}</p>`
+  let html = g.paragraphs.map(p=>`<p>${p}</p>`).join('');
+  if(g.fanVoices && g.fanVoices.length){
+    html += '<h3 class="tech-group-heading">💌 ファンの皆様から</h3>';
+    html += g.fanVoices.map(v=>`<p>「${v.message}」<br><span style="font-size:11px;color:var(--brown-deep);">— ${v.from}</span></p>`).join('');
+    if(g.fanVoicesReply) html += `<p>${g.fanVoicesReply}</p>`;
+  }
+  html += `<p>${g.distributeMessage}</p>`
     + `<div style="text-align:center;margin:10px 0;">${QR_CODE_SVG}<p style="font-size:10px;color:var(--brown-deep);margin-top:4px;">https://takeshiuchimi.github.io/nya/index.html</p></div>`
     + `<p class="greeting-thanks">${g.thanks}</p>`
     + `<p class="greeting-sign">${g.sign}</p>`;
@@ -829,13 +875,18 @@ function renderTechInfo(){
   const t = SITE_DATA.techInfo;
   const c = SITE_DATA.capacity;
   const gamesTotal = Object.values(c.games).reduce((a,b)=>a+b, 0);
-  const grandTotal = c.engineKB + gamesTotal;
+  const grandTotal = c.htmlKB + c.cssKB + c.jsonKB + c.engineKB + c.testKB + gamesTotal;
   let html = '<h3 class="tech-group-heading">🎮 採り入れた機能</h3>';
   html += t.featureSections.map(s=>`<p><b>${s.heading}</b><br>${s.body}</p>`).join('');
   html += '<h3 class="tech-group-heading">⚙️ 技術的な話</h3>';
   html += t.techSections.map(s=>`<p><b>${s.heading}</b><br>${s.body}</p>`).join('');
-  html += `<p><b>現在の容量内訳</b><br>共通エンジン部分: 約${c.engineKB}KB<br>`;
-  html += Object.entries(c.games).map(([name,kb])=>`${name}: 約${kb}KB`).join('<br>');
+  html += `<p><b>現在の容量内訳(全て、合計が実ファイルと一致)</b><br>`;
+  html += `HTML(タグ構造): 約${c.htmlKB}KB<br>`;
+  html += `CSS: 約${c.cssKB}KB<br>`;
+  html += `JSON(挨拶・技術情報・遊び方等の文章データ): 約${c.jsonKB}KB<br>`;
+  html += `JS共通エンジン: 約${c.engineKB}KB<br>`;
+  html += Object.entries(c.games).map(([name,kb])=>`JS ${name}: 約${kb}KB`).join('<br>');
+  html += `<br>テスト用コード(本番では不要、50本規模でまとめて除去予定): 約${c.testKB}KB`;
   html += `<br>合計: 約${grandTotal.toFixed(1)}KB</p>`;
   document.getElementById('techInfoBody').innerHTML = html;
 }
@@ -991,7 +1042,7 @@ function renderTurnBadges(topEl, bottomEl, topActive, bottomActive, cpuThinking)
    各ゲームモジュールの registerGame() には、テスト専用の _test プロパティ
    (盤の状態を直接操作するための裏口)が含まれている。これは実際のゲーム
    動作には一切使われておらず、本番配布の直前にビルドスクリプト側で
-   除去すれば、その分だけ容量を削減できる(現状で合計 約2.3KB相当)。
+   除去すれば、その分だけ容量を削減できる(現状で合計 約4.0KB相当、2025-07時点)。
    50本規模になった際に、まとめて対応することを検討する。
    ============================================================ */
 
@@ -2108,6 +2159,7 @@ const boardHtml = `
       <span>先手 <b id="seroScorePlayerTop">2</b></span>
     </div>
     <div class="game-board sero-board" id="seroBoard"></div>
+    <div class="sero-pass-callout" id="seroPassCallout"></div>
     <div class="scorebar" id="seroScorebarBottom">
       <span>後手 <b id="seroScoreCpu">2</b></span>
       <span>先手 <b id="seroScorePlayer">2</b></span>
@@ -2214,7 +2266,7 @@ function bestMoveForPlayer(b, depth){ return minimax(b, 'player', 'player', dept
 
 // catMark, catSvg は共通エンジン側で定義済み(game_nyasero.jsでは再定義しない)
 
-let board, turn, gameOver, winner, cpuThinking, currentLegal, revealMode;
+let board, turn, gameOver, winner, cpuThinking, currentLegal, revealModeBottom, revealModeTop;
 let boardEl, turnTopEl, turnBottomEl, scoreCpuEl, scorePlayerEl, scoreCpuTopEl, scorePlayerTopEl;
 let cellEls;
 
@@ -2225,19 +2277,26 @@ function isInteractionAllowed(owner){
 function render(){
   currentLegal = (!gameOver) ? legalMoves(board, turn) : [];
   let hintCell = null;
-  if(mode==='cpu' && !gameOver && turn==='player' && isInteractionAllowed('player')){
-    const mv = bestMoveForPlayer(board, 9);
+  if(!gameOver && isInteractionAllowed(turn)){
+    const mv = minimax(board, turn, turn, 9, -Infinity, Infinity).move;
     if(mv) hintCell = { r: mv.r, c: mv.c };
   }
+  const hintIsBottom = turn==='player';
   for(let r=0;r<SIZE;r++){
     for(let c=0;c<SIZE;c++){
       const el = cellEls[r][c];
       el.innerHTML = board[r][c] ? catMark(board[r][c]) : '';
       const showLegal = isInteractionAllowed(turn) && currentLegal.some(m=>m.r===r&&m.c===c);
-      el.classList.toggle('legal', showLegal);
+      if(showLegal){
+        const dot = document.createElement('div');
+        dot.className = 'legal-dot ' + (turn==='player' ? 'legal-dot-player' : 'legal-dot-cpu');
+        el.appendChild(dot);
+      }
       const isHint = !!(hintCell && hintCell.r===r && hintCell.c===c);
-      el.classList.toggle('hint', isHint);
-      el.classList.toggle('reveal', isHint && revealMode);
+      el.classList.toggle('hint', isHint && hintIsBottom);
+      el.classList.toggle('hint-top', isHint && !hintIsBottom);
+      el.classList.toggle('reveal', isHint && hintIsBottom && revealModeBottom);
+      el.classList.toggle('reveal-top', isHint && !hintIsBottom && revealModeTop);
     }
   }
   const counts = countPieces(board);
@@ -2256,10 +2315,25 @@ function finishIfNoMoves(){
   if(myMoves.length>0) return false;
   const oppMoves = legalMoves(board, opponentOf(turn));
   if(oppMoves.length===0){ endGame(); return true; }
+  const passedSide = turn;
   turn = opponentOf(turn);
   render();
+  showPassCallout(passedSide);
   if(mode==='cpu' && turn==='cpu') afterMove();
   return true;
+}
+
+let passCalloutTimer;
+function showPassCallout(passedSide){
+  const el = document.getElementById('seroPassCallout');
+  if(!el) return;
+  const label = passedSide==='player'
+    ? (mode==='pvp' ? '先手' : 'あなた')
+    : (mode==='pvp' ? '後手' : 'CPU');
+  el.textContent = `${label}は置ける場所が無いのでパス`;
+  el.classList.add('show');
+  clearTimeout(passCalloutTimer);
+  passCalloutTimer = setTimeout(()=>{ el.classList.remove('show'); }, 1800);
 }
 
 function endGame(){
@@ -2322,22 +2396,32 @@ function init(selectedMode){
     cellEls.push(rowEls);
   }
 
-  // 隠し仕掛け: 手番表示を5回連続タップするとヒントの見え方を切り替える
+  // 隠し仕掛け: 手番表示を5回連続タップすると、その側だけヒントの見え方を切り替える
   // (盤面ごと作り直されるため、毎回ここで登録し直す)
-  let secretTapCount = 0;
-  let secretTapTimer = null;
-  function onSecretTap(){
-    secretTapCount++;
-    clearTimeout(secretTapTimer);
-    secretTapTimer = setTimeout(()=>{ secretTapCount = 0; }, 1500);
-    if(secretTapCount>=5){
-      secretTapCount = 0;
-      revealMode = !revealMode;
+  let secretTapCountBottom = 0, secretTapTimerBottom = null;
+  let secretTapCountTop = 0, secretTapTimerTop = null;
+  function onSecretTapBottom(){
+    secretTapCountBottom++;
+    clearTimeout(secretTapTimerBottom);
+    secretTapTimerBottom = setTimeout(()=>{ secretTapCountBottom = 0; }, 1500);
+    if(secretTapCountBottom>=5){
+      secretTapCountBottom = 0;
+      revealModeBottom = !revealModeBottom;
       render();
     }
   }
-  turnTopEl.addEventListener('click', onSecretTap);
-  turnBottomEl.addEventListener('click', onSecretTap);
+  function onSecretTapTop(){
+    secretTapCountTop++;
+    clearTimeout(secretTapTimerTop);
+    secretTapTimerTop = setTimeout(()=>{ secretTapCountTop = 0; }, 1500);
+    if(secretTapCountTop>=5){
+      secretTapCountTop = 0;
+      revealModeTop = !revealModeTop;
+      render();
+    }
+  }
+  turnTopEl.addEventListener('click', onSecretTapTop);
+  turnBottomEl.addEventListener('click', onSecretTapBottom);
 
   board = makeInitialBoard();
   turn = (mode==='cpu') ? 'cpu' : 'player';
@@ -2345,7 +2429,8 @@ function init(selectedMode){
   winner = null;
   cpuThinking = false;
   currentLegal = [];
-  revealMode = false;
+  revealModeBottom = false;
+  revealModeTop = false;
   render();
   if(mode==='cpu' && turn==='cpu') afterMove();
 }
@@ -2390,6 +2475,7 @@ registerGame('nyasero', {
     getCpuThinking: ()=>cpuThinking,
     onCellTap,
     legalMoves: (b,o)=>legalMoves(b,o),
+    finishIfNoMoves,
     countPieces: (b)=>countPieces(b),
   },
 });
@@ -4310,7 +4396,6 @@ const boardHtml = `
     <div class="nypon-paw bottom" id="nyponPawBottom"></div>
     <div class="nypon-callout" id="nyponCallout"></div>
   </div>
-  <div class="hint-row">ドラッグで構え、タップ or フリックでシュート!当てる瞬間に動かすとスピンがかかる</div>
   <div class="status-bar" id="nyponStatusBottom">
     <span id="nyponLabelBottom">あなた</span>
     <span>score <b id="nyponScoreBottom">0</b></span>
@@ -4592,6 +4677,7 @@ function onFieldPointer(clientX, clientY){
 
 
 function init(selectedMode){
+  document.body.classList.add('nypon-active');
   fieldEl = document.getElementById('nyponField');
   ballEl = document.getElementById('nyponBall');
   paddleTopEl = document.getElementById('nyponPaddleTop');
