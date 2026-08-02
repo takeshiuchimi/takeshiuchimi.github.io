@@ -248,7 +248,11 @@
     content:'';position:absolute;width:20%;height:20%;border-radius:50%;
     background:rgba(212,175,55,.6);
   }
+  .game-cell.legal.legal-player-turn::after{ background:var(--player-accent); }
+  .game-cell.legal.legal-cpu-turn::after{ background:var(--cpu-accent); }
   .game-cell.highlight{ box-shadow:inset 0 0 0 3px var(--gold); }
+  .game-cell.highlight.highlight-player-turn{ box-shadow:inset 0 0 0 3px var(--player-accent); }
+  .game-cell.highlight.highlight-cpu-turn{ box-shadow:inset 0 0 0 3px var(--cpu-accent); }
   .sero-pass-callout{
     text-align:center; font-size:12px; font-weight:bold; color:#fff;
     background:var(--brown); border-radius:8px;
@@ -510,7 +514,7 @@
   .nsei-label-big.center{ left:50%; top:50%; font-size:22px; transform:translate(-50%,-50%); }
   .nsei-token{ width:40%; height:40%; position:absolute; z-index:1; }
   .nsei-token.player{ left:62%; top:38%; transform:translate(-50%,-50%); }
-  .nsei-token.cpu{ left:38%; top:62%; transform:translate(-50%,-50%); }
+  .nsei-token.cpu{ left:38%; top:62%; transform:translate(-50%,-50%) rotate(180deg); }
   .nsei-token svg{ width:100%; height:100%; }
   .nsei-blink{ animation:nseiBlink .35s steps(1) 5; }
   @keyframes nseiBlink{
@@ -571,11 +575,12 @@
     text-align:center; width:90%; line-height:1.2;
   }
   .nypon-callout.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .nypon-callout.show.flip{ transform:translate(-50%,-50%) scale(1) rotate(180deg); }
   .nypon-paw{
     position:absolute; width:11%; height:8%; transform:translate(-50%,-50%);
     left:50%; z-index:0; opacity:.85; pointer-events:none;
   }
-  .nypon-paw.top{ top:2%; }
+  .nypon-paw.top{ top:2%; transform:translate(-50%,-50%) rotate(180deg); }
   .nypon-paw.bottom{ top:98%; }
   .nypon-paw svg{ width:100%; height:100%; }
   .nsei-preview{
@@ -616,6 +621,7 @@
     opacity:0;transition:opacity .06s;
   }
   .ris-cell.filled svg{ opacity:1; }
+  .ris-cell-top svg{ transform:rotate(180deg); }
   .ris-cell .cat-ear, .ris-cell .cat-face{ fill:var(--cell-color, #ccc); }
   .ris-cell .cat-eye{ fill:var(--line-dark); }
   .ris-cell.flash{ animation:ris-flash .13s ease-in-out 2; }
@@ -660,7 +666,7 @@
         <div class="mascot-cat-slot" id="mascotSlotTop"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0731-2359</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-0930</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -680,7 +686,7 @@
         <div class="mascot-cat-slot" id="mascotSlotBottom"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0731-2359</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-0930</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -763,8 +769,8 @@
   },
   "techInfo": {
     "featureSections": [
-      { "heading": "対面構造(点対称設計)", "body": "盤もボタンも例外なく、上下どちらの席から見ても正しい向きで読めるように作っています。ニャモリーのカード柄(サイコロ目)は、180度回転させても同じ形に見える模様をあえて選んでいて、1つの共有した盤をそのまま両側から読める仕組みの土台になっています。" },
-      { "heading": "CPUが手加減しない(内海メソッド)", "body": "一番シンプルなニャーバツから、CPUには絶対に手加減させていません。勝てる人が増えてきたので、探索の深さはむしろ強化しています(ニャセロ・ニャー将棋等)。手加減されない相手と、まず一戦。" },
+      { "heading": "対面構造(点対称設計)", "body": "盤もボタンも例外なく、上下どちらの席から見ても正しい向きで読めるように作っています。ニャモリーのカード柄(サイコロ目)は、180度回転させても同じ形に見える模様をあえて選んでいて、1つの共有した盤をそのまま両側から読める仕組みの土台になっています。CPU対戦は「押した側が人間になる」よう作り直し、駒の色・向き・手番表示の色は物理的な席(上下)に、操作権限やスコア判定は人間かCPUかに、それぞれ別々に紐付くよう整理しました。同じ理由で、対戦モードは押した側が先手になります。手番バッジ・ヒントの点・サイコロの目・肉球の向き・ホイールピッカー・掛け声の回転タイミングまで、細部まで同じ思想で貫いているのは、正直なところ自分でもあまり見たことがないくらいしつこくやり切った自信があります。自己満足かもしれませんが、これがあるから50本に増やしていってもブレずにいられると思っています。" },
+      { "heading": "CPUが手加減しない(内海メソッド)", "body": "一番シンプルなニャーバツから、CPUには絶対に手加減させていません。勝てる人が増えてきたので、探索の深さはむしろ強化しています(ニャセロ・ニャー将棋等)。手加減されない相手と、まず一戦。特にニャセロは、ミニマックス法+アルファベータ枝刈りで9手先まで自分も相手も最善を尽くす前提で読み切っています。決着がつかない局面は「駒数の差×2」+「四隅を取っていれば+12/取られていれば-12」で評価。わざと悪手を選ぶ分岐は一切なく、その瞬間に一番得する手を機械的に探しているだけです。仕組みは全部ここに書いた通りで、隠すつもりはありません。ただし1点、同じ最善スコアの候補手が複数あるとき(ニャセロの初手など、盤面が対称でどれを選んでも同点になる場面)は、その中からランダムに選ぶようにしています。相手は人間で、これはゲームだからです。弱い手を選ぶことは一切なく、あくまで最善タイの中からの選択です。" },
       { "heading": "無限スワイプ(3枚窓リサイクル方式)", "body": "ゲーム一覧・タイトル画面は、どれだけ連続でフリックしても絶対に空白にならない仕組みにしています。常に「前・現在・次」の3枚だけを保持し、1段階動くたびに中身を組み替えて位置を瞬時にリセットする方式です。ページ数が増えてもDOM要素は常に3枚だけなので軽いままです。" },
       { "heading": "振動フィードバック(音は無し)", "body": "タップ・勝利・敗北・引き分け・無効な操作、それぞれ違う振動パターンを用意しています。音は削って振動だけにしました。落ち着いた場所でも周りを気にせず使えるようにしています。" },
       { "heading": "ダークモード", "body": "OLED端末のバッテリー節約のために用意しています。「目に優しい」は実は研究上はっきりしていませんが、暗い場所でのプレイにも向いています。" },
@@ -784,20 +790,20 @@
     ]
   },
   "capacity": {
-    "htmlKB": 4.4,
-    "cssKB": 28.2,
-    "jsonKB": 13.4,
-    "engineKB": 58.1,
-    "testKB": 4.0,
+    "htmlKB": 4.3,
+    "cssKB": 28.7,
+    "jsonKB": 15.4,
+    "engineKB": 59.3,
+    "testKB": 4.1,
     "games": {
-      "ニャーバツ": 5.3,
-      "ニャセロ": 11.4,
-      "ニャー将棋": 11.7,
-      "ニャージャン": 12.4,
-      "ニャーリス": 21.6,
-      "ニャモリー": 8.2,
-      "ニャーロク": 11.9,
-      "ニャーホッケー": 18.4
+      "ニャーバツ": 5.4,
+      "ニャセロ": 12.2,
+      "ニャー将棋": 12.8,
+      "ニャージャン": 12.8,
+      "ニャーリス": 21.9,
+      "ニャモリー": 8.4,
+      "ニャーロク": 12.3,
+      "ニャーホッケー": 21.1
     }
   },
   "howToPlay": {
@@ -1028,13 +1034,29 @@ function checkInteractionAllowed(owner, gameOver, turn, cpuThinking){
   return true;
 }
 
-function renderTurnBadges(topEl, bottomEl, topActive, bottomActive, cpuThinking){
-  const topLabel = mode==='pvp' ? '後手 (2P)' : 'CPU';
-  const bottomLabel = mode==='pvp' ? '先手 (1P)' : 'あなた';
+// 駒の色・向きは「操作権限(player=人間/cpu=CPU本体)」ではなく「物理的にどちらの席にいるか」に
+// 従うべきなので、色・向き専用にownerを変換するヘルパー。CPU対戦で人間が上の席にいる場合、
+// 見た目の色(player=オレンジ/cpu=グレー)を入れ替える。
+function colorOwnerFor(owner){
+  return (mode==='cpu' && humanSeat==='top') ? (owner==='player' ? 'cpu' : 'player') : owner;
+}
+
+function renderTurnBadges(topEl, bottomEl, cpuActive, playerActive, cpuThinking, fixedFirstMover){
+  // CPU対戦時、人間が上の席に座っている場合はラベル・強調表示(どちらが有効か)を入れ替える。
+  // ただし色(帯の背景)は物理的な席に固定(上=グレー/cpu色、下=オレンジ/player色)で、役割とは別。
+  const topIsPlayer = (mode==='cpu' && humanSeat==='top');
+  const topActive = topIsPlayer ? playerActive : cpuActive;
+  const bottomActive = topIsPlayer ? cpuActive : playerActive;
+  // fixedFirstMover: 一部のゲーム(ニャセロ等)は手番順が固定で、押した席によらない
+  const firstMoverIsTop = fixedFirstMover ? (fixedFirstMover==='cpu') : (mode==='pvp' && firstMoverSeat==='top');
+  const topLabel = mode==='pvp' ? (firstMoverIsTop ? '先手 (1P)' : '後手 (2P)') : (topIsPlayer ? 'あなた' : 'CPU');
+  const bottomLabel = mode==='pvp' ? (firstMoverIsTop ? '後手 (2P)' : '先手 (1P)') : (topIsPlayer ? 'CPU' : 'あなた');
+  const topThinking = cpuThinking && !topIsPlayer;
+  const bottomThinking = cpuThinking && topIsPlayer;
   topEl.className = 'turn-badge top owner-cpu' + (topActive ? ' active' : '');
   bottomEl.className = 'turn-badge bottom owner-player' + (bottomActive ? ' active' : '');
-  topEl.innerHTML = topLabel + (cpuThinking ? '<span class="think">考え中…</span>' : (topActive ? '<span class="think">▶ 番です</span>' : ''));
-  bottomEl.innerHTML = bottomLabel + (bottomActive ? '<span class="think">▶ 番です</span>' : '');
+  topEl.innerHTML = topLabel + (topThinking ? '<span class="think">考え中…</span>' : (topActive ? '<span class="think">▶ 番です</span>' : ''));
+  bottomEl.innerHTML = bottomLabel + (bottomThinking ? '<span class="think">考え中…</span>' : (bottomActive ? '<span class="think">▶ 番です</span>' : ''));
 }
 
 /* ============================================================
@@ -1410,6 +1432,8 @@ function registerGame(key, def){
 
 let currentGameKey = null;
 let mode = 'cpu';           // 'cpu' | 'pvp'
+let humanSeat = 'bottom';   // 'bottom' | 'top' — CPU対戦時、人間がどちら側の席に座るか。押したボタンの側になる
+let firstMoverSeat = 'bottom'; // 'bottom' | 'top' — 対戦(PVP)時、どちら側の席が先手になるか。押したボタンの側になる
 let cpuMood = { kind:'normal', text:'' };
 let rematchState = { phase:'idle', requester:null, reason:null };
 let lastResultMessage = '';
@@ -1518,9 +1542,7 @@ function bannerContentFor(side){
           <span class="chip" onclick="submitDeclineReason('もう満足')">もう満足</span>
           <span class="chip" onclick="submitDeclineReason('また今度')">また今度</span>
           <span class="chip" onclick="submitDeclineReason('眠い')">眠い</span>
-        </div>
-        <input type="text" class="reason-input" id="declineReasonInput_${side}" placeholder="自由に入力してもOK">
-        <div class="row"><button class="btn" onclick="submitDeclineReasonFromInput('${side}')">これを伝える</button></div>`;
+        </div>`;
     case 'declined':
       return `<div class="msg">${isRequester ? '断られました: '+escapeHtml(rematchState.reason) : '理由を伝えました: '+escapeHtml(rematchState.reason)}</div>`;
     case 'otherGame':
@@ -1560,12 +1582,6 @@ function submitDeclineReason(reason){
   rematchState = { phase:'declined', requester:rematchState.requester, reason };
   renderEndBanners();
 }
-function submitDeclineReasonFromInput(side){
-  const input = document.getElementById('declineReasonInput_'+side);
-  const val = (input && input.value.trim()) ? input.value.trim() : 'なんとなく';
-  submitDeclineReason(val);
-}
-
 /* ---- 画面遷移 ---- */
 function showScreen(id){
   ['screen-list','screen-title','screen-game'].forEach(s=>{
@@ -1599,8 +1615,12 @@ function openGameTitle(key){
   showScreen('screen-title');
 }
 
-function startCurrentGame(selectedMode){
+function startCurrentGame(selectedMode, pressedFromTop){
   if(selectedMode) mode = selectedMode;
+  if(pressedFromTop !== undefined){
+    if(mode==='cpu') humanSeat = pressedFromTop ? 'top' : 'bottom';
+    else firstMoverSeat = pressedFromTop ? 'top' : 'bottom';
+  }
   document.body.className = '';
   const def = GAMES[currentGameKey];
   showScreen('screen-game');
@@ -1803,12 +1823,12 @@ function makeTitleHalf(key, isTop){
   btnCpu.className = 'btn';
   btnCpu.style.flex = '1';
   btnCpu.textContent = 'CPU対戦';
-  btnCpu.addEventListener('click', ()=>{ currentGameKey = key; startCurrentGame('cpu'); });
+  btnCpu.addEventListener('click', ()=>{ currentGameKey = key; startCurrentGame('cpu', isTop); });
   const btnPvp = document.createElement('button');
   btnPvp.className = 'btn secondary';
   btnPvp.style.flex = '1';
   btnPvp.textContent = '2人対戦';
-  btnPvp.addEventListener('click', ()=>{ currentGameKey = key; startCurrentGame('pvp'); });
+  btnPvp.addEventListener('click', ()=>{ currentGameKey = key; startCurrentGame('pvp', isTop); });
   rowModes.appendChild(btnCpu);
   rowModes.appendChild(btnPvp);
   half.appendChild(rowModes);
@@ -2034,7 +2054,7 @@ function bestMoveForCpu(){
 function render(){
   for(let i=0;i<9;i++){
     const el = cellEls[i];
-    el.innerHTML = board[i] ? catMark(board[i]) : '';
+    el.innerHTML = board[i] ? catMark(colorOwnerFor(board[i])) : '';
     el.classList.toggle('highlight', !!(winLine && winLine.includes(i)));
   }
   const topActive = !gameOver && turn==='cpu';
@@ -2095,7 +2115,7 @@ function init(selectedMode){
     cellEls.push(d);
   }
   board = Array(9).fill(null);
-  turn = 'player';
+  turn = (mode==='pvp' && firstMoverSeat==='top') ? 'cpu' : 'player';
   gameOver = false;
   winner = null;
   winLine = null;
@@ -2152,20 +2172,20 @@ registerGame('nyabatsu', {
 (function(){
 
 const boardHtml = `
-  <div class="turn-badge top" id="seroTurnTop">後手</div>
+  <div class="turn-badge top" id="seroTurnTop">先手</div>
   <div id="seroRotateWrap">
     <div class="scorebar top" id="seroScorebarTop">
-      <span>後手 <b id="seroScoreCpuTop">2</b></span>
-      <span>先手 <b id="seroScorePlayerTop">2</b></span>
+      <span>先手 <b id="seroScoreCpuTop">2</b></span>
+      <span>後手 <b id="seroScorePlayerTop">2</b></span>
     </div>
     <div class="game-board sero-board" id="seroBoard"></div>
     <div class="sero-pass-callout" id="seroPassCallout"></div>
     <div class="scorebar" id="seroScorebarBottom">
-      <span>後手 <b id="seroScoreCpu">2</b></span>
-      <span>先手 <b id="seroScorePlayer">2</b></span>
+      <span>先手 <b id="seroScoreCpu">2</b></span>
+      <span>後手 <b id="seroScorePlayer">2</b></span>
     </div>
   </div>
-  <div class="turn-badge bottom" id="seroTurnBottom">先手</div>
+  <div class="turn-badge bottom" id="seroTurnBottom">後手</div>
 `;
 
 const SIZE = 4;
@@ -2261,8 +2281,30 @@ function minimax(b, owner, forOwner, depth, alpha, beta){
     return { score:best, move:bestMove };
   }
 }
-function chooseCpuMove(b, depth){ return minimax(b, 'cpu', 'cpu', depth, -Infinity, Infinity).move; }
-function bestMoveForPlayer(b, depth){ return minimax(b, 'player', 'player', depth, -Infinity, Infinity).move; }
+function chooseCpuMove(b, depth){ return pickBestWithTieBreak(b, 'cpu', depth); }
+function bestMoveForPlayer(b, depth){ return pickBestWithTieBreak(b, 'player', depth); }
+
+// ルート(最初の1手)だけ、同点の候補が複数あればランダムに選ぶ。
+// 深い階層の探索自体は決定的なまま(手加減はしていない、同じ最善の中から選ぶだけ)。
+function pickBestWithTieBreak(b, owner, depth){
+  const moves = legalMoves(b, owner);
+  if(moves.length===0) return null;
+  let alpha = -Infinity, beta = Infinity;
+  let best = -Infinity;
+  let bestMoves = [];
+  for(const mv of moves){
+    const nb = applyMoveToBoard(b, mv.r, mv.c, owner, mv.flips);
+    const res = minimax(nb, opponentOf(owner), owner, depth-1, alpha, beta);
+    if(res.score > best){
+      best = res.score;
+      bestMoves = [mv];
+    }else if(res.score === best){
+      bestMoves.push(mv);
+    }
+    alpha = Math.max(alpha, best);
+  }
+  return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+}
 
 // catMark, catSvg は共通エンジン側で定義済み(game_nyasero.jsでは再定義しない)
 
@@ -2281,15 +2323,15 @@ function render(){
     const mv = minimax(board, turn, turn, 9, -Infinity, Infinity).move;
     if(mv) hintCell = { r: mv.r, c: mv.c };
   }
-  const hintIsBottom = turn==='player';
+  const hintIsBottom = (mode==='cpu' && humanSeat==='top') ? (turn==='cpu') : (turn==='player');
   for(let r=0;r<SIZE;r++){
     for(let c=0;c<SIZE;c++){
       const el = cellEls[r][c];
-      el.innerHTML = board[r][c] ? catMark(board[r][c]) : '';
+      el.innerHTML = board[r][c] ? catMark(colorOwnerFor(board[r][c])) : '';
       const showLegal = isInteractionAllowed(turn) && currentLegal.some(m=>m.r===r&&m.c===c);
       if(showLegal){
         const dot = document.createElement('div');
-        dot.className = 'legal-dot ' + (turn==='player' ? 'legal-dot-player' : 'legal-dot-cpu');
+        dot.className = 'legal-dot ' + (hintIsBottom ? 'legal-dot-player' : 'legal-dot-cpu');
         el.appendChild(dot);
       }
       const isHint = !!(hintCell && hintCell.r===r && hintCell.c===c);
@@ -2307,7 +2349,7 @@ function render(){
 
   const topActive = !gameOver && turn==='cpu';
   const bottomActive = !gameOver && turn==='player';
-  renderTurnBadges(turnTopEl, turnBottomEl, topActive, bottomActive, cpuThinking);
+  renderTurnBadges(turnTopEl, turnBottomEl, topActive, bottomActive, cpuThinking, 'cpu');
 }
 
 function finishIfNoMoves(){
@@ -2424,7 +2466,7 @@ function init(selectedMode){
   turnBottomEl.addEventListener('click', onSecretTapBottom);
 
   board = makeInitialBoard();
-  turn = (mode==='cpu') ? 'cpu' : 'player';
+  turn = 'cpu';
   gameOver = false;
   winner = null;
   cpuThinking = false;
@@ -2437,15 +2479,15 @@ function init(selectedMode){
 
 function getResultMessageCpu(resultKind){
   const counts = countPieces(board);
-  const scoreText = `(先手${counts.player} - 後手${counts.cpu})`;
+  const scoreText = `(先手${counts.cpu} - 後手${counts.player})`;
   if(resultKind==='draw') return `🤝 引き分け! ${scoreText}`;
   return resultKind==='player' ? `🎉 あなたの勝ち! ${scoreText}` : `🐾 CPUの勝ち… ${scoreText}`;
 }
 function getResultMessagePvp(resultKind){
   const counts = countPieces(board);
-  const scoreText = `(先手${counts.player} - 後手${counts.cpu})`;
+  const scoreText = `(先手${counts.cpu} - 後手${counts.player})`;
   if(resultKind==='draw') return `🤝 引き分け! ${scoreText}`;
-  return (resultKind==='player' ? 'プレイヤー1(先手)' : 'プレイヤー2(後手)') + `の勝ち! ${scoreText}`;
+  return (resultKind==='player' ? 'プレイヤー1(後手)' : 'プレイヤー2(先手)') + `の勝ち! ${scoreText}`;
 }
 
 const howToPlayHtml = buildHowToPlayHtml(SITE_DATA.howToPlay.nyasero);
@@ -2459,7 +2501,7 @@ registerGame('nyasero', {
   cardIconPlayer,
   cardIconCpu,
   title: 'ニャセロ',
-  desc: '4×4マスの小さなオセロ。相手の駒をはさんでひっくり返そう!両者とも置ける場所がなくなった時点で駒の多い方が勝ちです。盤が小さい分、一手ごとの重みが増します。',
+  desc: '4×4マスの小さなオセロ。相手の駒をはさんでひっくり返そう!両者とも打てる場所がなくなったら駒の多い方が勝ち。盤が小さい分、一手の重みが増します。',
   boardHtml,
   howToPlayHtml,
   init,
@@ -2505,14 +2547,17 @@ function inBounds(r,c){ return r>=0 && r<ROWS && c>=0 && c<COLS; }
 
 function initialState(){
   const board = Array.from({length:ROWS}, ()=>Array(COLS).fill(null));
-  board[0][0] = { type:'giraffe', owner:'cpu' };
-  board[0][1] = { type:'lion',    owner:'cpu' };
-  board[0][2] = { type:'elephant',owner:'cpu' };
-  board[1][1] = { type:'chick',   owner:'cpu' };
-  board[2][1] = { type:'chick',   owner:'player' };
-  board[3][0] = { type:'elephant',owner:'player' };
-  board[3][1] = { type:'lion',    owner:'player' };
-  board[3][2] = { type:'giraffe', owner:'player' };
+  const flip = (mode==='cpu' && humanSeat==='top');
+  const rr = r => flip ? (ROWS-1-r) : r;
+  const cc = c => flip ? (COLS-1-c) : c;
+  board[rr(0)][cc(0)] = { type:'giraffe', owner:'cpu' };
+  board[rr(0)][cc(1)] = { type:'lion',    owner:'cpu' };
+  board[rr(0)][cc(2)] = { type:'elephant',owner:'cpu' };
+  board[rr(1)][cc(1)] = { type:'chick',   owner:'cpu' };
+  board[rr(2)][cc(1)] = { type:'chick',   owner:'player' };
+  board[rr(3)][cc(0)] = { type:'elephant',owner:'player' };
+  board[rr(3)][cc(1)] = { type:'lion',    owner:'player' };
+  board[rr(3)][cc(2)] = { type:'giraffe', owner:'player' };
   return { board, hands:{player:[],cpu:[]}, turn:'player', gameOver:false, winner:null, winReason:null };
 }
 function cloneState(s){
@@ -2529,12 +2574,16 @@ function moveDirections(type, owner){
     case 'lion': return [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
     case 'elephant': return [[-1,-1],[-1,1],[1,-1],[1,1]];
     case 'giraffe': return [[-1,0],[1,0],[0,-1],[0,1]];
-    case 'chick': { const fwd = owner==='player'?-1:1; return [[fwd,0]]; }
-    case 'hen': { const fwd = owner==='player'?-1:1; return [[-1,0],[1,0],[0,-1],[0,1],[fwd,-1],[fwd,1]]; }
+    case 'chick': { const flip = (mode==='cpu' && humanSeat==='top'); const fwd = (owner==='player') !== flip ? -1 : 1; return [[fwd,0]]; }
+    case 'hen': { const flip = (mode==='cpu' && humanSeat==='top'); const fwd = (owner==='player') !== flip ? -1 : 1; return [[-1,0],[1,0],[0,-1],[0,1],[fwd,-1],[fwd,1]]; }
   }
   return [];
 }
-function isLastRowFor(owner, r){ return owner==='player' ? r===0 : r===ROWS-1; }
+function isLastRowFor(owner, r){
+  const flip = (mode==='cpu' && humanSeat==='top');
+  if(flip) return owner==='player' ? r===ROWS-1 : r===0;
+  return owner==='player' ? r===0 : r===ROWS-1;
+}
 
 function generateMoves(s){
   const moves = [];
@@ -2666,9 +2715,14 @@ function render(){
     for(let c=0;c<COLS;c++){
       const cell = state.board[r][c];
       const el = cellEls[r][c];
-      el.innerHTML = cell ? catSvg(cell.type, cell.owner) : '';
+      el.innerHTML = cell ? catSvg(cell.type, colorOwnerFor(cell.owner)) : '';
       el.classList.toggle('highlight', !!(selected && selected.kind==='board' && selected.r===r && selected.c===c));
       el.classList.toggle('legal', legalTargets.some(t=>t.r===r && t.c===c));
+      const turnIsBottomSeat = (mode==='cpu' && humanSeat==='top') ? (state.turn==='cpu') : (state.turn==='player');
+      el.classList.toggle('legal-player-turn', legalTargets.some(t=>t.r===r && t.c===c) && turnIsBottomSeat);
+      el.classList.toggle('legal-cpu-turn', legalTargets.some(t=>t.r===r && t.c===c) && !turnIsBottomSeat);
+      el.classList.toggle('highlight-player-turn', !!(selected && selected.kind==='board' && selected.r===r && selected.c===c) && turnIsBottomSeat);
+      el.classList.toggle('highlight-cpu-turn', !!(selected && selected.kind==='board' && selected.r===r && selected.c===c) && !turnIsBottomSeat);
     }
   }
   renderHand(cpuHandEl, state.hands.cpu, 'cpu');
@@ -2687,7 +2741,7 @@ function renderHand(el, hand, owner){
   Object.keys(counts).forEach(type=>{
     const piece = document.createElement('div');
     piece.className='hand-piece';
-    piece.innerHTML = catSvg(type, owner) + (counts[type]>1 ? `<span class="count">${counts[type]}</span>` : '');
+    piece.innerHTML = catSvg(type, colorOwnerFor(owner)) + (counts[type]>1 ? `<span class="count">${counts[type]}</span>` : '');
     const canTapThisHand = (mode==='pvp') || (mode==='cpu' && owner==='player');
     if(canTapThisHand){
       piece.classList.toggle('selected', !!(selected && selected.kind==='hand' && selected.pieceType===type && state.turn===owner));
@@ -2785,6 +2839,7 @@ function init(selectedMode){
   }
 
   state = initialState();
+  if(mode==='pvp' && firstMoverSeat==='top') state.turn = 'cpu';
   clearSelection();
   cpuThinking = false;
   render();
@@ -3115,15 +3170,16 @@ function endJanGame(result){
 }
 
 function init(selectedMode){
-  cpuHandRow = document.getElementById('janCpuHandRow');
-  playerHandRow = document.getElementById('janPlayerHandRow');
+  const swapped = (mode==='cpu' && humanSeat==='top');
+  cpuHandRow = document.getElementById(swapped ? 'janPlayerHandRow' : 'janCpuHandRow');
+  playerHandRow = document.getElementById(swapped ? 'janCpuHandRow' : 'janPlayerHandRow');
   wallStackEl = document.getElementById('janWallStack');
-  wallCountEl = document.getElementById('janWallCount');
-  wallCountTopEl = document.getElementById('janWallCountTop');
-  cpuDiscardAreaEl = document.getElementById('janCpuDiscardArea');
-  playerDiscardAreaEl = document.getElementById('janPlayerDiscardArea');
-  valueCounterTopEl = document.getElementById('janValueCounterTop');
-  valueCounterBottomEl = document.getElementById('janValueCounterBottom');
+  wallCountEl = document.getElementById(swapped ? 'janWallCountTop' : 'janWallCount');
+  wallCountTopEl = document.getElementById(swapped ? 'janWallCount' : 'janWallCountTop');
+  cpuDiscardAreaEl = document.getElementById(swapped ? 'janPlayerDiscardArea' : 'janCpuDiscardArea');
+  playerDiscardAreaEl = document.getElementById(swapped ? 'janCpuDiscardArea' : 'janPlayerDiscardArea');
+  valueCounterTopEl = document.getElementById(swapped ? 'janValueCounterBottom' : 'janValueCounterTop');
+  valueCounterBottomEl = document.getElementById(swapped ? 'janValueCounterTop' : 'janValueCounterBottom');
   hintTextEl = document.getElementById('janHintText');
   turnTopEl = document.getElementById('janTurnTop');
   turnBottomEl = document.getElementById('janTurnBottom');
@@ -3133,7 +3189,7 @@ function init(selectedMode){
   playerHand = wall.splice(wall.length-5, 5);
   cpuHand = wall.splice(wall.length-5, 5);
   discardPile = [];
-  turn = 'player';
+  turn = (mode==='pvp' && firstMoverSeat==='top') ? 'cpu' : 'player';
   phase = 'needDraw';
   gameOver = false;
   winner = null;
@@ -3463,8 +3519,8 @@ function updateStatus(){
   scoreBottomEl.textContent = boardBottomState.score;
   linesTopEl.textContent = boardTopState.lines;
   linesBottomEl.textContent = boardBottomState.lines;
-  labelTopEl.textContent = mode==='pvp' ? 'プレイヤー2' : 'CPU';
-  labelBottomEl.textContent = mode==='pvp' ? 'プレイヤー1' : 'あなた';
+  labelTopEl.textContent = mode==='pvp' ? 'プレイヤー2' : (topRole()==='cpu' ? 'CPU' : 'あなた');
+  labelBottomEl.textContent = mode==='pvp' ? 'プレイヤー1' : (bottomRole()==='cpu' ? 'CPU' : 'あなた');
   boardWrapTopEl.classList.toggle('gameover', !!boardTopState.gameOver);
   boardWrapBottomEl.classList.toggle('gameover', !!boardBottomState.gameOver);
 }
@@ -3534,33 +3590,39 @@ function onBoardGameOver(which){
   if(gameEnded) return;
   gameEnded = true;
   running = false;
-  winner = which==='top' ? 'player' : 'cpu';
+  winner = which==='top' ? bottomRole() : topRole();
   setTimeout(()=> showResult(winner), 200);
 }
 
+function topRole(){ return (mode==='cpu' && humanSeat==='top') ? 'player' : 'cpu'; }
+function bottomRole(){ return (mode==='cpu' && humanSeat==='top') ? 'cpu' : 'player'; }
+
 function driveCpu(){
-  if(boardTopState.gameOver || gameEnded) return;
-  const cur = boardTopState.current;
+  const aiIsTop = topRole()==='cpu';
+  const state = aiIsTop ? boardTopState : boardBottomState;
+  const seatLabel = aiIsTop ? 'top' : 'bottom';
+  if(state.gameOver || gameEnded) return;
+  const cur = state.current;
   if(!cur) return;
   if(cur.fromIncoming && cur.y < 1) return;
 
   if(cur.id !== cpuLastPieceId){
     cpuLastPieceId = cur.id;
     cpuThinkingUntil = Date.now() + 350 + Math.random()*250;
-    boardTopState._cpuDecided = false;
+    state._cpuDecided = false;
     cpuTarget = null;
   }
-  if(boardTopState._cpuDecided){
+  if(state._cpuDecided){
     if(!cpuTarget) return;
     if(Date.now() < cpuNextActionTime) return;
-    const nowCur = boardTopState.current;
+    const nowCur = state.current;
     if(!nowCur){ cpuTarget = null; return; }
     if(nowCur.rot !== cpuTarget.rot){
-      tryRotate(boardTopState);
+      tryRotate(state);
     }else if(nowCur.x < cpuTarget.x){
-      tryMove(boardTopState, 1, 0);
+      tryMove(state, 1, 0);
     }else if(nowCur.x > cpuTarget.x){
-      tryMove(boardTopState, -1, 0);
+      tryMove(state, -1, 0);
     }else{
       cpuTarget = null;
       return;
@@ -3569,15 +3631,15 @@ function driveCpu(){
     return;
   }
   if(Date.now() < cpuThinkingUntil) return;
-  boardTopState._cpuDecided = true;
+  state._cpuDecided = true;
 
   const threshold = -18;
-  if(shouldCpuFlip(boardTopState.grid, cur.type, threshold)){
-    startEscapeAnim('top', cur);
-    boardTopState.current = null;
+  if(shouldCpuFlip(state.grid, cur.type, threshold)){
+    startEscapeAnim(seatLabel, cur);
+    state.current = null;
     return;
   }
-  const best = findBestPlacement(boardTopState.grid, cur.type);
+  const best = findBestPlacement(state.grid, cur.type);
   if(best){
     cpuTarget = { rot: best.rot, x: best.x };
     cpuNextActionTime = Date.now() + CPU_STEP_DELAY;
@@ -3594,7 +3656,8 @@ function setupGestures(el, getState, getOpponentState, isTopBoard){
     if(!running || gameEnded) return;
     const state = getState();
     if(state.gameOver) return;
-    if(mode==='cpu' && isTopBoard) return;
+    const thisBoardRole = isTopBoard ? topRole() : bottomRole();
+    if(mode==='cpu' && thisBoardRole==='cpu') return;
     if(el.setPointerCapture) el.setPointerCapture(e.pointerId);
     const { w, h } = cellSize();
     active = { pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, lastStepX: e.clientX, cellW: w, cellH: h, startTime: Date.now(), flipped: false, moved: false };
@@ -3694,7 +3757,7 @@ function init(selectedMode){
   for(let r=0;r<ROWS;r++){
     const rowB=[];
     for(let c=0;c<COLS;c++){
-      const dt = document.createElement('div'); dt.className='ris-cell'; dt.innerHTML = CAT_CELL_SVG; boardTopEl.appendChild(dt);
+      const dt = document.createElement('div'); dt.className='ris-cell ris-cell-top'; dt.innerHTML = CAT_CELL_SVG; boardTopEl.appendChild(dt);
       topCells[ROWS-1-r][COLS-1-c] = dt;
       const db = document.createElement('div'); db.className='ris-cell'; db.innerHTML = CAT_CELL_SVG; boardBottomEl.appendChild(db); rowB.push(db);
     }
@@ -3776,6 +3839,7 @@ registerGame('nyaris', {
     getBoardTopEl: ()=>boardTopEl, getBoardBottomEl: ()=>boardBottomEl,
     onBoardGameOver,
     isRunning: ()=>running,
+    topRole, bottomRole, driveCpu,
   },
 });
 
@@ -3807,8 +3871,8 @@ const boardHtml = `
 const COLS = 4, ROWS = 3;
 const CARD_BACK_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="58" r="30" fill="var(--brown)"/>
-  <path d="M26 34 L36 56 L20 56 Z" fill="var(--brown)"/>
-  <path d="M74 34 L80 56 L64 56 Z" fill="var(--brown)"/>
+  <path d="M24 32 L34 6 L46 30 Z" fill="var(--brown)"/>
+  <path d="M76 32 L66 6 L54 30 Z" fill="var(--brown)"/>
   <circle cx="40" cy="56" r="3.2" fill="var(--cream)"/>
   <circle cx="60" cy="56" r="3.2" fill="var(--cream)"/>
   <path d="M45 66 Q50 70 55 66" stroke="var(--cream)" stroke-width="2" fill="none" stroke-linecap="round"/>
@@ -3845,10 +3909,11 @@ function render(){
       el.innerHTML = CARD_BACK_SVG;
     }
   });
-  scoreTopEl.textContent = score.cpu;
-  scoreBottomEl.textContent = score.player;
-  labelTopEl.textContent = mode==='pvp' ? 'プレイヤー2' : 'CPU';
-  labelBottomEl.textContent = mode==='pvp' ? 'プレイヤー1' : 'あなた';
+  const topIsPlayer = (mode==='cpu' && humanSeat==='top');
+  scoreTopEl.textContent = topIsPlayer ? score.player : score.cpu;
+  scoreBottomEl.textContent = topIsPlayer ? score.cpu : score.player;
+  labelTopEl.textContent = mode==='pvp' ? 'プレイヤー2' : (topIsPlayer ? 'あなた' : 'CPU');
+  labelBottomEl.textContent = mode==='pvp' ? 'プレイヤー1' : (topIsPlayer ? 'CPU' : 'あなた');
   const topActive = !gameOver && turn==='cpu';
   const bottomActive = !gameOver && turn==='player';
   renderTurnBadges(turnTopEl, turnBottomEl, topActive, bottomActive, cpuThinking);
@@ -3963,7 +4028,7 @@ function init(selectedMode){
     boardEl.appendChild(d);
     cellEls.push(d);
   }
-  turn = 'player';
+  turn = (mode==='pvp' && firstMoverSeat==='top') ? 'cpu' : 'player';
   gameOver = false;
   winner = null;
   score = { player:0, cpu:0 };
@@ -4111,14 +4176,16 @@ function renderBoard(){
     }
     if(hasPlayer){
       const t = document.createElement('div');
-      t.className = 'nsei-token player';
-      t.innerHTML = pawSvg('player');
+      const visualOwner = colorOwnerFor('player');
+      t.className = 'nsei-token ' + visualOwner;
+      t.innerHTML = pawSvg(visualOwner);
       el.appendChild(t);
     }
     if(hasCpu){
       const t = document.createElement('div');
-      t.className = 'nsei-token cpu';
-      t.innerHTML = pawSvg('cpu');
+      const visualOwner = colorOwnerFor('cpu');
+      t.className = 'nsei-token ' + visualOwner;
+      t.innerHTML = pawSvg(visualOwner);
       el.appendChild(t);
     }
   }
@@ -4127,10 +4194,10 @@ function renderBoard(){
   const bottomActive = !gameOver && turn==='player';
   renderTurnBadges(turnTopEl, turnBottomEl, topActive, bottomActive, cpuThinking);
 
-  wpTop.setDisabled(!isInteractionAllowed('cpu'));
-  wpBottom.setDisabled(!isInteractionAllowed('player'));
-  rollBtnTop.disabled = !isInteractionAllowed('cpu');
-  rollBtnBottom.disabled = !isInteractionAllowed('player');
+  wpTop.setDisabled(!isInteractionAllowed(topOwner()));
+  wpBottom.setDisabled(!isInteractionAllowed(bottomOwner()));
+  rollBtnTop.disabled = !isInteractionAllowed(topOwner());
+  rollBtnBottom.disabled = !isInteractionAllowed(bottomOwner());
 }
 
 function moveContextFor(owner){
@@ -4166,7 +4233,7 @@ function resolveLanding(owner, newPos, wp){
     gameOver = true; winner = owner;
     renderBoard();
     const goalCellEl = cellEls[GOAL_INDEX];
-    const tokenEl = goalCellEl.querySelectorAll ? goalCellEl.querySelectorAll('.nsei-token.' + owner)[0] : null;
+    const tokenEl = goalCellEl.querySelectorAll ? goalCellEl.querySelectorAll('.nsei-token.' + colorOwnerFor(owner))[0] : null;
     if(tokenEl) tokenEl.classList.add('nsei-blink');
     setTimeout(()=> showResult(winner), 1900);
     return;
@@ -4215,6 +4282,9 @@ function endTurn(){
   if(mode==='cpu' && turn==='cpu') setTimeout(cpuTakeTurn, 500);
 }
 
+function topOwner(){ return (mode==='cpu' && humanSeat==='top') ? 'player' : 'cpu'; }
+function bottomOwner(){ return (mode==='cpu' && humanSeat==='top') ? 'cpu' : 'player'; }
+
 function doRoll(owner, wp){
   if(!isInteractionAllowed(owner)) { feedbackInvalid(); return; }
   wp.setDisabled(true);
@@ -4227,8 +4297,9 @@ function cpuTakeTurn(){
   renderBoard();
   setTimeout(()=>{
     cpuThinking = false;
-    wpTop.setDisabled(true);
-    wpTop.spinRandom(2, 3);
+    const cpuWp = topOwner()==='cpu' ? wpTop : wpBottom;
+    cpuWp.setDisabled(true);
+    cpuWp.spinRandom(2, 3);
   }, 400);
 }
 
@@ -4257,7 +4328,7 @@ function init(selectedMode){
   }
 
   pos = { player:0, cpu:0 };
-  turn = 'player';
+  turn = (mode==='pvp' && firstMoverSeat==='top') ? 'cpu' : 'player';
   gameOver = false;
   winner = null;
   skipNext = null;
@@ -4275,7 +4346,7 @@ function init(selectedMode){
       if(suppressTop){ suppressTop = false; return; }
       if(typeof val==='number' && !gameOver){
         wpTop.setDisabled(true);
-        applyRoll('cpu', val, wpTop);
+        applyRoll(topOwner(), val, wpTop);
       }
     }
   });
@@ -4287,7 +4358,7 @@ function init(selectedMode){
       if(suppressBottom){ suppressBottom = false; return; }
       if(typeof val==='number' && !gameOver){
         wpBottom.setDisabled(true);
-        applyRoll('player', val, wpBottom);
+        applyRoll(bottomOwner(), val, wpBottom);
       }
     }
   });
@@ -4295,8 +4366,8 @@ function init(selectedMode){
   wpTop._suppressNext = ()=>{ suppressTop = true; };
   wpBottom._suppressNext = ()=>{ suppressBottom = true; };
 
-  rollBtnTop.addEventListener('click', ()=> doRoll('cpu', wpTop));
-  rollBtnBottom.addEventListener('click', ()=> doRoll('player', wpBottom));
+  rollBtnTop.addEventListener('click', ()=> doRoll(topOwner(), wpTop));
+  rollBtnBottom.addEventListener('click', ()=> doRoll(bottomOwner(), wpBottom));
 
   renderBoard();
 }
@@ -4351,6 +4422,7 @@ registerGame('nyansei', {
     getCpuThinking: ()=>cpuThinking,
     applyRoll, doRoll, endTurn, cpuTakeTurn,
     getWpTop: ()=>wpTop, getWpBottom: ()=>wpBottom,
+    topOwner, bottomOwner,
     EVENTS, TRACK_LENGTH,
   },
 });
@@ -4417,9 +4489,11 @@ function moveToward(current, target, speed){
 }
 
 function resetBall(heldBy){
+  const playerDir = bottomOwner()==='player' ? -1 : 1;
+  const cpuDir = topOwner()==='cpu' ? 1 : -1;
   ball = {
     x: heldBy==='player' ? playerPaddleX : cpuPaddleX,
-    y: heldBy==='player' ? playerPaddleY - BALL_R - 1 : cpuPaddleY + BALL_R + 1,
+    y: heldBy==='player' ? playerPaddleY + playerDir*(BALL_R+1) : cpuPaddleY + cpuDir*(BALL_R+1),
     vx: 0, vy: 0,
     held: heldBy,
   };
@@ -4433,12 +4507,12 @@ function startFaceoff(){
   ball = { x: FIELD_W/2, y: FIELD_H/2, vx: 0, vy: 0, held: null, faceoff: true, pending: true };
   faceoffCountdown = FACEOFF_WAIT_TICKS;
   cpuFaceoffDelay = Math.floor(Math.random() * 8); // 審判の笛のタイミングのようにブレを持たせる
-  showCallout('3', 700);
+  showCallout('3', 900);
 }
 
 function releaseBall(flickVx, flickVy){
   if(!ball || !ball.held) return;
-  const dir = ball.held==='player' ? -1 : 1;
+  const dir = ball.held==='player' ? (bottomOwner()==='player' ? -1 : 1) : (topOwner()==='cpu' ? 1 : -1);
   if(flickVx !== undefined){
     const power = clamp(Math.abs(flickVy) * 0.9, 3.2, 8);
     ball.vy = dir * power;
@@ -4451,15 +4525,22 @@ function releaseBall(flickVx, flickVy){
   ball.held = null;
 }
 
+function topOwner(){ return (mode==='cpu' && humanSeat==='top') ? 'player' : 'cpu'; }
+function bottomOwner(){ return (mode==='cpu' && humanSeat==='top') ? 'cpu' : 'player'; }
+function playerHomeY(){ return bottomOwner()==='player' ? PADDLE_Y_BOTTOM : PADDLE_Y_TOP; }
+function playerLimitY(){ return bottomOwner()==='player' ? PLAYER_Y_MIN : CPU_Y_MAX; }
+function cpuHomeY(){ return topOwner()==='cpu' ? PADDLE_Y_TOP : PADDLE_Y_BOTTOM; }
+function cpuLimitY(){ return topOwner()==='cpu' ? CPU_Y_MAX : PLAYER_Y_MIN; }
+
 function scorePoint(owner){
   score[owner]++;
-  showCallout('ゴーーール!', 1200);
+  showCallout('ゴーーール!', 2000);
   render();
   if(score[owner] >= WIN_SCORE){
     gameOver = true; winner = owner;
     stopEngineLoop();
-    setTimeout(()=> showCallout('ゲームセット!', 1400), 1200);
-    setTimeout(()=> showResult(winner), 2600);
+    setTimeout(()=> showCallout('ゲームセット!', 2200), 2000);
+    setTimeout(()=> showResult(winner), 4200);
     return;
   }
   resetBall(owner==='player' ? 'cpu' : 'player');
@@ -4489,7 +4570,7 @@ function tick(){
 
   if(mode==='cpu' && ball.held!=='cpu'){
     let targetX = ball.x;
-    let targetY = PADDLE_Y_TOP;
+    let targetY = cpuHomeY();
     let cpuSpeed = 2.5;
     if(ball.faceoff){
       // フェイスオフ中は反応に遅延を持たせ、突撃速度もランダムにブレさせる
@@ -4499,12 +4580,12 @@ function tick(){
         cpuSpeed = 0;
       }else{
         targetX = FIELD_W/2 + (Math.random()-0.5) * 4; // わずかな乱れ
-        targetY = CPU_Y_MAX;
+        targetY = cpuLimitY();
         cpuSpeed = 2.6 + Math.random() * 1.2; // 2.6〜3.8のブレ
       }
     }else if(ball.vy < 0){
       // 玉がこちらへ向かっている間は前に出て迎え撃つ(氷上の格闘技らしく)
-      targetY = CPU_Y_MAX;
+      targetY = cpuLimitY();
       if(cpuShotPlan==='left') targetX = ball.x + PADDLE_W * 0.4;
       else if(cpuShotPlan==='right') targetX = ball.x - PADDLE_W * 0.4;
       else if(cpuShotPlan==='spin'){
@@ -4518,7 +4599,7 @@ function tick(){
     cpuPaddleX = clamp(cpuPaddleX, PADDLE_W/2, FIELD_W - PADDLE_W/2);
     if(cpuPaddleY < targetY) cpuPaddleY = Math.min(targetY, cpuPaddleY + cpuSpeed);
     else if(cpuPaddleY > targetY) cpuPaddleY = Math.max(targetY, cpuPaddleY - cpuSpeed);
-    cpuPaddleY = clamp(cpuPaddleY, PADDLE_Y_TOP, CPU_Y_MAX);
+    cpuPaddleY = clamp(cpuPaddleY, Math.min(cpuHomeY(),cpuLimitY()), Math.max(cpuHomeY(),cpuLimitY()));
   }
 
   // 人間側の操作もCPUと同じ速度上限で、目標地点へ近づける(瞬間移動させない)
@@ -4533,15 +4614,15 @@ function tick(){
   if(ball.faceoff){
     if(ball.pending){
       faceoffCountdown--;
-      if(faceoffCountdown === 40) showCallout('2', 700);
-      else if(faceoffCountdown === 20) showCallout('1', 700);
+      if(faceoffCountdown === 40) showCallout('2', 900);
+      else if(faceoffCountdown === 20) showCallout('1', 900);
       if(faceoffCountdown <= 0){
         const angle = Math.random() * Math.PI * 2;
         const r = Math.random() * FACEOFF_CIRCLE_R;
         ball.x = clamp(FIELD_W/2 + Math.cos(angle) * r, BALL_R, FIELD_W - BALL_R);
         ball.y = clamp(FIELD_H/2 + Math.sin(angle) * r, BALL_R, FIELD_H - BALL_R);
         ball.pending = false;
-        showCallout('フェイスオフ!', 700);
+        showCallout('フェイスオフ!', 1400);
       }
       render();
       return;
@@ -4551,13 +4632,13 @@ function tick(){
     const reach = PADDLE_W/2 + BALL_R;
     if(playerDist <= reach){
       const hitOffset = clamp((ball.x - playerPaddleX) / (PADDLE_W/2), -1, 1);
-      ball.vy = -4.3;
+      ball.vy = (bottomOwner()==='player' ? -1 : 1) * 4.3;
       ball.vx = clamp(hitOffset * 2.6 + playerVelocity * 1.6, -5, 5);
       ball.faceoff = false;
       feedbackTap();
     }else if(cpuDist <= reach){
       const hitOffset = clamp((ball.x - cpuPaddleX) / (PADDLE_W/2), -1, 1);
-      ball.vy = 4.3;
+      ball.vy = (topOwner()==='cpu' ? 1 : -1) * 4.3;
       ball.vx = clamp(hitOffset * 2.6 + cpuVelocity * 1.6, -5, 5);
       ball.faceoff = false;
     }
@@ -4568,10 +4649,10 @@ function tick(){
   if(ball.held){
     if(ball.held==='player'){
       ball.x = playerPaddleX;
-      ball.y = playerPaddleY - BALL_R - 1;
+      ball.y = playerPaddleY + (bottomOwner()==='player' ? -1 : 1) * (BALL_R+1);
     }else{
       ball.x = cpuPaddleX;
-      ball.y = cpuPaddleY + BALL_R + 1;
+      ball.y = cpuPaddleY + (topOwner()==='cpu' ? 1 : -1) * (BALL_R+1);
       if(mode==='cpu'){
         cpuHoldTicks++;
         if(cpuHoldTicks > 16) releaseBall();
@@ -4587,17 +4668,28 @@ function tick(){
   if(ball.x <= BALL_R){ ball.x = BALL_R; ball.vx = Math.abs(ball.vx); }
   if(ball.x >= FIELD_W - BALL_R){ ball.x = FIELD_W - BALL_R; ball.vx = -Math.abs(ball.vx); }
 
-  // 下端(プレイヤー側): パドルの現在位置(前進していれば手前)で判定。隙間を作らない
-  if(ball.vy > 0 && ball.y >= playerPaddleY - BALL_R){
-    if(Math.abs(ball.x - playerPaddleX) <= PADDLE_W/2 + BALL_R){
-      const hitOffset = clamp((ball.x - playerPaddleX) / (PADDLE_W/2), -1, 1);
-      ball.vy = clamp(-Math.abs(ball.vy) * 1.03, -MAX_BALL_SPEED, MAX_BALL_SPEED);
-      ball.vx = clamp(hitOffset * 2.6 + playerVelocity * 1.6, -5, 5);
-      ball.y = playerPaddleY - BALL_R;
-      feedbackTap();
+  // 衝突判定は「物理的に下端/上端にいるパドル」基準。席交換時はplayer/cpuの実体が入れ替わる
+  const bottomIsPlayer = bottomOwner()==='player';
+  const bottomPaddleX = bottomIsPlayer ? playerPaddleX : cpuPaddleX;
+  const bottomPaddleY = bottomIsPlayer ? playerPaddleY : cpuPaddleY;
+  const bottomVelocity = bottomIsPlayer ? playerVelocity : cpuVelocity;
+  const topIsPlayer = topOwner()==='player';
+  const topPaddleX = topIsPlayer ? playerPaddleX : cpuPaddleX;
+  const topPaddleY = topIsPlayer ? playerPaddleY : cpuPaddleY;
+  const topVelocity = topIsPlayer ? playerVelocity : cpuVelocity;
+
+  // 下端: パドルの現在位置(前進していれば手前)で判定。隙間を作らない
+  if(ball.vy > 0 && ball.y >= bottomPaddleY - BALL_R){
+    if(Math.abs(ball.x - bottomPaddleX) <= PADDLE_W/2 + BALL_R){
+      const hitOffset = clamp((ball.x - bottomPaddleX) / (PADDLE_W/2), -1, 1);
+      const speedMul = (!bottomIsPlayer && cpuShotPlan==='center') ? 1.35 : 1.03;
+      ball.vy = clamp(-Math.abs(ball.vy) * speedMul, -MAX_BALL_SPEED, MAX_BALL_SPEED);
+      ball.vx = clamp(hitOffset * 2.6 + bottomVelocity * 1.6, -5, 5);
+      ball.y = bottomPaddleY - BALL_R;
+      if(bottomIsPlayer) feedbackTap(); else cpuShotPlan = null;
     }else if(ball.y >= FIELD_H - BALL_R){
       if(ball.x >= GOAL_LEFT && ball.x <= GOAL_RIGHT){
-        scorePoint('cpu');
+        scorePoint(bottomIsPlayer ? 'cpu' : 'player');
         return;
       }else{
         ball.y = FIELD_H - BALL_R;
@@ -4605,18 +4697,18 @@ function tick(){
       }
     }
   }
-  // 上端(CPU側): 同様にパドルの現在位置で判定
-  if(ball.vy < 0 && ball.y <= cpuPaddleY + BALL_R){
-    if(Math.abs(ball.x - cpuPaddleX) <= PADDLE_W/2 + BALL_R){
-      const hitOffset = clamp((ball.x - cpuPaddleX) / (PADDLE_W/2), -1, 1);
-      const speedMul = cpuShotPlan==='center' ? 1.35 : 1.03;
+  // 上端: 同様にパドルの現在位置で判定
+  if(ball.vy < 0 && ball.y <= topPaddleY + BALL_R){
+    if(Math.abs(ball.x - topPaddleX) <= PADDLE_W/2 + BALL_R){
+      const hitOffset = clamp((ball.x - topPaddleX) / (PADDLE_W/2), -1, 1);
+      const speedMul = (!topIsPlayer && cpuShotPlan==='center') ? 1.35 : 1.03;
       ball.vy = clamp(Math.abs(ball.vy) * speedMul, -MAX_BALL_SPEED, MAX_BALL_SPEED);
-      ball.vx = clamp(hitOffset * 2.6 + cpuVelocity * 1.6, -5, 5);
-      ball.y = cpuPaddleY + BALL_R;
-      cpuShotPlan = null;
+      ball.vx = clamp(hitOffset * 2.6 + topVelocity * 1.6, -5, 5);
+      ball.y = topPaddleY + BALL_R;
+      if(topIsPlayer) feedbackTap(); else cpuShotPlan = null;
     }else if(ball.y <= BALL_R){
       if(ball.x >= GOAL_LEFT && ball.x <= GOAL_RIGHT){
-        scorePoint('player');
+        scorePoint(topIsPlayer ? 'cpu' : 'player');
         return;
       }else{
         ball.y = BALL_R;
@@ -4629,12 +4721,20 @@ function tick(){
 }
 
 let calloutEl, calloutTimer;
+let calloutFlipTimer;
 function showCallout(text, duration){
   if(!calloutEl) return;
   clearTimeout(calloutTimer);
+  clearTimeout(calloutFlipTimer);
+  const total = duration || 900;
   calloutEl.textContent = text;
   calloutEl.classList.add('show');
-  calloutTimer = setTimeout(()=>{ calloutEl.classList.remove('show'); }, duration || 900);
+  calloutEl.classList.remove('flip');
+  if(total > 500){
+    // 半分の時間で反転し、もう半分は相手向きに表示する(不公平にならないよう)
+    calloutFlipTimer = setTimeout(()=>{ calloutEl.classList.add('flip'); }, total/2);
+  }
+  calloutTimer = setTimeout(()=>{ calloutEl.classList.remove('show'); calloutEl.classList.remove('flip'); }, total);
 }
 
 function render(){
@@ -4642,16 +4742,21 @@ function render(){
   ballEl.style.opacity = ball.pending ? '0' : '1';
   ballEl.style.left = (ball.x / FIELD_W * 100) + '%';
   ballEl.style.top = (ball.y / FIELD_H * 100) + '%';
-  paddleBottomEl.style.left = (playerPaddleX / FIELD_W * 100) + '%';
-  paddleTopEl.style.left = (cpuPaddleX / FIELD_W * 100) + '%';
-  paddleBottomEl.style.top = (playerPaddleY / FIELD_H * 100 - playerLunge * 5) + '%';
-  paddleTopEl.style.top = (cpuPaddleY / FIELD_H * 100 + cpuLunge * 5) + '%';
-  pawBottomEl.style.left = (playerPaddleX / FIELD_W * 100) + '%';
-  pawTopEl.style.left = (cpuPaddleX / FIELD_W * 100) + '%';
-  pawBottomEl.style.top = (Math.min(FIELD_H, playerPaddleY + 8) / FIELD_H * 100) + '%';
-  pawTopEl.style.top = (Math.max(0, cpuPaddleY - 8) / FIELD_H * 100) + '%';
-  document.getElementById('nyponScoreTop').textContent = score.cpu;
-  document.getElementById('nyponScoreBottom').textContent = score.player;
+  const playerPaddleEl = bottomOwner()==='player' ? paddleBottomEl : paddleTopEl;
+  const cpuPaddleEl = bottomOwner()==='player' ? paddleTopEl : paddleBottomEl;
+  const playerPawEl = bottomOwner()==='player' ? pawBottomEl : pawTopEl;
+  const cpuPawEl = bottomOwner()==='player' ? pawTopEl : pawBottomEl;
+  playerPaddleEl.style.left = (playerPaddleX / FIELD_W * 100) + '%';
+  cpuPaddleEl.style.left = (cpuPaddleX / FIELD_W * 100) + '%';
+  playerPaddleEl.style.top = (playerPaddleY / FIELD_H * 100 - playerLunge * 5) + '%';
+  cpuPaddleEl.style.top = (cpuPaddleY / FIELD_H * 100 + cpuLunge * 5) + '%';
+  playerPawEl.style.left = (playerPaddleX / FIELD_W * 100) + '%';
+  cpuPawEl.style.left = (cpuPaddleX / FIELD_W * 100) + '%';
+  const playerPawNearEdge = bottomOwner()==='player';
+  playerPawEl.style.top = (playerPawNearEdge ? Math.min(FIELD_H, playerPaddleY + 8) : Math.max(0, playerPaddleY - 8)) / FIELD_H * 100 + '%';
+  cpuPawEl.style.top = (playerPawNearEdge ? Math.max(0, cpuPaddleY - 8) : Math.min(FIELD_H, cpuPaddleY + 8)) / FIELD_H * 100 + '%';
+  document.getElementById('nyponScoreTop').textContent = topOwner()==='cpu' ? score.cpu : score.player;
+  document.getElementById('nyponScoreBottom').textContent = bottomOwner()==='cpu' ? score.cpu : score.player;
 }
 
 function onFieldPointer(clientX, clientY){
@@ -4671,7 +4776,7 @@ function onFieldPointer(clientX, clientY){
     }
   }else{
     playerTargetX = x;
-    playerTargetY = clamp(yRaw, PLAYER_Y_MIN, PADDLE_Y_BOTTOM);
+    playerTargetY = clamp(yRaw, Math.min(playerHomeY(),playerLimitY()), Math.max(playerHomeY(),playerLimitY()));
   }
 }
 
@@ -4687,18 +4792,18 @@ function init(selectedMode){
   pawTopEl.innerHTML = pawSvg('cpu');
   calloutEl = document.getElementById('nyponCallout');
   pawBottomEl.innerHTML = pawSvg('player');
-  document.getElementById('nyponLabelTop').textContent = mode==='pvp' ? 'プレイヤー2' : 'CPU';
-  document.getElementById('nyponLabelBottom').textContent = mode==='pvp' ? 'プレイヤー1' : 'あなた';
+  document.getElementById('nyponLabelTop').textContent = mode==='pvp' ? 'プレイヤー2' : (topOwner()==='cpu' ? 'CPU' : 'あなた');
+  document.getElementById('nyponLabelBottom').textContent = mode==='pvp' ? 'プレイヤー1' : (bottomOwner()==='cpu' ? 'CPU' : 'あなた');
 
   score = { player:0, cpu:0 };
   playerPaddleX = FIELD_W/2;
   cpuPaddleX = FIELD_W/2;
-  playerPaddleY = PADDLE_Y_BOTTOM;
-  cpuPaddleY = PADDLE_Y_TOP;
+  playerPaddleY = playerHomeY();
+  cpuPaddleY = cpuHomeY();
   playerTargetX = FIELD_W/2;
-  playerTargetY = PADDLE_Y_BOTTOM;
+  playerTargetY = playerHomeY();
   cpuTargetX = FIELD_W/2;
-  cpuTargetY = PADDLE_Y_TOP;
+  cpuTargetY = cpuHomeY();
   prevPlayerPaddleX = FIELD_W/2;
   prevCpuPaddleX = FIELD_W/2;
   playerLunge = 0;
@@ -4780,7 +4885,7 @@ registerGame('nyapon', {
   cardIconPlayer: `<div style="width:34px;height:34px;">${pawPongSvg('player')}</div>`,
   cardIconCpu: `<div style="width:34px;height:34px;">${pawPongSvg('cpu')}</div>`,
   title: 'ニャーホッケー',
-  desc: '対戦エアホッケー。ドラッグで構えてタップ/フリックでシュート、パックをはじき返し合います。ゴールは壁の切れ目だけ。5点先取で勝敗。シリーズ唯一のリアルタイムアクションです。',
+  desc: '対戦エアホッケー。構えてタップ/フリックでシュート、パックを打ち返し合います。ゴールは壁の切れ目だけ。5点先取。唯一のリアルタイムアクションです。',
   boardHtml,
   howToPlayHtml,
   init,
