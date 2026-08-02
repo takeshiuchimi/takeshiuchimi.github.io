@@ -395,7 +395,7 @@
     display:flex;gap:5px;justify-content:center;flex-wrap:wrap;
     padding:5px;min-height:62px;align-items:center;
   }
-  .hand-row.top-hand{ background:rgba(169,184,196,.15); border-radius:10px; }
+  .hand-row.top-hand{ background:rgba(169,184,196,.15); border-radius:10px; transform:rotate(180deg); }
   .hand-row.bottom-hand{ background:rgba(247,201,155,.15); border-radius:10px; }
   .table-area{ width:100%; display:flex; flex-direction:row; align-items:center; justify-content:center; gap:8px; margin:6px 0; }
   .discard-row{
@@ -412,6 +412,7 @@
   .wall-stack .count{ font-size:11px; color:var(--brown-deep); }
   .wall-stack .count.top{ transform:rotate(180deg); margin-bottom:2px; }
   .wall-stack .wall-cat{ font-size:14px; line-height:1; margin-bottom:1px; }
+  .wall-stack .wall-cat.top{ transform:rotate(180deg); }
   .wall-stack.disabled{ cursor:default; opacity:.5; }
   .value-counter{
     display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,1fr);
@@ -437,6 +438,7 @@
   .value-counter .vc-item.zero .vc-icon svg circle{ fill:#C0392B; opacity:.4; }
   .value-counter .vc-item.zero .vc-count{ background:#C0392B; }
   .hint-text{ text-align:center; font-size:11px; color:var(--brown-deep); margin:2px 0; }
+  .hint-text.top{ transform:rotate(180deg); }
 
   /* ---- ニャモリー専用 ---- */
   /* ---- WheelPicker(共通部品) ---- */
@@ -666,7 +668,7 @@
         <div class="mascot-cat-slot" id="mascotSlotTop"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-2110</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-2144</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -686,7 +688,7 @@
         <div class="mascot-cat-slot" id="mascotSlotBottom"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-2110</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-2144</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -791,16 +793,16 @@
   },
   "capacity": {
     "htmlKB": 4.3,
-    "cssKB": 28.7,
-    "jsonKB": 15.6,
-    "engineKB": 59.3,
+    "cssKB": 28.9,
+    "jsonKB": 15.3,
+    "engineKB": 59.5,
     "testKB": 4.1,
     "games": {
       "ニャーバツ": 5.4,
       "ニャセロ": 12.2,
       "ニャー将棋": 12.8,
-      "ニャージャン": 12.8,
-      "ニャーリス": 21.9,
+      "ニャージャン": 13.3,
+      "ニャーリス": 21.8,
       "ニャモリー": 8.4,
       "ニャーロク": 12.3,
       "ニャーホッケー": 21.1
@@ -2897,6 +2899,7 @@ registerGame('nyashogi', {
 
 const boardHtml = `
   <div class="turn-badge top" id="janTurnTop">後手</div>
+  <div class="hint-text top" id="janHintTextTop">&nbsp;</div>
   <div id="janRotateWrap">
     <div class="hand-row top-hand" id="janCpuHandRow"></div>
     <div class="discard-label top-label">🐾 後手の捨て牌</div>
@@ -2904,7 +2907,7 @@ const boardHtml = `
     <div class="table-area">
       <div class="value-counter top" id="janValueCounterTop"></div>
       <div class="wall-stack" id="janWallStack">
-        <div class="wall-cat">🐱</div>
+        <div class="wall-cat top">🐱</div>
         <div class="count top" id="janWallCountTop">14</div>
         <div class="tile back"></div>
         <div class="count" id="janWallCount">14</div>
@@ -2942,7 +2945,7 @@ function sortedHand(hand){ return hand.slice().sort((a,b)=>a-b); }
 
 let wall, playerHand, cpuHand, discardPile, turn, phase, gameOver, winner, winByRon, cpuThinking, pendingRon;
 let cpuHandRow, playerHandRow, wallStackEl, wallCountEl, wallCountTopEl, cpuDiscardAreaEl, playerDiscardAreaEl;
-let valueCounterTopEl, valueCounterBottomEl, hintTextEl, turnTopEl, turnBottomEl;
+let valueCounterTopEl, valueCounterBottomEl, hintTextEl, hintTextTopEl, turnTopEl, turnBottomEl;
 
 function wallRemainingCount(v){
   const inPlayer = playerHand.filter(x=>x===v).length;
@@ -3001,14 +3004,21 @@ function render(){
   const bottomActive = !gameOver && turn==='player';
   renderTurnBadges(turnTopEl, turnBottomEl, topActive, bottomActive, cpuThinking);
 
+  // 手番側の物理的な席(上/下)を判定して、そちら側にメッセージを出す
+  const swapped = (mode==='cpu' && humanSeat==='top');
+  const turnIsTop = swapped ? (turn==='player') : (turn==='cpu');
+  const activeHintEl = turnIsTop ? hintTextTopEl : hintTextEl;
+  const inactiveHintEl = turnIsTop ? hintTextEl : hintTextTopEl;
+  inactiveHintEl.innerHTML = '&nbsp;';
+
   if(gameOver){
-    hintTextEl.innerHTML = '&nbsp;';
+    activeHintEl.innerHTML = '&nbsp;';
   }else if(pendingRon || cpuThinking){
-    hintTextEl.textContent = '';
+    activeHintEl.textContent = '';
   }else if(phase==='needDraw'){
-    hintTextEl.textContent = isInteractionAllowed(turn) ? '山をタップして1枚引いてください' : '';
+    activeHintEl.textContent = isInteractionAllowed(turn) ? '山をタップして1枚引いてください' : '';
   }else{
-    hintTextEl.textContent = isInteractionAllowed(turn) ? '捨てる牌をタップしてください' : '';
+    activeHintEl.textContent = isInteractionAllowed(turn) ? '捨てる牌をタップしてください' : '';
   }
 
   const topBanner = document.getElementById('msgBannerTop');
@@ -3182,6 +3192,7 @@ function init(selectedMode){
   valueCounterTopEl = document.getElementById(swapped ? 'janValueCounterBottom' : 'janValueCounterTop');
   valueCounterBottomEl = document.getElementById(swapped ? 'janValueCounterTop' : 'janValueCounterBottom');
   hintTextEl = document.getElementById('janHintText');
+  hintTextTopEl = document.getElementById('janHintTextTop');
   turnTopEl = document.getElementById('janTurnTop');
   turnBottomEl = document.getElementById('janTurnBottom');
   wallStackEl.onclick = onWallTap;
@@ -3265,7 +3276,6 @@ const boardHtml = `
   <div class="board-wrap top" id="janrisBoardWrapTop">
     <div class="ris-board" id="janrisBoardTop"></div>
   </div>
-  <div class="hint-row">タップ=回転 / ドラッグ=移動 / 上に強くフリック=相手へ送る</div>
   <div class="divider-wall"></div>
   <div class="board-wrap" id="janrisBoardWrapBottom">
     <div class="ris-board" id="janrisBoardBottom"></div>
