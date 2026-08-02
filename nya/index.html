@@ -666,7 +666,7 @@
         <div class="mascot-cat-slot" id="mascotSlotTop"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-0930</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-2110</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -686,7 +686,7 @@
         <div class="mascot-cat-slot" id="mascotSlotBottom"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-0930</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-2110</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -770,7 +770,7 @@
   "techInfo": {
     "featureSections": [
       { "heading": "対面構造(点対称設計)", "body": "盤もボタンも例外なく、上下どちらの席から見ても正しい向きで読めるように作っています。ニャモリーのカード柄(サイコロ目)は、180度回転させても同じ形に見える模様をあえて選んでいて、1つの共有した盤をそのまま両側から読める仕組みの土台になっています。CPU対戦は「押した側が人間になる」よう作り直し、駒の色・向き・手番表示の色は物理的な席(上下)に、操作権限やスコア判定は人間かCPUかに、それぞれ別々に紐付くよう整理しました。同じ理由で、対戦モードは押した側が先手になります。手番バッジ・ヒントの点・サイコロの目・肉球の向き・ホイールピッカー・掛け声の回転タイミングまで、細部まで同じ思想で貫いているのは、正直なところ自分でもあまり見たことがないくらいしつこくやり切った自信があります。自己満足かもしれませんが、これがあるから50本に増やしていってもブレずにいられると思っています。" },
-      { "heading": "CPUが手加減しない(内海メソッド)", "body": "一番シンプルなニャーバツから、CPUには絶対に手加減させていません。勝てる人が増えてきたので、探索の深さはむしろ強化しています(ニャセロ・ニャー将棋等)。手加減されない相手と、まず一戦。特にニャセロは、ミニマックス法+アルファベータ枝刈りで9手先まで自分も相手も最善を尽くす前提で読み切っています。決着がつかない局面は「駒数の差×2」+「四隅を取っていれば+12/取られていれば-12」で評価。わざと悪手を選ぶ分岐は一切なく、その瞬間に一番得する手を機械的に探しているだけです。仕組みは全部ここに書いた通りで、隠すつもりはありません。ただし1点、同じ最善スコアの候補手が複数あるとき(ニャセロの初手など、盤面が対称でどれを選んでも同点になる場面)は、その中からランダムに選ぶようにしています。相手は人間で、これはゲームだからです。弱い手を選ぶことは一切なく、あくまで最善タイの中からの選択です。" },
+      { "heading": "CPUが手加減しない(内海メソッド)", "body": "一番シンプルなニャーバツから、CPUには絶対に手加減させていません。勝てる人が増えてきたので、探索の深さはむしろ強化しています(ニャセロ・ニャー将棋等)。手加減されない相手と、まず一戦。特にニャセロは、ミニマックス法+アルファベータ枝刈りで12手先まで(最大でも12マスしか置けないので、理論上どの局面からでも終局まで完全に読み切っています)自分も相手も最善を尽くす前提で読み切っています。決着がつかない局面は「駒数の差×2」+「四隅を取っていれば+12/取られていれば-12」で評価。わざと悪手を選ぶ分岐は一切なく、その瞬間に一番得する手を機械的に探しているだけです。仕組みは全部ここに書いた通りで、隠すつもりはありません。ただし1点、同じ最善スコアの候補手が複数あるとき(ニャセロの初手など、盤面が対称でどれを選んでも同点になる場面)は、その中からランダムに選ぶようにしています。相手は人間で、これはゲームだからです。弱い手を選ぶことは一切なく、あくまで最善タイの中からの選択です。" },
       { "heading": "無限スワイプ(3枚窓リサイクル方式)", "body": "ゲーム一覧・タイトル画面は、どれだけ連続でフリックしても絶対に空白にならない仕組みにしています。常に「前・現在・次」の3枚だけを保持し、1段階動くたびに中身を組み替えて位置を瞬時にリセットする方式です。ページ数が増えてもDOM要素は常に3枚だけなので軽いままです。" },
       { "heading": "振動フィードバック(音は無し)", "body": "タップ・勝利・敗北・引き分け・無効な操作、それぞれ違う振動パターンを用意しています。音は削って振動だけにしました。落ち着いた場所でも周りを気にせず使えるようにしています。" },
       { "heading": "ダークモード", "body": "OLED端末のバッテリー節約のために用意しています。「目に優しい」は実は研究上はっきりしていませんが、暗い場所でのプレイにも向いています。" },
@@ -792,7 +792,7 @@
   "capacity": {
     "htmlKB": 4.3,
     "cssKB": 28.7,
-    "jsonKB": 15.4,
+    "jsonKB": 15.6,
     "engineKB": 59.3,
     "testKB": 4.1,
     "games": {
@@ -2320,7 +2320,7 @@ function render(){
   currentLegal = (!gameOver) ? legalMoves(board, turn) : [];
   let hintCell = null;
   if(!gameOver && isInteractionAllowed(turn)){
-    const mv = minimax(board, turn, turn, 9, -Infinity, Infinity).move;
+    const mv = minimax(board, turn, turn, 12, -Infinity, Infinity).move;
     if(mv) hintCell = { r: mv.r, c: mv.c };
   }
   const hintIsBottom = (mode==='cpu' && humanSeat==='top') ? (turn==='cpu') : (turn==='player');
@@ -2404,7 +2404,7 @@ function afterMove(){
   cpuThinking = true;
   render();
   setTimeout(()=>{
-    const mv = chooseCpuMove(board, 9);
+    const mv = chooseCpuMove(board, 12);
     cpuThinking = false;
     if(mv) board = applyMoveToBoard(board, mv.r, mv.c, 'cpu', mv.flips);
     turn = 'player';
@@ -2519,6 +2519,7 @@ registerGame('nyasero', {
     legalMoves: (b,o)=>legalMoves(b,o),
     finishIfNoMoves,
     countPieces: (b)=>countPieces(b),
+    chooseCpuMove: (b,d)=>chooseCpuMove(b,d),
   },
 });
 
