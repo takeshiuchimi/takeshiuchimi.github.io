@@ -357,6 +357,7 @@
     display:flex;gap:5px;min-height:38px;align-items:center;justify-content:center;
     background:var(--cream-deep);border-radius:10px;padding:4px;margin:2px 0;
   }
+  .hand.top{ transform:rotate(180deg); }
   .hand-piece{
     width:32px;height:32px;border-radius:7px;cursor:pointer;position:relative;
     background:rgba(255,255,255,.5);
@@ -668,7 +669,7 @@
         <div class="mascot-cat-slot" id="mascotSlotTop"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-2144</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-2205</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -688,7 +689,7 @@
         <div class="mascot-cat-slot" id="mascotSlotBottom"></div>
         <div class="title-text-col">
           <h1 class="list-title">🐾 ニャーズ ゲームセンター <span class="version-badge">ver0.4</span></h1>
-          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-2144</span></p>
+          <p class="sub">向かい合って遊ぶ、猫の対戦ゲーム集 <span class="dev-build-badge">0802-2205</span></p>
         </div>
       </div>
       <div class="util-row-3">
@@ -795,17 +796,17 @@
     "htmlKB": 4.3,
     "cssKB": 28.9,
     "jsonKB": 15.3,
-    "engineKB": 59.5,
+    "engineKB": 59.9,
     "testKB": 4.1,
     "games": {
       "ニャーバツ": 5.4,
       "ニャセロ": 12.2,
       "ニャー将棋": 12.8,
       "ニャージャン": 13.3,
-      "ニャーリス": 21.8,
+      "ニャーリス": 21.7,
       "ニャモリー": 8.4,
-      "ニャーロク": 12.3,
-      "ニャーホッケー": 21.1
+      "ニャーロク": 12.2,
+      "ニャーホッケー": 20.9
     }
   },
   "howToPlay": {
@@ -1042,6 +1043,10 @@ function checkInteractionAllowed(owner, gameOver, turn, cpuThinking){
 function colorOwnerFor(owner){
   return (mode==='cpu' && humanSeat==='top') ? (owner==='player' ? 'cpu' : 'player') : owner;
 }
+// 上記の具体形。「物理的に上の席は今どちらの色か/下の席はどちらか」を読みやすく使うためのエイリアス。
+// ニャーロク・ニャーホッケー・ニャーリスで共通して使う(以前は各ゲームに同じ内容が重複定義されていた)。
+function topOwner(){ return colorOwnerFor('cpu'); }
+function bottomOwner(){ return colorOwnerFor('player'); }
 
 function renderTurnBadges(topEl, bottomEl, cpuActive, playerActive, cpuThinking, fixedFirstMover){
   // CPU対戦時、人間が上の席に座っている場合はラベル・強調表示(どちらが有効か)を入れ替える。
@@ -2536,7 +2541,7 @@ registerGame('nyasero', {
 const boardHtml = `
   <div class="turn-badge top" id="shogiTurnTop">後手</div>
   <div id="shogiRotateWrap">
-    <div class="hand" id="shogiCpuHand"></div>
+    <div class="hand top" id="shogiCpuHand"></div>
     <div class="game-board shogi-board" id="shogiBoard"></div>
     <div class="hand" id="shogiPlayerHand"></div>
   </div>
@@ -3530,8 +3535,8 @@ function updateStatus(){
   scoreBottomEl.textContent = boardBottomState.score;
   linesTopEl.textContent = boardTopState.lines;
   linesBottomEl.textContent = boardBottomState.lines;
-  labelTopEl.textContent = mode==='pvp' ? 'プレイヤー2' : (topRole()==='cpu' ? 'CPU' : 'あなた');
-  labelBottomEl.textContent = mode==='pvp' ? 'プレイヤー1' : (bottomRole()==='cpu' ? 'CPU' : 'あなた');
+  labelTopEl.textContent = mode==='pvp' ? 'プレイヤー2' : (topOwner()==='cpu' ? 'CPU' : 'あなた');
+  labelBottomEl.textContent = mode==='pvp' ? 'プレイヤー1' : (bottomOwner()==='cpu' ? 'CPU' : 'あなた');
   boardWrapTopEl.classList.toggle('gameover', !!boardTopState.gameOver);
   boardWrapBottomEl.classList.toggle('gameover', !!boardBottomState.gameOver);
 }
@@ -3601,15 +3606,12 @@ function onBoardGameOver(which){
   if(gameEnded) return;
   gameEnded = true;
   running = false;
-  winner = which==='top' ? bottomRole() : topRole();
+  winner = which==='top' ? bottomOwner() : topOwner();
   setTimeout(()=> showResult(winner), 200);
 }
 
-function topRole(){ return (mode==='cpu' && humanSeat==='top') ? 'player' : 'cpu'; }
-function bottomRole(){ return (mode==='cpu' && humanSeat==='top') ? 'cpu' : 'player'; }
-
 function driveCpu(){
-  const aiIsTop = topRole()==='cpu';
+  const aiIsTop = topOwner()==='cpu';
   const state = aiIsTop ? boardTopState : boardBottomState;
   const seatLabel = aiIsTop ? 'top' : 'bottom';
   if(state.gameOver || gameEnded) return;
@@ -3667,7 +3669,7 @@ function setupGestures(el, getState, getOpponentState, isTopBoard){
     if(!running || gameEnded) return;
     const state = getState();
     if(state.gameOver) return;
-    const thisBoardRole = isTopBoard ? topRole() : bottomRole();
+    const thisBoardRole = isTopBoard ? topOwner() : bottomOwner();
     if(mode==='cpu' && thisBoardRole==='cpu') return;
     if(el.setPointerCapture) el.setPointerCapture(e.pointerId);
     const { w, h } = cellSize();
@@ -3850,7 +3852,7 @@ registerGame('nyaris', {
     getBoardTopEl: ()=>boardTopEl, getBoardBottomEl: ()=>boardBottomEl,
     onBoardGameOver,
     isRunning: ()=>running,
-    topRole, bottomRole, driveCpu,
+    topOwner, bottomOwner, driveCpu,
   },
 });
 
@@ -4293,9 +4295,6 @@ function endTurn(){
   if(mode==='cpu' && turn==='cpu') setTimeout(cpuTakeTurn, 500);
 }
 
-function topOwner(){ return (mode==='cpu' && humanSeat==='top') ? 'player' : 'cpu'; }
-function bottomOwner(){ return (mode==='cpu' && humanSeat==='top') ? 'cpu' : 'player'; }
-
 function doRoll(owner, wp){
   if(!isInteractionAllowed(owner)) { feedbackInvalid(); return; }
   wp.setDisabled(true);
@@ -4536,8 +4535,6 @@ function releaseBall(flickVx, flickVy){
   ball.held = null;
 }
 
-function topOwner(){ return (mode==='cpu' && humanSeat==='top') ? 'player' : 'cpu'; }
-function bottomOwner(){ return (mode==='cpu' && humanSeat==='top') ? 'cpu' : 'player'; }
 function playerHomeY(){ return bottomOwner()==='player' ? PADDLE_Y_BOTTOM : PADDLE_Y_TOP; }
 function playerLimitY(){ return bottomOwner()==='player' ? PLAYER_Y_MIN : CPU_Y_MAX; }
 function cpuHomeY(){ return topOwner()==='cpu' ? PADDLE_Y_TOP : PADDLE_Y_BOTTOM; }
