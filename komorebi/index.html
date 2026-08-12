@@ -18,6 +18,11 @@
     --card:#FBF6EB;
     --desc-text:#5c4a38;
     --overlay-bg:rgba(59,46,34,0.55);
+    --cat-body:#ead2b3;
+    --cat-accent:#f6e4b9;
+    --cat-eye:#6b5138;
+    --cat-line:#8a6848;
+    --cat-bell:#e9c968;
   }
   html.dark-mode{
     --paper:#1C1712;
@@ -30,9 +35,34 @@
     --card:#2A231B;
     --desc-text:#C9BBA0;
     --overlay-bg:rgba(0,0,0,0.65);
+    --cat-body:#6f4526;
+    --cat-accent:#9b6a34;
+    --cat-eye:#120d09;
+    --cat-line:#2e1b10;
+    --cat-bell:#a9761f;
   }
   html{
     transition:background-color .3s ease;
+  }
+  .title-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .mascot-cat{
+    flex:0 0 auto;
+    width:36px;
+    height:43px;
+    display:block;
+    transition:transform .15s ease;
+  }
+  .mascot-cat:hover{
+    transform:translateY(-2px) scale(1.05);
+  }
+  .mascot-cat svg{
+    width:100%;
+    height:100%;
+    display:block;
   }
   body, .card, .modal-card{
     transition:background-color .3s ease, color .3s ease, border-color .3s ease;
@@ -51,6 +81,9 @@
     align-items:center;
     min-height:100vh;
     padding:18px 0 24px;
+  }
+  .title-text-col{
+    text-align:center;
   }
   .eyebrow{
     letter-spacing:.3em;
@@ -72,6 +105,25 @@
     color:var(--desc-text);
     letter-spacing:.02em;
     margin:0 0 12px;
+  }
+  .version-badge{
+    display:inline-block;
+    font-size:10px;
+    vertical-align:middle;
+    background:var(--gold);
+    color:#fff;
+    padding:2px 7px;
+    border-radius:10px;
+    font-weight:bold;
+    margin-left:6px;
+  }
+  .dev-build-badge{
+    display:inline-block;
+    font-size:8px;
+    vertical-align:middle;
+    color:var(--desc-text);
+    opacity:.5;
+    margin-left:5px;
   }
   .util-row{
     display:flex;
@@ -305,6 +357,82 @@
     pointer-events:none;
   }
 
+  .zoom-btn{
+    position:absolute;
+    right:12px;
+    top:10px;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    border:none;
+    background:rgba(59,46,34,0.55);
+    color:#fff;
+    font-size:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    backdrop-filter:blur(2px);
+    z-index:5;
+  }
+  .zoom-btn:hover{ background:rgba(59,46,34,0.8); }
+
+  .zoom-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.92);
+    z-index:100;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .zoom-overlay.open{
+    display:flex;
+  }
+  .zoom-viewport{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    touch-action:none;
+  }
+  .zoom-viewport img{
+    max-width:100%;
+    max-height:100%;
+    user-select:none;
+    -webkit-user-drag:none;
+    will-change:transform;
+    transform-origin:0 0;
+  }
+  .zoom-close{
+    position:absolute;
+    top:14px;
+    right:14px;
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    border:none;
+    background:rgba(255,255,255,0.15);
+    color:#fff;
+    font-size:22px;
+    line-height:1;
+    cursor:pointer;
+    z-index:101;
+  }
+  .zoom-hint{
+    position:absolute;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    color:rgba(255,255,255,0.7);
+    font-size:12px;
+    letter-spacing:.03em;
+    pointer-events:none;
+  }
+
   .tap-hint{
     position:absolute;
     left:50%;
@@ -381,9 +509,33 @@
 </head>
 <body>
 
-<div class="eyebrow">TakeshiUchimiProject</div>
-<h1>こもれび</h1>
-<p class="subtitle">大正浪漫 × challenge Platform 手づくり商品カタログ</p>
+<div class="title-row">
+  <a class="mascot-cat" href="https://takeshiuchimi.github.io/nya/index.html" target="_blank" rel="noopener" aria-label="ねこをクリックでニャーズゲームセンターへようこそ" title="ねこをクリックでニャーズゲームセンターへようこそ">
+    <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ニャーズ">
+      <ellipse cx="50" cy="88" rx="30" ry="26" fill="var(--cat-body)"/>
+      <path d="M22 92 Q10 100 16 112 Q24 116 28 104 Z" fill="var(--cat-body)"/>
+      <path d="M20 22 L34 46 L14 46 Z" fill="var(--cat-body)"/>
+      <path d="M80 22 L86 46 L66 46 Z" fill="var(--cat-body)"/>
+      <path d="M20 22 L30 34 L18 38 Z" fill="var(--cat-accent)"/>
+      <path d="M80 22 L82 38 L70 34 Z" fill="var(--cat-accent)"/>
+      <circle cx="50" cy="52" r="30" fill="var(--cat-body)"/>
+      <circle cx="39" cy="50" r="3.4" fill="var(--cat-eye)"/>
+      <circle cx="61" cy="50" r="3.4" fill="var(--cat-eye)"/>
+      <path d="M45 60 Q50 64 55 60" stroke="var(--cat-line)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <line x1="18" y1="55" x2="34" y2="57" stroke="var(--cat-line)" stroke-width="1.4"/>
+      <line x1="18" y1="61" x2="34" y2="61" stroke="var(--cat-line)" stroke-width="1.4"/>
+      <line x1="82" y1="55" x2="66" y2="57" stroke="var(--cat-line)" stroke-width="1.4"/>
+      <line x1="82" y1="61" x2="66" y2="61" stroke="var(--cat-line)" stroke-width="1.4"/>
+      <ellipse cx="76" cy="72" rx="9" ry="14" fill="var(--cat-body)" stroke="var(--cat-accent)" stroke-width="1.5"/>
+      <circle cx="76" cy="60" r="4.5" fill="var(--cat-bell)"/>
+    </svg>
+  </a>
+  <div class="title-text-col">
+    <div class="eyebrow">TakeshiUchimiProject</div>
+    <h1>こもれび<span class="version-badge">ver0.1</span></h1>
+    <p class="subtitle">大正浪漫 × challenge Platform 手づくり商品カタログ<span class="dev-build-badge">0812-1030</span></p>
+  </div>
+</div>
 
 <div class="carousel">
   <div class="frame">
@@ -433,6 +585,7 @@
     <button class="nav-btn prev" id="prevBtn" aria-label="前へ">&#10094;</button>
     <button class="nav-btn next" id="nextBtn" aria-label="次へ">&#10095;</button>
     <div class="position-indicator" id="positionIndicator"></div>
+    <button class="zoom-btn" id="zoomBtn" type="button" aria-label="拡大表示">🔍</button>
     <div class="tap-hint" id="tapHint">商品をタップすると詳細が見られます</div>
   </div>
   <div class="dots" id="dots"></div>
@@ -478,6 +631,14 @@
       <p>ダークモードは、色をCSS変数として1箇所にまとめておき、切り替え時にその変数の値だけ差し替える方式です。</p>
     </div>
   </div>
+</div>
+
+<div class="zoom-overlay" id="zoomOverlay">
+  <button class="zoom-close" id="zoomClose" aria-label="閉じる">&times;</button>
+  <div class="zoom-viewport" id="zoomViewport">
+    <img id="zoomImg" src="" alt="拡大表示">
+  </div>
+  <div class="zoom-hint">ピンチ／ダブルタップで拡大</div>
 </div>
 
 <script>
@@ -673,6 +834,134 @@
     updateDarkLabel();
   });
   updateDarkLabel();
+})();
+
+(function(){
+  const zoomBtn = document.getElementById('zoomBtn');
+  const overlay = document.getElementById('zoomOverlay');
+  const viewport = document.getElementById('zoomViewport');
+  const zoomImg = document.getElementById('zoomImg');
+  const closeBtn = document.getElementById('zoomClose');
+  const hint = document.querySelector('.zoom-hint');
+  const track = document.getElementById('track');
+
+  let scale = 1, panX = 0, panY = 0;
+  let startDist = 0, startScale = 1;
+  let dragging = false, lastX = 0, lastY = 0;
+  let lastTapTime = 0;
+
+  function apply(){
+    zoomImg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  }
+
+  function clampPan(){
+    const vw = viewport.clientWidth, vh = viewport.clientHeight;
+    const iw = zoomImg.clientWidth * scale, ih = zoomImg.clientHeight * scale;
+    const maxX = Math.max(0, (iw - vw) / 2);
+    const maxY = Math.max(0, (ih - vh) / 2);
+    panX = Math.min(maxX, Math.max(-maxX, panX));
+    panY = Math.min(maxY, Math.max(-maxY, panY));
+  }
+
+  function reset(){
+    scale = 1; panX = 0; panY = 0;
+    apply();
+  }
+
+  function openZoom(realIndex){
+    // track children are [lastClone, ...realSlides, firstClone], so real slides start at index 1
+    const slides = track.querySelectorAll('.slide');
+    const img = slides[realIndex + 1] ? slides[realIndex + 1].querySelector('img') : null;
+    if (!img) return;
+    zoomImg.src = img.src;
+    reset();
+    overlay.classList.add('open');
+    hint.style.opacity = '1';
+    setTimeout(() => { hint.style.transition = 'opacity 1.2s ease'; hint.style.opacity = '0'; }, 1800);
+  }
+
+  function closeZoom(){
+    overlay.classList.remove('open');
+  }
+
+  zoomBtn.addEventListener('click', () => {
+    // find current real slide index from the carousel's dots state
+    const activeDot = document.querySelector('.dot.active');
+    const dots = Array.from(document.querySelectorAll('.dot'));
+    const realIndex = activeDot ? dots.indexOf(activeDot) : 0;
+    openZoom(realIndex);
+  });
+
+  closeBtn.addEventListener('click', closeZoom);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeZoom();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeZoom();
+  });
+
+  function dist(t0, t1){
+    const dx = t0.clientX - t1.clientX, dy = t0.clientY - t1.clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+
+  viewport.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      startDist = dist(e.touches[0], e.touches[1]);
+      startScale = scale;
+      dragging = false;
+    } else if (e.touches.length === 1) {
+      const now = Date.now();
+      if (now - lastTapTime < 300) {
+        // double tap toggle
+        if (scale > 1) { reset(); }
+        else { scale = 2.4; apply(); }
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now;
+      }
+      if (scale > 1) {
+        dragging = true;
+        lastX = e.touches[0].clientX;
+        lastY = e.touches[0].clientY;
+      }
+    }
+  }, { passive: true });
+
+  viewport.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2) {
+      const d = dist(e.touches[0], e.touches[1]);
+      scale = Math.min(4, Math.max(1, startScale * (d / startDist)));
+      clampPan();
+      apply();
+    } else if (e.touches.length === 1 && dragging && scale > 1) {
+      const dx = e.touches[0].clientX - lastX;
+      const dy = e.touches[0].clientY - lastY;
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+      panX += dx;
+      panY += dy;
+      clampPan();
+      apply();
+    }
+  }, { passive: true });
+
+  viewport.addEventListener('touchend', (e) => {
+    dragging = false;
+    if (scale <= 1.02) reset();
+  });
+
+  // desktop: double-click to toggle, wheel to zoom
+  viewport.addEventListener('dblclick', () => {
+    if (scale > 1) { reset(); }
+    else { scale = 2.4; apply(); }
+  });
+  viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    scale = Math.min(4, Math.max(1, scale - e.deltaY * 0.002));
+    clampPan();
+    apply();
+  }, { passive: false });
 })();
 </script>
 
