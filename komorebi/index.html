@@ -365,6 +365,16 @@
   .tech-group-heading:first-child{
     margin-top:0;
   }
+  .greeting-thanks{
+    font-weight:bold;
+    color:var(--gold);
+  }
+  .greeting-sign{
+    text-align:right;
+    font-size:11px;
+    color:var(--desc-text);
+    opacity:.7;
+  }
   .qr-wrap{
     margin-top:18px;
     padding-top:18px;
@@ -739,6 +749,7 @@
 
 <div class="util-row">
   <button class="about-link" id="aboutBtn" type="button">こもれびとは</button>
+  <button class="about-link" id="greetingBtn" type="button">💌 内海から</button>
   <button class="about-link" id="techInfoBtn" type="button">🔧 技術情報</button>
 </div>
 
@@ -751,6 +762,14 @@
       <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbwAAAG8AQAAAACNyy1yAAACt0lEQVR4nO2cW27jMAxFL4v8yzvI/pc1O5BWwH6QlCg3gxkEbRS5VyhSW+ZBIoCg+LJE8dRoH89xAEGCBAleH5Q+DtinDbtFEzQ5iW23RoL7g1BVFLWBoiiqFf3C5xEzIaZ1ozUSvAZ4s38CoFQACgigTdBEiwqggLZDZ7Gt1kjwmqCImF11c2qTd+2Owbd/I0GCz4HuAJiDeozrn/tGggT/b7gPMGxoUbFdvh2upeEJTGI7rZHghcDm8T3Mltqmf1cUHTPHJLbfGgluD94wWUtYhkp7eNWvT2I7rZHgNUDPWcE8VUArLFXljyNzNbJYFcxZEVymq/2zeh7VZkx7h7omAeoqwZeDQwnDYLqWjrS/RnXA5CvtKsEl4NjuT8azuwTd0g4Z6irBRbo6VVHr8GBPZVbXXuoqwTXgyK9KxPtohzZBqbnMOlVg1/xUgr8cvCHUzxXVy/3oDQAKSKmmpewHILgW7D6A7fJyVwBoYoHVaAsMgYU/leAvBm8ApFSrqwow6qpWtDKpMLapM2CjNRK8BjjnAU5/OaoqqWTA2IrguhqrGUyJ3FTcVikVpfp8E5TK2IrgIjCVU1O9FcmJncoBo1iw0RoJXgOcA6uulpi0dLgElTVWgqvAyK/2fqq+y3uf1eGC0dcaVnijNRK8Bph6Ai32b9J9Am0HIhswHFrX3o3WSPAaIPouDzyorvq1plYr1lgJrgFT/6rq5LX2/qsUfPVH1FWCLweh8zhZVOR2wbCr1FWCy3NWnvAvQ1ExJ6+YsyK4Dvxy7oqNkl9XmexqPN1ojQSvAT44dyUi/dEekPoEWLci+C5gP3vN3rnOHqxW6B9BUZ69RnChXf06NI5bUXghQOKWdpXgO/irf3uBBUheK/1Vgu+QB8CUX0U+MSA/pa4SfDUo+m+ZR4NnsBMkSJDg4/EJMEqCKqz5fB4AAAAASUVORK5CYII=" alt="こもれびページQRコード" class="qr-img">
       <p class="qr-caption" id="aboutQrCaption"></p>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="greetingOverlay">
+  <div class="modal-card">
+    <button class="modal-close" id="greetingClose" aria-label="閉じる">&times;</button>
+    <p class="modal-title" id="greetingTitle"></p>
+    <div class="modal-body" id="greetingBody"></div>
   </div>
 </div>
 
@@ -775,7 +794,7 @@
 </script>
 
 <script type="application/json" id="siteContentData">
-{"about":{"title":"「こもれび」とは","paragraphs":["大正浪漫の架空のカフェー「こもれび」の日常に、実際にchallenge Platformで販売されている手づくり商品をそっと紛れ込ませています。物語や風景を楽しみながら、商品にも出会える小さなカタログです。","ここに並ぶ品々は、株式会社チャレンジプラットフォームが運営する就労継続支援事業所「サニースポット」で製作されたものです。","内海が取り組んでいる研究テーマ「大正浪漫と竹久夢二の美人画の現代における再解釈」とコラボレーションした世界観の中に、商品たちを自然に潜り込ませています。","タイトルの「こもれび」は、木々の隙間からやわらかく差し込む光のように、一人ひとりの個性や得意なことが、あたたかく静かに、けれど確かに周りを照らしていく——そんな日々のありかたを重ねた、内海自身のサニースポットの解釈によるものです。"],"qrCaption":"このページはこちら"},"techInfo":{"title":"🔧 技術情報","featureSections":[{"heading":"ショッパブルなルックブック","body":"大正浪漫のイラストの中に、実際に販売中の商品をさりげなく登場させています。値札をタップすると、そのまま商品ページ（stores.jp）に直接飛べます。世界観を壊さずに商品を知ってもらう、という狙いです。"},{"heading":"無限ループカルーセル","body":"前後にもう1枚ずつ複製したスライドを並べておき、端まで来た瞬間だけ見えない位置でこっそり視点を戻す方式です。どれだけ連続でスワイプしても空白になりません。"},{"heading":"ズーム機能","body":"画像右上の🔍から、ピンチ・ダブルタップで拡大表示できます。値札の細かい文字も確認できるようにしています。"},{"heading":"ダークモード","body":"色をCSS変数として1箇所にまとめ、切り替え時にその変数の値だけ差し替える方式です。イラスト自体にも明るさ・コントラスト・色相を調整するフィルターをかけて、暗い画面の中で浮かないようにしています。"},{"heading":"初回だけの操作案内","body":"「商品をタップすると詳細が見られます」は初回表示時のみ数秒でフェードアウトします。localStorageに一度見たことを記録するので、2回目以降は表示されません。"}],"techSections":[{"heading":"なぜHTMLファイル1本に内包するか","body":"ブラウザさえあれば、サーバーもインストールも不要で動きます。イラストは全てBase64形式でファイルの中に直接埋め込んであり、画像を別に持ち歩く必要がありません。"},{"heading":"なぜGoogle Fontsを使わないか","body":"当初は明朝体をGoogle Fonts経由で読み込んでいましたが、「完全オフラインで完結する」という方針と矛盾するためやめました。今はOS標準の日本語フォント（游明朝・游ゴシック・メイリオ等）に任せています。通信ゼロ・追加容量ゼロです。"},{"heading":"画像の軽量化","body":"元の書き出し画像は1枚あたり約2.9MBのPNGでした。表示サイズに合わせて解像度を落とし、JPEG化（1枚約400〜600KB）、さらにWebP化して、画質を保ったまま大幅に圧縮しています。"},{"heading":"遅延読み込み（初回表示の高速化）","body":"1枚目のイラストだけ即座に読み込み、2〜4枚目はごく小さなプレースホルダーだけを先に表示して、ページが表示された直後にバックグラウンドで本物の画像に差し替えます。ブラウザが4枚分を同時にデコードして最初の表示が遅れる、という状態を避けています。"},{"heading":"値札データ・文章のJSON化","body":"24個の値札（商品リンク・位置・ラベル）や、「こもれびとは」「技術情報」の文章は、HTMLに直書きせず、それぞれ1つのJSONブロックにまとめてあります。修正のたびにコードを探し回らず、JSON内の該当箇所を直すだけで済みます。"}],"capacity":{"total":1118.4,"breakdown":{"イラスト画像（WebP, 4枚）":1077.3,"JavaScript":14.1,"CSS":13.7,"値札データ（JSON）":3.2,"文章データ（JSON）":4.3,"HTML本体":5.8}}}}
+{"about":{"title":"「こもれび」とは","paragraphs":["大正浪漫の架空のカフェー「こもれび」の日常に、実際にchallenge Platformで販売されている手づくり商品をそっと紛れ込ませています。物語や風景を楽しみながら、商品にも出会える小さなカタログです。","ここに並ぶ品々は、株式会社チャレンジプラットフォームが運営する就労継続支援事業所「サニースポット」で製作されたものです。","内海が取り組んでいる研究テーマ「大正浪漫と竹久夢二の美人画の現代における再解釈」とコラボレーションした世界観の中に、商品たちを自然に潜り込ませています。","タイトルの「こもれび」は、木々の隙間からやわらかく差し込む光のように、一人ひとりの個性や得意なことが、あたたかく静かに、けれど確かに周りを照らしていく——そんな日々のありかたを重ねた、内海自身のサニースポットの解釈によるものです。"],"qrCaption":"このページはこちら"},"techInfo":{"title":"🔧 技術情報","featureSections":[{"heading":"ショッパブルなルックブック","body":"大正浪漫のイラストの中に、実際に販売中の商品をさりげなく登場させています。値札をタップすると、そのまま商品ページ（stores.jp）に直接飛べます。世界観を壊さずに商品を知ってもらう、という狙いです。"},{"heading":"無限ループカルーセル","body":"前後にもう1枚ずつ複製したスライドを並べておき、端まで来た瞬間だけ見えない位置でこっそり視点を戻す方式です。どれだけ連続でスワイプしても空白になりません。"},{"heading":"ズーム機能","body":"画像右上の🔍から、ピンチ・ダブルタップで拡大表示できます。値札の細かい文字も確認できるようにしています。"},{"heading":"ダークモード","body":"色をCSS変数として1箇所にまとめ、切り替え時にその変数の値だけ差し替える方式です。イラスト自体にも明るさ・コントラスト・色相を調整するフィルターをかけて、暗い画面の中で浮かないようにしています。"},{"heading":"初回だけの操作案内","body":"「商品をタップすると詳細が見られます」は初回表示時のみ数秒でフェードアウトします。localStorageに一度見たことを記録するので、2回目以降は表示されません。"}],"techSections":[{"heading":"なぜHTMLファイル1本に内包するか","body":"ブラウザさえあれば、サーバーもインストールも不要で動きます。イラストは全てBase64形式でファイルの中に直接埋め込んであり、画像を別に持ち歩く必要がありません。"},{"heading":"なぜGoogle Fontsを使わないか","body":"当初は明朝体をGoogle Fonts経由で読み込んでいましたが、「完全オフラインで完結する」という方針と矛盾するためやめました。今はOS標準の日本語フォント（游明朝・游ゴシック・メイリオ等）に任せています。通信ゼロ・追加容量ゼロです。"},{"heading":"画像の軽量化","body":"元の書き出し画像は1枚あたり約2.9MBのPNGでした。表示サイズに合わせて解像度を落とし、JPEG化（1枚約400〜600KB）、さらにWebP化して、画質を保ったまま大幅に圧縮しています。"},{"heading":"遅延読み込み（初回表示の高速化）","body":"1枚目のイラストだけ即座に読み込み、2〜4枚目はごく小さなプレースホルダーだけを先に表示して、ページが表示された直後にバックグラウンドで本物の画像に差し替えます。ブラウザが4枚分を同時にデコードして最初の表示が遅れる、という状態を避けています。"},{"heading":"値札データ・文章のJSON化","body":"24個の値札（商品リンク・位置・ラベル）や、「こもれびとは」「技術情報」の文章は、HTMLに直書きせず、それぞれ1つのJSONブロックにまとめてあります。修正のたびにコードを探し回らず、JSON内の該当箇所を直すだけで済みます。"},{"heading":"値札の位置合わせ（実測ピクセル方式）","body":"実はここが一番地味で一番時間がかかった部分です。イラストに赤枠を実際に重ねて描画し、ズレていたら測り直す、を24箇所×何回も繰り返しました。丸数字の中心を基準にする、というルールに決めるまでも何度か作り直しています。"},{"heading":"なぜここまで細部にこだわるか","body":"サニースポットのメンバーが一つひとつ丁寧に作った商品を紹介するページなので、自分も手を抜きたくありませんでした。値札の位置合わせも、画像の軽量化も、地味な積み重ねですが、そこが見た目の説得力になると思っています。"}],"capacity":{"total":1118.4,"breakdown":{"イラスト画像（WebP, 4枚）":1077.3,"JavaScript":14.1,"CSS":13.7,"値札データ（JSON）":3.2,"文章データ（JSON）":4.3,"HTML本体":5.8}}},"greeting":{"title":"💌 内海から","paragraphs":["このページはver0.1。まだ育てている途中です。","サニースポットで日々ものづくりに取り組んでいるメンバーの手仕事を、大正浪漫という世界観に乗せて紹介したくて作りました。","見てくださった方々、ありがとうございます。「こういう見せ方もあるんだ」と思ってもらえたら嬉しいです。","この夏はほとんどの時間を大正浪漫にどっぷり浸かって過ごしました。"],"distributeMessage":"このページは自由に見て、広めてもらって構いません。","thanks":"サニースポットのメンバーの皆さん、いつも丁寧なものづくりをありがとうございます。","sign":"— 内海"}}
 </script>
 
 <script>
@@ -816,6 +835,15 @@
     bodyEl.innerHTML = section.paragraphs.map(p => `<p>${p}</p>`).join('');
   }
 
+  function renderGreeting(titleId, bodyId, greeting){
+    document.getElementById(titleId).textContent = greeting.title;
+    let html = greeting.paragraphs.map(p => `<p>${p}</p>`).join('');
+    if (greeting.distributeMessage) html += `<p>${greeting.distributeMessage}</p>`;
+    if (greeting.thanks) html += `<p class="greeting-thanks">${greeting.thanks}</p>`;
+    if (greeting.sign) html += `<p class="greeting-sign">${greeting.sign}</p>`;
+    document.getElementById(bodyId).innerHTML = html;
+  }
+
   function renderTechInfo(titleId, bodyId, tech){
     document.getElementById(titleId).textContent = tech.title;
     let html = '<h3 class="tech-group-heading">✨ 機能</h3>';
@@ -831,6 +859,7 @@
 
   renderModalText('aboutTitle', 'aboutBody', siteData.about);
   document.getElementById('aboutQrCaption').textContent = siteData.about.qrCaption;
+  renderGreeting('greetingTitle', 'greetingBody', siteData.greeting);
   renderTechInfo('techTitle', 'techBody', siteData.techInfo);
 })();
 
@@ -1033,6 +1062,7 @@
   }
 
   wireModal('aboutOverlay', 'aboutBtn', 'aboutClose');
+  wireModal('greetingOverlay', 'greetingBtn', 'greetingClose');
   wireModal('techOverlay', 'techInfoBtn', 'techClose');
 
   // dark mode
