@@ -5,214 +5,566 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TakeshiUchimi Projects</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
 /* =============================================
    TakeshiUchimi Projects · デザイントークン
-   呑蔵v5.3と統一
+   こもれび基準：生成り・淡い茶・くすみ緑
    ============================================= */
 :root{
-  --bg:#1a1a1f;--bg2:#23232b;--bg3:#2c2c36;--bg4:#35353f;
-  --gold:#d4a843;--gold2:#f5d06e;--gold-dim:rgba(212,168,67,0.15);
-  --red:#c0392b;--red2:#e74c3c;
-  --text:#f0ead8;--text2:#c8bfa8;
-  --muted:#6a6a7a;--muted2:#9a9aaa;
-  --border:#3a3a46;--border2:#46465a;
+  --bg:#f2e8d5;--bg2:#fbf6eb;--bg3:#f6eedf;--bg4:#eee1ca;
+  --gold:#ad8a54;--gold2:#c5a66f;--gold-dim:rgba(173,138,84,0.12);
+  --red:#b77a72;--red2:#c98f86;
+  --text:#3b2e22;--text2:#5c4a38;
+  --muted:#8e8375;--muted2:#7c756b;
+  --border:#d8c9b0;--border2:#cdbb9f;
+  --moss:#7c8b5d;--moss-deep:#5f6e45;
+  --overlay:rgba(59,46,34,.48);
   --radius:12px;
 }
+html.dark-mode{
+  /* ニャーズ基準 */
+  --bg:#181410;
+  --bg2:#3d342a;
+  --bg3:#241e18;
+  --bg4:#2f2821;
+
+  --gold:#E0BC4A;
+  --gold2:#E8CA68;
+  --gold-dim:rgba(224,188,74,.14);
+
+  --red:#D9622B;
+  --red2:#F2874A;
+
+  --text:#EFE6D6;
+  --text2:#D8CCBA;
+
+  --muted:#8f806d;
+  --muted2:#B8A68E;
+
+  --border:#4d4034;
+  --border2:#625141;
+
+  --moss:#8fb56e;
+  --moss-deep:#a8d488;
+
+  --overlay:rgba(20,16,12,.80);
+}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Noto Serif JP',serif;min-height:100vh;display:flex;flex-direction:column;}
+body{
+  background:
+    radial-gradient(circle at 12% 8%, rgba(124,139,93,.08), transparent 32%),
+    radial-gradient(circle at 88% 82%, rgba(183,122,114,.08), transparent 34%),
+    var(--bg);
+  color:var(--text);font-family:'Noto Serif JP',serif;
+  min-height:100vh;display:flex;flex-direction:column;
+}
 
 /* HEADER */
 header{
-  padding:52px 24px 36px;text-align:center;
+  padding:24px 18px 18px;
   border-bottom:1px solid var(--border);
-  background:linear-gradient(180deg,#111118,var(--bg));
+  background:linear-gradient(180deg,rgba(251,246,235,.96),rgba(242,232,213,.88));
+  transition:background .3s,color .3s,border-color .3s;
 }
-.site-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:6px;color:var(--muted2);text-transform:uppercase;margin-bottom:14px;}
-.site-name{font-size:34px;font-weight:900;color:var(--text);letter-spacing:2px;line-height:1.2;}
-.site-name em{color:var(--gold);font-style:normal;}
-.site-sub{font-size:12px;color:var(--muted2);margin-top:10px;letter-spacing:2px;}
-.divider{width:60px;height:2px;background:linear-gradient(90deg,var(--gold),var(--red));margin:24px auto 0;border-radius:1px;}
+html.dark-mode header{
+  background:linear-gradient(180deg,#181410,#241e18);
+}
+.brand-wrap{
+  max-width:480px;margin:0 auto;
+}
+.brand-grid{
+  display:grid;
+  grid-template-columns:46px 1fr auto;
+  grid-template-rows:auto auto;
+  column-gap:11px;
+  align-items:center;
+}
+.brand-cat{
+  grid-column:1;grid-row:1 / 3;
+  width:42px;height:50px;display:block;
+}
+.brand-cat svg{width:100%;height:100%;display:block;}
+.brand-top{
+  grid-column:2;grid-row:1;
+  font-family:'Oswald',sans-serif;
+  font-size:11px;letter-spacing:2.7px;
+  color:var(--moss-deep);
+  line-height:1.2;
+  white-space:nowrap;
+}
+.brand-sub{
+  grid-column:2 / 4;grid-row:2;
+  font-size:18px;font-weight:700;
+  color:var(--text);
+  letter-spacing:.08em;
+  line-height:1.25;
+  margin-top:4px;
+}
+.theme-btn{
+  grid-column:3;grid-row:1;
+  border:1px solid rgba(124,139,93,.32);
+  background:rgba(124,139,93,.10);
+  color:var(--moss-deep);
+  border-radius:999px;
+  padding:6px 10px;
+  font-family:'Noto Serif JP',serif;
+  font-size:10px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.theme-btn:hover{background:rgba(124,139,93,.18);}
+.util-btn{
+  border:none;
+  background:var(--moss);
+  color:var(--bg2);
+  padding:7px 16px;
+  border-radius:999px;
+  font-family:'Noto Serif JP',serif;
+  font-size:11px;
+  letter-spacing:.04em;
+  cursor:pointer;
+  box-shadow:0 2px 0 var(--moss-deep);
+}
+.util-btn:active{transform:translateY(2px);box-shadow:none;}
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;z-index:50;
+  display:flex;align-items:center;justify-content:center;
+  padding:22px;
+  background:var(--overlay);
+  opacity:0;pointer-events:none;
+  transition:opacity .22s ease;
+}
+.modal-overlay.open{opacity:1;pointer-events:auto;}
+.modal-card{
+  position:relative;
+  width:min(100%,430px);
+  max-height:78vh;overflow:auto;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:26px 22px 22px;
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.45);
+  transform:translateY(10px);
+  transition:transform .22s ease,background .3s,color .3s;
+}
+.modal-overlay.open .modal-card{transform:translateY(0);}
+.modal-close{
+  position:absolute;top:8px;right:10px;
+  width:30px;height:30px;border:none;background:transparent;
+  color:var(--text2);font-size:21px;cursor:pointer;
+}
+.modal-title{
+  font-size:18px;font-weight:700;color:var(--text);
+  text-align:center;margin-bottom:14px;letter-spacing:.08em;
+}
+.modal-body{font-size:12.5px;line-height:1.9;color:var(--text2);}
+.modal-body p{margin:0 0 11px;}
+.modal-body p:last-child{margin-bottom:0;}
 
 /* MAIN */
-main{flex:1;max-width:480px;margin:0 auto;width:100%;padding:32px 16px 60px;}
+main{max-width:480px;margin:0 auto;width:100%;padding:22px 16px 8px;}
 .section-label{font-size:10px;letter-spacing:4px;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;padding-left:4px;}
 
 /* PROJECT CARD */
 .project{
   display:flex;align-items:center;gap:16px;
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  background:rgba(251,246,235,.92);border:1px solid var(--border);border-radius:var(--radius);
   padding:18px 20px;margin-bottom:12px;
   text-decoration:none;color:inherit;
   transition:all 0.2s;position:relative;overflow:hidden;cursor:pointer;
 }
 .project::before{
   content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
-  background:linear-gradient(180deg,var(--gold),var(--red));
+  background:linear-gradient(180deg,var(--moss),var(--gold));
   border-radius:3px 0 0 3px;opacity:0;transition:opacity 0.2s;
 }
-.project:hover{border-color:rgba(212,168,67,0.35);transform:translateX(4px);background:var(--bg3);}
+.project:hover{border-color:rgba(124,139,93,.45);transform:translateX(4px);background:var(--bg3);box-shadow:0 8px 24px rgba(74,52,35,.08);}
 .project:hover::before{opacity:1;}
-.project.disabled{opacity:0.4;cursor:default;}
-.project.disabled:hover{transform:none;border-color:var(--border);background:var(--bg2);}
-.project.disabled:hover::before{opacity:0;}
-
-.proj-icon{font-size:28px;flex-shrink:0;width:48px;height:48px;background:var(--bg4);border-radius:10px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);}
+.proj-icon{font-size:28px;flex-shrink:0;width:48px;height:48px;background:var(--bg4);border-radius:10px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);}
 .proj-info{flex:1;min-width:0;}
 .proj-num{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--muted2);margin-bottom:3px;}
 .proj-name{font-size:15px;font-weight:700;color:var(--text);}
 .proj-desc{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.6;}
 .proj-badge{flex-shrink:0;font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:20px;font-family:'Oswald',sans-serif;text-transform:uppercase;}
-.badge-live{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(212,168,67,0.35);}
-.badge-dev{background:rgba(100,100,100,0.15);color:var(--muted2);border:1px solid var(--border);}
-.proj-arrow{color:var(--gold);font-size:18px;flex-shrink:0;opacity:0;transition:opacity 0.2s;}
+.badge-live{background:rgba(124,139,93,.10);color:var(--moss-deep);border:1px solid rgba(124,139,93,.30);}
+.proj-arrow{color:var(--moss-deep);font-size:18px;flex-shrink:0;opacity:0;transition:opacity 0.2s;}
 .project:hover .proj-arrow{opacity:1;}
 
 /* FOOTER */
-footer{text-align:center;padding:24px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2.2;}
-footer em{color:var(--gold);font-style:normal;}
+footer{
+  text-align:center;
+  padding:18px 20px 38px;
+  font-size:10px;color:var(--muted);
+  letter-spacing:1px;line-height:2;
+}
+footer em{color:var(--moss-deep);font-style:normal;}
+
+body,.project,.proj-icon,footer{transition:background .3s,color .3s,border-color .3s;}
+header{padding:16px 16px 12px;}
+.brand-wrap{max-width:480px;margin:0 auto;}
+.compact-head{
+  grid-template-columns:42px 1fr 34px;
+  grid-template-rows:18px 22px;
+  column-gap:9px;
+  row-gap:1px;
+}
+.brand-cat{
+  grid-column:1;grid-row:1 / 3;
+  width:38px;height:44px;
+  align-self:center;
+  text-decoration:none;
+}
+.brand-cat:hover{transform:translateY(-1px);}
+.brand-top{
+  grid-column:2;grid-row:1;
+  font-size:10.5px;letter-spacing:2px;
+  line-height:18px;
+}
+.brand-sub{
+  grid-column:2 / 4;grid-row:2;
+  font-size:16px;line-height:22px;margin:0;
+}
+.icon-theme{
+  grid-column:3;grid-row:1;
+  width:30px;height:30px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  align-self:start;
+  margin-top:-6px;
+  font-size:15px;
+}
+main{padding-top:22px;}
+.bottom-tools{
+  display:flex;justify-content:center;gap:8px;
+  margin:18px 0 6px;
+}
+.bottom-tools .util-btn{padding:6px 14px;font-size:10.5px;}
+
+footer{padding:4px 20px 18px;}
+.modal-home-qr{
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px dashed var(--border);
+  text-align:center;
+}
+.modal-home-qr img{
+  display:block;
+  width:min(190px,55vw);
+  height:auto;
+  margin:0 auto;
+  padding:8px;
+  background:#fff;
+  border-radius:8px;
+}
+.modal-home-qr div{
+  margin-top:7px;
+  font-family:'Oswald',sans-serif;
+  font-size:9px;
+  letter-spacing:.04em;
+  color:var(--muted2);
+  word-break:break-all;
+}
+html.dark-mode body{
+  background:
+    radial-gradient(circle at 12% 8%, rgba(143,181,110,.05), transparent 32%),
+    radial-gradient(circle at 88% 82%, rgba(217,98,43,.04), transparent 34%),
+    var(--bg);
+}
+html.dark-mode .project{
+  background:var(--bg2);
+  border-color:var(--border);
+  box-shadow:0 5px 0 rgba(0,0,0,.10);
+}
+html.dark-mode .project:hover{
+  background:var(--bg3);
+  border-color:rgba(168,212,136,.38);
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+}
+html.dark-mode .proj-icon{
+  background:var(--bg4);
+  border-color:var(--border);
+  box-shadow:none;
+}
+html.dark-mode .modal-card{
+  background:var(--bg2);
+  border-color:var(--border);
+}
+html.dark-mode .util-btn{
+  background:#6b5236;
+  color:#fff;
+  box-shadow:0 2px 0 #8B6F47;
+}
+html.dark-mode .icon-theme{
+  background:#6b5236;
+  color:#fff;
+  border-color:#8B6F47;
+}
+html.dark-mode .badge-live{
+  background:rgba(143,181,110,.12);
+  color:var(--moss-deep);
+  border-color:rgba(143,181,110,.32);
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="site-label">Personal Projects</div>
-  <div class="site-name">Takeshi<em>Uchimi</em></div>
-  <div class="site-sub">Works & Tools</div>
-  <div class="divider"></div>
+  <div class="brand-wrap">
+    <div class="brand-grid compact-head">
+      <a class="brand-cat cat-link" href="https://takeshiuchimi.github.io/nya/index.html" aria-label="ニャーズゲームセンター">
+        <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<ellipse cx="50" cy="88" rx="30" ry="26" fill="#ead2b3"/>
+<path d="M22 92 Q10 100 16 112 Q24 116 28 104 Z" fill="#ead2b3"/>
+<path d="M20 22 L34 46 L14 46 Z" fill="#ead2b3"/>
+<path d="M80 22 L86 46 L66 46 Z" fill="#ead2b3"/>
+<circle cx="50" cy="52" r="30" fill="#ead2b3"/>
+<circle cx="39" cy="50" r="3.4" fill="#6b5138"/>
+<circle cx="61" cy="50" r="3.4" fill="#6b5138"/>
+<path d="M45 60 Q50 64 55 60" stroke="#8a6848" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+<line x1="18" y1="55" x2="34" y2="57" stroke="#8a6848" stroke-width="1.4"/>
+<line x1="18" y1="61" x2="34" y2="61" stroke="#8a6848" stroke-width="1.4"/>
+<line x1="82" y1="55" x2="66" y2="57" stroke="#8a6848" stroke-width="1.4"/>
+<line x1="82" y1="61" x2="66" y2="61" stroke="#8a6848" stroke-width="1.4"/>
+</svg>
+      </a>
+      <div class="brand-top">TakeshiUchimiProject</div>
+      <button class="theme-btn icon-theme" id="themeBtn" type="button" aria-label="ダークモード切替" title="ダークモード切替">◐</button>
+      <div class="brand-sub">Works &amp; Tools</div>
+    </div>
+  </div>
 </header>
 
 <main>
   <div class="section-label">Projects</div>
-
-  <!-- 1. 呑蔵競馬 -->
-  <a class="project" href="./nomuzo/index.html">
-    <div class="proj-icon">🍶</div>
-    <div class="proj-info">
-      <div class="proj-num">01</div>
-      <div class="proj-name">呑蔵競馬</div>
-      <div class="proj-desc">競馬ラボPDF取込・AI分析・内海式スコア v5.3</div>
-    </div>
-    <div class="proj-badge badge-live">Live</div>
-    <div class="proj-arrow">›</div>
-  </a>
-
-  <!-- 2. 呑蔵野球 -->
-  <a class="project" href="./nomuzoyakyu/index.html">
-    <div class="proj-icon">⚾</div>
-    <div class="proj-info">
-      <div class="proj-num">02</div>
-      <div class="proj-name">呑蔵野球</div>
-      <div class="proj-desc">内海メソッドによる選手評価エンジン</div>
-    </div>
-    <div class="proj-badge badge-live">Live</div>
-    <div class="proj-arrow">›</div>
-  </a>
-
-  <!-- 3. 稲盛先生 -->
-  <a class="project" href="./inamori/index.html">
-    <div class="proj-icon">📖</div>
-    <div class="proj-info">
-      <div class="proj-num">03</div>
-      <div class="proj-name">稲盛先生</div>
-      <div class="proj-desc">稲盛和夫フィロソフィーに基づく対話システム</div>
-    </div>
-    <div class="proj-badge badge-live">Live</div>
-    <div class="proj-arrow">›</div>
-  </a>
-
-  <!-- 4. 吹奏楽アルバム -->
-  <a class="project" href="./album/index.html">
-    <div class="proj-icon">🎺</div>
-    <div class="proj-info">
-      <div class="proj-num">04</div>
-      <div class="proj-name">吹奏楽アルバム</div>
-      <div class="proj-desc">EWI & Flute Jazz Night — スライドショー</div>
-    </div>
-    <div class="proj-badge badge-live">Live</div>
-    <div class="proj-arrow">›</div>
-  </a>
-
-  <!-- 5. 今夜苦竹で -->
-  <a class="project" href="./nigatake/index.html">
-    <div class="proj-icon">🥃</div>
-    <div class="proj-info">
-      <div class="proj-num">05</div>
-      <div class="proj-name">今夜苦竹で</div>
-      <div class="proj-desc">Ca&co Snack Bar Nigatake</div>
-    </div>
-    <div class="proj-badge badge-live">Live</div>
-    <div class="proj-arrow">›</div>
-  </a>
-
-  <!-- 6. Ca&coレコード -->
-  <a class="project" href="./cacorecord/index.html">
-    <div class="proj-icon">🎵</div>
-    <div class="proj-info">
-      <div class="proj-num">06</div>
-      <div class="proj-name">Ca&amp;co レコード</div>
-      <div class="proj-desc">オリジナルソング — 3曲収録</div>
-    </div>
-    <div class="proj-badge badge-live">Live</div>
-    <div class="proj-arrow">›</div>
-  </a>
-
-  <!-- 7. ポスターギャラリー -->
-  <a class="project" href="./posters/index.html">
-    <div class="proj-icon">🎨</div>
-    <div class="proj-info">
-      <div class="proj-num">07</div>
-      <div class="proj-name">ポスターギャラリー</div>
-      <div class="proj-desc">呑蔵・みっちゃん・きさら・Ca&amp;Co. — 店舗ポスター4枚</div>
-    </div>
-    <div class="proj-badge badge-live">Live</div>
-    <div class="proj-arrow">›</div>
-  </a>
-
-  <!-- 8. ラーメン利府街道 -->
-  <a class="project" href="./ramen/index.html">
-    <div class="proj-icon">🍜</div>
-    <div class="proj-info">
-      <div class="proj-num">08</div>
-      <div class="proj-name">ラーメン利府街道</div>
-      <div class="proj-desc">東仙台〜岩切〜利府 全23店 — 内海渾身リスト</div>
-    </div>
-    <div class="proj-badge badge-live">Live</div>
-    <div class="proj-arrow">›</div>
-  </a>
-
-  <!-- 9. Kさんの日常 -->
-  <a class="project" href="./k_daily/index.html">
-    <div class="proj-icon">👩</div>
-    <div class="proj-info">
-      <div class="proj-num">09</div>
-      <div class="proj-name">Kさんの日常</div>
-      <div class="proj-desc">食べてるか、毒吐いてるか、どっちかしかない</div>
-    </div>
-    <div class="proj-badge badge-live">Live</div>
-    <div class="proj-arrow">›</div>
-  </a>
-
-  <a class="project" href="./nya/index.html">
-    <div class="proj-icon">🐱</div>
-    <div class="proj-info">
-      <div class="proj-num">10</div>
-      <div class="proj-name">ニャーズゲームセンター</div>
-      <div class="proj-desc">猫たちの対戦ゲーム場。全5種目。</div>
-    </div>
-    <div class="proj-badge badge-live">Live</div>
-    <div class="proj-arrow">›</div>
-  </a>
-
+  <div id="projectList"></div>
 </main>
 
-<footer>© <em>TakeshiUchimi</em> · All Projects
-  <div style="margin-top:20px;">
-    <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:3px;margin-bottom:10px;">内海プロジェクト</div>
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAACMCAYAAACuwEE+AAADi0lEQVR4nO3dS47TQBQFUMdiEcx7yGJYEGMWxGJ6mDm7gAEKalUnca7qZ8vnDLFj0tHV81NVuXxZXvD29u3PK+dxbNfr+2XrnKcnCMo5PQvO3QOCwrLcD85a/oOwcHMvC+vWCZxbmYn10QG4+ZiNT7ckeGZdFtWFbbeMqDBELqoLCRWGiMAQ+ZJ+4NfPrz2+x0Pff/yOzi+/X/n59PiW3tfvLf19VRgiAkNEYIjEPUwpvQduSe/xrXuWtOdIj2/9Xun5qdoeSoUhIjBEBIZIdQ9Tqh3HSK8/umcppT1Jrd6/7xYVhojAEBEYIs17mNFqe5YttT3K6B6nNxWGiMAQERgih+9hWo+z1J5f6j03NJoKQ0RgiAgMkeY9TO979Oi5o9q/Z+vzo79PLRWGiMAQERgi1T3M6LmQ0ethRh8v7W2uSYUhIjBEBIbI4bb7qJ0Lmt0zzB5HqaXCEBEYIgJDpPtzSb3HKUbvz1K7/qX3+pre629UGCICQ0RgiDSfS9rb3Mzo/WFqe4at67UeZ7LHHV0JDBGBIVK9T+/snmL2epVS6zW5rZ+jqqXCEBEYIgJDpHo9zOyeYvZzSa17nt778tZeX4UhIjBEBIZI3MPsrecYPc5S6j1OMnv9TUmFISIwRASGSDyXtLeeY/Q4zNHf6eh9SQwlMEQEhsjp18OU0uegUqPnmlr3VCoMEYEhIjBEjMMUx4+2fiZlPQxDCQwRgSFiPUznuSDrYTg1gSEiMESMw+xs/5jaHqp3j6bCEBEYIgJDxDhM43GS0T1L7fWNw9CVwBARGCKnH4dpLb3+6HcLWA/DUAJDRGCInH4cJtX62exavXuykgpDRGCICAyRw43DlI723FKp9XNJvf9/FYaIwBARGCLV4zC9td5P5WjjNL3HffQwdCUwRASGSPV7q3u/3yc9f/Z6mtHPOo+mwhARGCICQ6S6hymNnkvZ29xW7VxYqvca3pIKQ0RgiAgMkeY9TG+zx1l6zxWVaseltphLoiuBISIwRA7Xw8weh9mb0fvRqDBEBIaIwBBp3sOM3n9ldk/T+v1IrdfLtO7JVBgiAkNEYIh4Lmln+7fMfi5qiwpDRGCICAyRuIfh3FQYIgJDZL1e3y+zvwTHcL2+X1QYIuuy/EvO7C/Cvt0yosIQ+R8YVYZHPmZjfXQAluVzJj7dkoSGm3tZeBoOo8Dn9KxovFRNBOccXrm7/AUh5CP3m1Ul6AAAAABJRU5ErkJggg==" alt="QR" style="width:120px;height:120px;border-radius:10px;display:block;margin:0 auto;">
-    <div style="font-size:9px;letter-spacing:4px;color:var(--muted);margin-top:8px;">SHARE</div>
+<footer>
+  <div class="bottom-tools">
+    <button class="util-btn" type="button" data-modal="messageModal">内海から</button>
+    <button class="util-btn" type="button" data-modal="techModal">技術情報</button>
   </div>
 </footer>
+
+<div class="modal-overlay" id="messageModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="messageTitle">
+    <button class="modal-close" type="button" aria-label="閉じる">×</button>
+    <div class="modal-title" id="messageTitle"></div>
+    <div class="modal-body" id="messageBody"></div>
+  </div>
+</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="techModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="techTitle">
+    <button class="modal-close" type="button" aria-label="閉じる">×</button>
+    <div class="modal-title" id="techTitle"></div>
+    <div class="modal-body" id="techBody"></div>
+  </div>
+</div>
+
+<script type="application/json" id="siteData">
+{
+  "projects": [
+    {
+      "num": "01",
+      "name": "呑蔵競馬",
+      "desc": "競馬ラボPDF取込・AI分析・内海式スコア v5.3",
+      "icon": "🍶",
+      "url": "https://takeshiuchimi.github.io/nomuzo/index.html",
+      "badge": "Live"
+    },
+    {
+      "num": "02",
+      "name": "呑蔵野球",
+      "desc": "内海メソッドによる選手評価エンジン",
+      "icon": "⚾",
+      "url": "https://takeshiuchimi.github.io/nomuzoyakyu/index.html",
+      "badge": "Live"
+    },
+    {
+      "num": "03",
+      "name": "稲盛先生",
+      "desc": "稲盛和夫フィロソフィーに基づく対話システム",
+      "icon": "📖",
+      "url": "https://takeshiuchimi.github.io/inamori/index.html",
+      "badge": "Live"
+    },
+    {
+      "num": "04",
+      "name": "吹奏楽アルバム",
+      "desc": "EWI & Flute Jazz Night — スライドショー",
+      "icon": "🎺",
+      "url": "https://takeshiuchimi.github.io/album/index.html",
+      "badge": "Live"
+    },
+    {
+      "num": "05",
+      "name": "今夜苦竹で",
+      "desc": "Ca&co Snack Bar Nigatake",
+      "icon": "🥃",
+      "url": "https://takeshiuchimi.github.io/nigatake/index.html",
+      "badge": "Live"
+    },
+    {
+      "num": "06",
+      "name": "Ca&co レコード",
+      "desc": "オリジナルソング — 3曲収録",
+      "icon": "🎵",
+      "url": "https://takeshiuchimi.github.io/cacorecord/index.html",
+      "badge": "Live"
+    },
+    {
+      "num": "07",
+      "name": "ポスターギャラリー",
+      "desc": "呑蔵・みっちゃん・きさら・Ca&Co. — 店舗ポスター4枚",
+      "icon": "🎨",
+      "url": "https://takeshiuchimi.github.io/posters/index.html",
+      "badge": "Live"
+    },
+    {
+      "num": "08",
+      "name": "ラーメン利府街道",
+      "desc": "東仙台〜岩切〜利府 全23店 — 内海渾身リスト",
+      "icon": "🍜",
+      "url": "https://takeshiuchimi.github.io/ramen/index.html",
+      "badge": "Live"
+    },
+    {
+      "num": "09",
+      "name": "Kさんの日常",
+      "desc": "食べてるか、毒吐いてるか、どっちかしかない",
+      "icon": "👩",
+      "url": "https://takeshiuchimi.github.io/k_daily/index.html",
+      "badge": "Live"
+    },
+    {
+      "num": "10",
+      "name": "ニャーズゲームセンター",
+      "desc": "猫たちの対戦ゲーム場。全5種目。",
+      "icon": "🐱",
+      "url": "https://takeshiuchimi.github.io/nya/index.html",
+      "badge": "Live"
+    },
+    {
+      "num": "11",
+      "name": "こもれび",
+      "desc": "大正浪漫 × challenge Platform 手づくり商品カタログ",
+      "icon": "🌿",
+      "url": "https://takeshiuchimi.github.io/komorebi/index.html",
+      "badge": "Live"
+    }
+  ],
+  "message": {
+    "title": "内海から",
+    "paragraphs": [
+      "ここは、思いついたことを実際に形にして残していくための個人プロジェクト置き場です。",
+      "仕事で使う道具も、遊びで作ったものも、まず動かしてみる。AIには考えるところ、描くところ、組み立てるところをそれぞれ手伝ってもらいながら、人が最後に判断して仕上げています。",
+      "完成品だけではなく、試して、直して、また試す過程そのものも「内海プロジェクト」です。"
+    ],
+    "homeUrl": "https://takeshiuchimi.github.io/",
+    "qrDataUri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZoAAAGaAQAAAAAefbjOAAADEElEQVR4nO2cQY6jMBBFXw1IWRopB8hRzA3mSK0+Ut8AjtIHaMksI4H+LGwTMruezCSZUCwigXjCFlbVr+8iJr59jD++z4BDDjnkkEMOOfSakJWjBViM0VpgKj/WT/WG/iHDc+j+UJQkJbB+OghYzOx0NggzGmgkSbqG7jc8h+4PTTUAjN1i9iZJw9Ri1oH1QI0gjxmeQ4+DYmqk9w6ImtEwmWn4J09y6P+Axg6ICYBGRM1Y/0+e5NBTQ0HKoSDqbIzdKi9psnqQND9ueA7dDSraYDQAGmA6yuLnQRbTEYsfxxlY7DHDc+juUF4RFytb42kGwtkYT2cT02IQrr3uJ5+TQ7dA5LJSqSlZo5SbQNEREoR5e/Pw5HNy6BYov2Si5lxc5LdflOX1faksEF8RLw1xcZ5KoAirgAxlqUgJWEOGr4iXhtYVUVxJDVBMyiGsCSPMaAiSZ42dQZNZjQxns7dUK4z4WUoS6x85PIfuCYUZs1Nxo6yfDtK7HYraHLtHD8+hu0G11lDVkzFRMsQQtmrTleVOILbqIYvKK5MyXtSm64gdQfYmCaaDpLSYhiCZdVRnYmrRwOL9ETuA1hhRdrWqTVWuSbX6zCWoZ42Xh7Z+RF4CiZIrpG3hifsR+4A2nmWOB8WKKNEihwfXETuCyk7XaI0sfhxzQx0xoeJFhLm1+NkiWFrde3gOPRYKM/aWAGrnlPWw2fiy/i89yaGnhaqOCPN1hphrV92l89b9iF1Aa3/EAuPPubjV8aNFWUqmBYsCI5xr28yTz8mhW6BNrUFMpQS9VJ+lPwKoccNjxItD1z1U89pft7TEdCyX4wAWP7w7fz/Q5puubFvTFG3xfvm6q9rb/8mcHLolRhAHgKkEBYN21th9tcTU5Q+7GE+uI/YAVYcqsQ0P+fRiagPuUO0XWrIVUT7sSiV/EJN3zOwBan87N8JXm51KQiPGnzMCZGP3VW9+8jk5dAu07mtIm87bXILm/FF9qcvhWeOVoa0fwbrJlbe/td3xrA2YviJeHDL/ZzKHHHLIIYcccugPoV+vMFeTGgMNegAAAABJRU5ErkJggg=="
+  },
+  "techInfo": {
+    "title": "技術情報",
+    "paragraphs": [
+      "企画・構成・画像生成はChatGPT、HTML・JavaScript実装はClaudeを中心に使用し、公開はGitHub Pagesで行っています。一つのAIに全部任せず、得意な作業を分けて使うのが基本です。",
+      "このページは、HTML/CSS/JavaScriptを中心にしたシンプルな構成です。依存する仕組みを増やしすぎず、将来も読みやすく、直しやすい形を優先しています。",
+      "プロジェクト一覧、「内海から」、「技術情報」など、更新する可能性のある情報はJSONに集約しています。HTMLを何度も書き換えるのではなく、データと表示部分を分離することで、追加・修正をしやすくしています。",
+      "JSONをさらに短縮すれば容量は減らせますが、今回は人間とAIの双方が内容を理解しやすいことを優先し、意味の分かる項目名を残しています。これがJSON埋め込みHTMLの内海メソッドです。",
+      "容量は小さく保つようにしていますが、無理な圧縮や読みにくいminifyは優先していません。渡した相手や別のAIが中身を読んで、意図を理解した上で改善できることの方を重視しています。",
+      "大規模に全部作り直すのではなく、重複や無駄を見つけたところから地道に共通化・整理していく方針です。動いているものを壊さず、少しずつ精度を上げていくことを大切にしています。"
+    ]
+  }
+}
+</script>
+
+<script>
+(() => {
+  const SITE_DATA = JSON.parse(document.getElementById('siteData').textContent);
+
+  const projectList = document.getElementById('projectList');
+  projectList.innerHTML = SITE_DATA.projects.map(p => `
+    <a class="project" href="${p.url}">
+      <div class="proj-icon">${p.icon}</div>
+      <div class="proj-info">
+        <div class="proj-num">${p.num}</div>
+        <div class="proj-name">${p.name}</div>
+        <div class="proj-desc">${p.desc}</div>
+      </div>
+      <div class="proj-badge badge-live">${p.badge}</div>
+      <div class="proj-arrow">›</div>
+    </a>
+  `).join('');
+
+  const renderParagraphs = paras =>
+    paras.map(p => `<p>${p}</p>`).join('');
+
+  document.getElementById('messageTitle').textContent = SITE_DATA.message.title;
+  document.getElementById('messageBody').innerHTML =
+    renderParagraphs(SITE_DATA.message.paragraphs) +
+    `<div class="modal-home-qr">
+      <img src="${SITE_DATA.message.qrDataUri}" alt="${SITE_DATA.message.homeUrl} QRコード">
+      <div>${SITE_DATA.message.homeUrl}</div>
+    </div>`;
+
+  document.getElementById('techTitle').textContent = SITE_DATA.techInfo.title;
+  document.getElementById('techBody').innerHTML =
+    renderParagraphs(SITE_DATA.techInfo.paragraphs);
+
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeBtn');
+  const saved = localStorage.getItem('takeshi_theme');
+  if(saved === 'dark') root.classList.add('dark-mode');
+
+  const syncThemeLabel = () => {
+    const isDark = root.classList.contains('dark-mode');
+    themeBtn.textContent = isDark ? '☀' : '◐';
+    themeBtn.setAttribute('aria-label', isDark ? 'ライトモードに切替' : 'ダークモードに切替');
+    themeBtn.setAttribute('title', isDark ? 'ライトモードに切替' : 'ダークモードに切替');
+  };
+  syncThemeLabel();
+
+  themeBtn.addEventListener('click', () => {
+    root.classList.toggle('dark-mode');
+    localStorage.setItem(
+      'takeshi_theme',
+      root.classList.contains('dark-mode') ? 'dark' : 'light'
+    );
+    syncThemeLabel();
+  });
+
+  document.querySelectorAll('[data-modal]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const modal = document.getElementById(btn.dataset.modal);
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+    });
+  });
+
+  document.querySelectorAll('.modal-overlay').forEach(modal => {
+    const close = () => {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+    };
+    modal.addEventListener('click', e => {
+      if(e.target === modal) close();
+    });
+    modal.querySelector('.modal-close').addEventListener('click', close);
+  });
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      document.querySelectorAll('.modal-overlay.open').forEach(m => {
+        m.classList.remove('open');
+        m.setAttribute('aria-hidden','true');
+      });
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
