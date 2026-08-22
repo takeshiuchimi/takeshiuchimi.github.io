@@ -1,1 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>てにゃーキャッチ(試作)</title>
+<style>
+  :root{
+    --cream:#FBF3E7; --cream-deep:#F3E6D0; --brown:#8B6F47; --brown-deep:#6B5335;
+    --gold:#D4AF37; --player-body:#F7C99B; --player-accent:#D9622B;
+    --cpu-body:#A9B8C4; --cpu-accent:#5C7A94; --line-dark:#3A2E20;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; background:var(--cream); color:var(--line-dark);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
+    overscroll-behavior:none; touch-action:none;
+  }
+  .app{ max-width:480px; margin:0 auto; padding:10px; }
+  h1{ font-size:18px; text-align:center; margin:6px 0; color:var(--brown-deep); }
+  .stage{
+    position:relative; width:100%; aspect-ratio:3/4; background:#000;
+    border-radius:16px; overflow:hidden; border:3px dashed var(--gold);
+    box-shadow:0 6px 0 rgba(139,111,71,.15);
+  }
+  video{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    transform:scaleX(-1); /* 鏡合わせにして直感的な操作感に */
+  }
+  canvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .cat{
+    position:absolute; width:56px; height:56px; transform:translate(-50%,-50%);
+    pointer-events:none; filter:drop-shadow(0 3px 3px rgba(0,0,0,.4));
+    transition:left .06s linear, top .06s linear;
+  }
+  .target{
+    position:absolute; width:34px; height:34px; transform:translate(-50%,-50%);
+    pointer-events:none; opacity:.9;
+  }
+  .target svg{ width:100%; height:100%; }
+  .hud{
+    display:flex; justify-content:space-between; align-items:center;
+    margin:8px 2px; font-size:13px; font-weight:bold; color:var(--brown-deep);
+  }
+  .score{ font-size:16px; }
+  .status{
+    text-align:center; font-size:12px; color:var(--brown-deep); min-height:18px; margin:4px 0;
+  }
+  .row{ display:flex; gap:8px; margin-top:8px; }
+  .btn{
+    flex:1; font-family:inherit; font-size:14px; background:var(--brown); color:#fff;
+    border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
+    box-shadow:0 3px 0 var(--brown-deep);
+  }
+  .btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--brown-deep); }
+  .overlay-msg{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:10px; padding:20px; text-align:center;
+    background:rgba(0,0,0,.55); color:#fff; font-size:14px; z-index:5;
+  }
+  .overlay-msg.hidden{ display:none; }
+  .note{
+    font-size:11px; color:var(--brown-deep); text-align:center; margin-top:10px; line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🐾 てにゃーキャッチ(試作)</h1>
+  <div class="hud">
+    <span>手のひらで猫を動かして、的にタッチ!</span>
+    <span class="score">score <b id="score">0</b></span>
+  </div>
+  <div class="stage" id="stage">
+    <video id="video" playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <div class="cat" id="cat"></div>
+    <div class="target" id="target"></div>
+    <div class="overlay-msg" id="startOverlay">
+      <div>カメラを使って、手の動きで猫を操作します。<br>カメラへのアクセスを許可してください。</div>
+      <button class="btn" id="startBtn" style="flex:none;padding:12px 24px;">はじめる</button>
+    </div>
+  </div>
+  <div class="status" id="status">&nbsp;</div>
+  <div class="row">
+    <button class="btn" id="resetBtn">スコアをリセット</button>
+  </div>
+  <p class="note">
+    試作版です。MediaPipe Hands(Google製、ブラウザ内で完結)を使って手の位置を検出し、猫のキャラクターに反映しています。<br>
+    サーバーには何も送信されません。手の動きの検出精度は照明条件によって変わります。<br>
+    <b>注意: カメラ機能はHTTPS配信(またはlocalhost)でないと動作しません。</b>ファイルをそのまま開いた場合、カメラの許可が出ないことがあります。
+  </p>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script>
+const CAT_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="58" r="32" fill="var(--player-body)"/>
+  <path d="M24 32 L34 6 L46 30 Z" fill="var(--player-body)"/>
+  <path d="M76 32 L66 6 L54 30 Z" fill="var(--player-body)"/>
+  <circle cx="38" cy="54" r="5.5" fill="#3A2E20"/>
+  <circle cx="62" cy="54" r="5.5" fill="#3A2E20"/>
+</svg>`;
+const TARGET_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="46" fill="none" stroke="#D4AF37" stroke-width="8"/>
+  <circle cx="50" cy="50" r="26" fill="none" stroke="#D4AF37" stroke-width="8"/>
+  <circle cx="50" cy="50" r="8" fill="#D4AF37"/>
+</svg>`;
+
+const videoEl = document.getElementById('video');
+const canvasEl = document.getElementById('canvas');
+const ctx = canvasEl.getContext('2d');
+const catEl = document.getElementById('cat');
+const targetEl = document.getElementById('target');
+const statusEl = document.getElementById('status');
+const scoreEl = document.getElementById('score');
+const stageEl = document.getElementById('stage');
+const startOverlay = document.getElementById('startOverlay');
+
+catEl.innerHTML = CAT_SVG;
+targetEl.innerHTML = TARGET_SVG;
+
+let score = 0;
+let catX = 50, catY = 50; // % 座標
+let targetX = 50, targetY = 50;
+let lastHandSeen = 0;
+let running = false;
+
+function placeTargetRandom(){
+  targetX = 15 + Math.random() * 70;
+  targetY = 15 + Math.random() * 70;
+  targetEl.style.left = targetX + '%';
+  targetEl.style.top = targetY + '%';
+}
+
+function updateCatPos(xPct, yPct){
+  catX = xPct; catY = yPct;
+  catEl.style.left = catX + '%';
+  catEl.style.top = catY + '%';
+  checkCatch();
+}
+
+function checkCatch(){
+  const dx = catX - targetX, dy = catY - targetY;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if(dist < 8){
+    score++;
+    scoreEl.textContent = score;
+    placeTargetRandom();
+  }
+}
+
+function onResults(results){
+  canvasEl.width = stageEl.clientWidth;
+  canvasEl.height = stageEl.clientHeight;
+  ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+
+  if(results.multiHandLandmarks && results.multiHandLandmarks.length > 0){
+    lastHandSeen = Date.now();
+    statusEl.textContent = '手を検出中';
+    const lm = results.multiHandLandmarks[0];
+    // 人差し指の先端(8番)を基準にする。ミラー表示のためxは反転
+    const tip = lm[8];
+    const xPct = (1 - tip.x) * 100;
+    const yPct = tip.y * 100;
+    updateCatPos(xPct, yPct);
+
+    // デバッグ用に手の骨格を描画(鏡合わせに合わせてx反転)
+    ctx.fillStyle = 'rgba(212,175,55,.8)';
+    lm.forEach(p=>{
+      const px = (1 - p.x) * canvasEl.width;
+      const py = p.y * canvasEl.height;
+      ctx.beginPath();
+      ctx.arc(px, py, 3, 0, Math.PI*2);
+      ctx.fill();
+    });
+  }else{
+    if(Date.now() - lastHandSeen > 800){
+      statusEl.textContent = '手が見つかりません。カメラに手をかざしてください';
+    }
+  }
+}
+
+let hands, rafId, stream;
+
+async function startCamera(){
+  startOverlay.classList.add('hidden');
+  statusEl.textContent = 'カメラを起動しています…';
+  try{
+    hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.5,
+    });
+    hands.onResults(onResults);
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } },
+      audio: false,
+    });
+    videoEl.srcObject = stream;
+    await videoEl.play();
+
+    running = true;
+    placeTargetRandom();
+    statusEl.textContent = '手を検出中';
+
+    async function frameLoop(){
+      if(!running) return;
+      await hands.send({image: videoEl});
+      rafId = requestAnimationFrame(frameLoop);
+    }
+    frameLoop();
+  }catch(e){
+    statusEl.textContent = 'カメラを開始できませんでした: ' + e.message;
+    startOverlay.classList.remove('hidden');
+  }
+}
+
+document.getElementById('startBtn').addEventListener('click', startCamera);
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  score = 0; scoreEl.textContent = '0';
+});
+
+// 初期表示位置
+catEl.style.left = '50%'; catEl.style.top = '50%';
+</script>
+</body>
+</html>
