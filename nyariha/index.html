@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>てにゃーキャッチ(試作)</title>
+<title>てにゃーもぎ(試作)</title>
 <style>
   :root{
     --cream:#FBF3E7; --cream-deep:#F3E6D0; --brown:#8B6F47; --brown-deep:#6B5335;
     --gold:#D4AF37; --player-body:#F7C99B; --player-accent:#D9622B;
-    --cpu-body:#A9B8C4; --cpu-accent:#5C7A94; --line-dark:#3A2E20;
+    --line-dark:#3A2E20;
   }
   *{box-sizing:border-box;}
   html,body{
@@ -25,27 +25,82 @@
   }
   video{
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-    transform:scaleX(-1); /* 鏡合わせにして直感的な操作感に */
+    transform:scaleX(-1);
   }
   canvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-  .cat{
-    position:absolute; width:56px; height:56px; transform:translate(-50%,-50%);
-    pointer-events:none; filter:drop-shadow(0 3px 3px rgba(0,0,0,.4));
-    transition:left .06s linear, top .06s linear;
+
+  .fruit{
+    position:absolute; width:44px; height:44px; transform:translate(-50%,-50%);
+    font-size:36px; line-height:44px; text-align:center; pointer-events:none;
+    filter:drop-shadow(0 3px 3px rgba(0,0,0,.5));
+    transition:opacity .15s ease;
   }
-  .target{
-    position:absolute; width:34px; height:34px; transform:translate(-50%,-50%);
-    pointer-events:none; opacity:.9;
+  .fruit.collected{ opacity:0; }
+
+  .basket-row{
+    position:absolute; left:0; right:0; bottom:6%; display:flex; justify-content:space-around;
+    pointer-events:none;
   }
-  .target svg{ width:100%; height:100%; }
+  .basket{
+    width:26%; aspect-ratio:1/1; max-width:110px;
+    background:rgba(139,111,71,.55); border:3px solid var(--gold); border-radius:14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:#fff; font-size:13px; font-weight:bold; text-shadow:0 1px 2px rgba(0,0,0,.6);
+  }
+  .basket .icon{ font-size:26px; }
+  .basket .count{ font-size:14px; }
+  .basket.glow{ box-shadow:0 0 0 4px #fff, 0 0 14px 4px var(--gold); }
+
+  .hand-cursor{
+    position:absolute; width:50px; height:50px; transform:translate(-50%,-50%);
+    pointer-events:none; z-index:3; transition:left .05s linear, top .05s linear;
+  }
+  .hand-cursor svg{ width:100%; height:100%; filter:drop-shadow(0 3px 3px rgba(0,0,0,.5)); }
+  .held-fruit{
+    position:absolute; font-size:26px; transform:translate(-50%,-120%);
+    pointer-events:none; z-index:4;
+  }
+  .falling-fruit{
+    position:absolute; font-size:26px; transform:translate(-50%,-50%);
+    pointer-events:none; z-index:4;
+  }
+  .game-hud{
+    position:absolute; top:6px; left:6px; right:6px; z-index:6;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:16px; font-weight:bold; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.7);
+  }
+  #catReaction{ font-size:26px; transition:transform .15s ease; }
+  #catReaction.bounce{ transform:scale(1.3) rotate(-8deg); }
+  #catReaction.sad{ transform:scale(0.9) rotate(6deg); }
+  #comboDisplay{ min-width:70px; text-align:right; color:var(--gold); }
+  .mogi-callout{
+    position:absolute; left:50%; top:38%; transform:translate(-50%,-50%) scale(0.7);
+    font-size:22px; font-weight:bold; color:var(--gold); z-index:6;
+    text-shadow:0 0 6px rgba(0,0,0,.6), 0 0 2px #fff;
+    opacity:0; pointer-events:none; transition:opacity .12s ease, transform .12s ease;
+    text-align:center; width:90%;
+  }
+  .mogi-callout.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .rating-star{ font-size:44px; text-align:center; }
+  .dwell-btn{
+    position:relative; width:120px; height:120px; margin-top:6px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .dwell-ring{ position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); }
+  .dwell-ring-bg{ fill:var(--brown); stroke:rgba(255,255,255,.25); stroke-width:8; }
+  .dwell-ring-fg{
+    fill:none; stroke:var(--gold); stroke-width:8; stroke-linecap:round;
+    stroke-dasharray:276.5; stroke-dashoffset:276.5; transition:stroke-dashoffset .05s linear;
+  }
+  .dwell-label{ position:relative; z-index:1; font-size:14px; font-weight:bold; color:#fff; text-align:center; line-height:1.4; }
+  .dwell-label small{ font-size:10px; font-weight:normal; opacity:.85; }
+  .dwell-btn.active .dwell-ring-bg{ fill:var(--brown-deep); }
+
   .hud{
     display:flex; justify-content:space-between; align-items:center;
     margin:8px 2px; font-size:13px; font-weight:bold; color:var(--brown-deep);
   }
-  .score{ font-size:16px; }
-  .status{
-    text-align:center; font-size:12px; color:var(--brown-deep); min-height:18px; margin:4px 0;
-  }
+  .status{ text-align:center; font-size:12px; color:var(--brown-deep); min-height:18px; margin:4px 0; }
   .row{ display:flex; gap:8px; margin-top:8px; }
   .btn{
     flex:1; font-family:inherit; font-size:14px; background:var(--brown); color:#fff;
@@ -59,26 +114,44 @@
     background:rgba(0,0,0,.55); color:#fff; font-size:14px; z-index:5;
   }
   .overlay-msg.hidden{ display:none; }
-  .note{
-    font-size:11px; color:var(--brown-deep); text-align:center; margin-top:10px; line-height:1.6;
-  }
+  .note{ font-size:11px; color:var(--brown-deep); text-align:center; margin-top:10px; line-height:1.6; }
 </style>
 </head>
 <body>
 <div class="app">
-  <h1>🐾 てにゃーキャッチ(試作)</h1>
+  <h1>🐾 てにゃーもぎ(試作)</h1>
   <div class="hud">
-    <span>手のひらで猫を動かして、的にタッチ!</span>
-    <span class="score">score <b id="score">0</b></span>
+    <span>手を<b>パー</b>で近づいて<b>グー</b>でもぎ取り、かごで<b>パー</b>を開いて入れよう</span>
   </div>
   <div class="stage" id="stage">
     <video id="video" playsinline muted></video>
     <canvas id="canvas"></canvas>
-    <div class="cat" id="cat"></div>
-    <div class="target" id="target"></div>
+    <div id="fruitsLayer"></div>
+    <div class="basket-row" id="basketRow"></div>
+    <div class="hand-cursor" id="handCursor"></div>
+    <div class="held-fruit" id="heldFruit"></div>
+    <div class="game-hud" id="gameHud">
+      <span id="catReaction">😺</span>
+      <span id="timerDisplay">⏱ 30</span>
+      <span id="comboDisplay"></span>
+    </div>
+    <div class="mogi-callout" id="mogiCallout"></div>
     <div class="overlay-msg" id="startOverlay">
-      <div>カメラを使って、手の動きで猫を操作します。<br>カメラへのアクセスを許可してください。</div>
+      <div>カメラを使って、手の動きで果物をもぎ取ります。<br>30秒でどれだけかごに入れられるか挑戦!<br>カメラへのアクセスを許可してください。</div>
       <button class="btn" id="startBtn" style="flex:none;padding:12px 24px;">はじめる</button>
+    </div>
+    <div class="overlay-msg hidden" id="resultOverlay">
+      <div class="rating-star" id="ratingStar"></div>
+      <div id="ratingLabel" style="font-size:18px;font-weight:bold;"></div>
+      <div id="ratingDetail" style="font-size:13px;"></div>
+      <div class="dwell-btn" id="retryDwellBtn">
+        <svg class="dwell-ring" viewBox="0 0 100 100">
+          <circle class="dwell-ring-bg" cx="50" cy="50" r="44"/>
+          <circle class="dwell-ring-fg" id="retryRingFg" cx="50" cy="50" r="44"/>
+        </svg>
+        <span class="dwell-label">もう一回!<br><small>手をここに乗せてね</small></span>
+      </div>
+      <button class="btn" id="retryBtn" style="flex:none;padding:8px 20px;margin-top:6px;">(タップでもOK)</button>
     </div>
   </div>
   <div class="status" id="status">&nbsp;</div>
@@ -86,68 +159,327 @@
     <button class="btn" id="resetBtn">スコアをリセット</button>
   </div>
   <p class="note">
-    試作版です。MediaPipe Hands(Google製、ブラウザ内で完結)を使って手の位置を検出し、猫のキャラクターに反映しています。<br>
+    試作版です。MediaPipe Hands(Google製、ブラウザ内で完結)を使って手の開閉と位置を検出しています。<br>
     サーバーには何も送信されません。手の動きの検出精度は照明条件によって変わります。<br>
-    <b>注意: カメラ機能はHTTPS配信(またはlocalhost)でないと動作しません。</b>ファイルをそのまま開いた場合、カメラの許可が出ないことがあります。
+    <b>注意: カメラ機能はHTTPS配信(またはlocalhost)でないと動作しません。</b>
   </p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 <script>
-const CAT_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="50" cy="58" r="32" fill="var(--player-body)"/>
-  <path d="M24 32 L34 6 L46 30 Z" fill="var(--player-body)"/>
-  <path d="M76 32 L66 6 L54 30 Z" fill="var(--player-body)"/>
-  <circle cx="38" cy="54" r="5.5" fill="#3A2E20"/>
-  <circle cx="62" cy="54" r="5.5" fill="#3A2E20"/>
+const PAW_OPEN_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="62" r="24" fill="var(--player-body)"/>
+  <circle cx="26" cy="40" r="12" fill="var(--player-body)"/>
+  <circle cx="50" cy="26" r="12" fill="var(--player-body)"/>
+  <circle cx="74" cy="40" r="12" fill="var(--player-body)"/>
 </svg>`;
-const TARGET_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="50" cy="50" r="46" fill="none" stroke="#D4AF37" stroke-width="8"/>
-  <circle cx="50" cy="50" r="26" fill="none" stroke="#D4AF37" stroke-width="8"/>
-  <circle cx="50" cy="50" r="8" fill="#D4AF37"/>
+const PAW_CLOSED_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="55" r="30" fill="var(--player-accent)"/>
 </svg>`;
+
+const FRUITS = {
+  apple: { emoji:'🍎', label:'りんご' },
+  mikan: { emoji:'🍊', label:'みかん' },
+  grape: { emoji:'🍇', label:'ぶどう' },
+};
+const FRUIT_KEYS = Object.keys(FRUITS);
 
 const videoEl = document.getElementById('video');
 const canvasEl = document.getElementById('canvas');
 const ctx = canvasEl.getContext('2d');
-const catEl = document.getElementById('cat');
-const targetEl = document.getElementById('target');
-const statusEl = document.getElementById('status');
-const scoreEl = document.getElementById('score');
 const stageEl = document.getElementById('stage');
+const fruitsLayer = document.getElementById('fruitsLayer');
+const basketRow = document.getElementById('basketRow');
+const handCursorEl = document.getElementById('handCursor');
+const heldFruitEl = document.getElementById('heldFruit');
+const statusEl = document.getElementById('status');
 const startOverlay = document.getElementById('startOverlay');
+const resultOverlay = document.getElementById('resultOverlay');
+const catReactionEl = document.getElementById('catReaction');
+const timerDisplayEl = document.getElementById('timerDisplay');
+const comboDisplayEl = document.getElementById('comboDisplay');
+const calloutEl = document.getElementById('mogiCallout');
+const retryDwellBtn = document.getElementById('retryDwellBtn');
+const retryRingFg = document.getElementById('retryRingFg');
 
-catEl.innerHTML = CAT_SVG;
-targetEl.innerHTML = TARGET_SVG;
+handCursorEl.innerHTML = PAW_OPEN_SVG;
 
-let score = 0;
-let catX = 50, catY = 50; // % 座標
-let targetX = 50, targetY = 50;
+const GAME_SECONDS = 30;
+let score = { apple:0, mikan:0, grape:0 };
+let fruits = []; // {type, x, y, el, collected}
+let baskets = {}; // type -> {el, x, y}
+let holding = null; // null | type
+let fallingFruits = []; // 自由落下中の果物 {type,x,y,vy,el}
+let handX = 50, handY = 50; // %
+let handOpen = true;
+let prevHandOpen = true;
 let lastHandSeen = 0;
 let running = false;
+let timeLeft = GAME_SECONDS;
+let combo = 0, bestCombo = 0;
+let totalSuccess = 0, totalMiss = 0;
+let gameEnded = false;
+let cameraActive = false;
+let timerInterval = null;
+let calloutTimer = null;
 
-function placeTargetRandom(){
-  targetX = 15 + Math.random() * 70;
-  targetY = 15 + Math.random() * 70;
-  targetEl.style.left = targetX + '%';
-  targetEl.style.top = targetY + '%';
+function updateScoreDisplay(){
+  FRUIT_KEYS.forEach(k=>{
+    if(baskets[k]) baskets[k].countEl.textContent = score[k];
+  });
 }
 
-function updateCatPos(xPct, yPct){
-  catX = xPct; catY = yPct;
-  catEl.style.left = catX + '%';
-  catEl.style.top = catY + '%';
-  checkCatch();
+function spawnFruit(type, x, y){
+  const el = document.createElement('div');
+  el.className = 'fruit';
+  el.textContent = FRUITS[type].emoji;
+  el.style.left = x + '%';
+  el.style.top = y + '%';
+  fruitsLayer.appendChild(el);
+  fruits.push({ type, x, y, el, collected:false });
 }
 
-function checkCatch(){
-  const dx = catX - targetX, dy = catY - targetY;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  if(dist < 8){
-    score++;
-    scoreEl.textContent = score;
-    placeTargetRandom();
+function respawnAllFruits(){
+  fruitsLayer.innerHTML = '';
+  fruits = [];
+  // 木のイメージで上部にランダム配置(重ならないよう帯を分ける)
+  const positions = [
+    { xMin:12, xMax:38, yMin:10, yMax:35 },
+    { xMin:38, xMax:62, yMin:8, yMax:30 },
+    { xMin:62, xMax:88, yMin:10, yMax:35 },
+  ];
+  const shuffled = FRUIT_KEYS.slice().sort(()=>Math.random()-0.5);
+  shuffled.forEach((type,i)=>{
+    const p = positions[i];
+    const x = p.xMin + Math.random()*(p.xMax-p.xMin);
+    const y = p.yMin + Math.random()*(p.yMax-p.yMin);
+    spawnFruit(type, x, y);
+  });
+}
+
+function buildBaskets(){
+  basketRow.innerHTML = '';
+  baskets = {};
+  FRUIT_KEYS.forEach(type=>{
+    const el = document.createElement('div');
+    el.className = 'basket';
+    el.innerHTML = `<div class="icon">${FRUITS[type].emoji}</div><div>${FRUITS[type].label}</div><div class="count">0</div>`;
+    basketRow.appendChild(el);
+    baskets[type] = { el, countEl: el.querySelector('.count') };
+  });
+}
+
+function basketCenter(type){
+  const rect = baskets[type].el.getBoundingClientRect();
+  const stageRect = stageEl.getBoundingClientRect();
+  return {
+    x: ((rect.left + rect.width/2 - stageRect.left) / stageRect.width) * 100,
+    y: ((rect.top + rect.height/2 - stageRect.top) / stageRect.height) * 100,
+  };
+}
+
+function basketBounds(type){
+  const rect = baskets[type].el.getBoundingClientRect();
+  const stageRect = stageEl.getBoundingClientRect();
+  return {
+    xMin: ((rect.left - stageRect.left) / stageRect.width) * 100,
+    xMax: ((rect.right - stageRect.left) / stageRect.width) * 100,
+    yTop: ((rect.top - stageRect.top) / stageRect.height) * 100,
+  };
+}
+
+function distPct(x1,y1,x2,y2){
+  const dx = x1-x2, dy = y1-y2;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+const DWELL_DURATION_MS = 1200;
+let dwellStartTime = null;
+
+function resetDwell(){
+  dwellStartTime = null;
+  if(retryRingFg){ retryRingFg.style.strokeDashoffset = '276.5'; }
+  if(retryDwellBtn){ retryDwellBtn.classList.remove('active'); }
+}
+
+function checkRetryDwell(){
+  if(!gameEnded){ resetDwell(); return; }
+  const rect = retryDwellBtn.getBoundingClientRect();
+  const stageRect = stageEl.getBoundingClientRect();
+  const bx = ((rect.left + rect.width/2 - stageRect.left) / stageRect.width) * 100;
+  const by = ((rect.top + rect.height/2 - stageRect.top) / stageRect.height) * 100;
+  const bw = (rect.width / stageRect.width) * 100;
+  const dist = distPct(handX, handY, bx, by);
+
+  if(dist < bw/2){
+    if(dwellStartTime === null){
+      dwellStartTime = Date.now();
+      retryDwellBtn.classList.add('active');
+    }
+    const elapsed = Date.now() - dwellStartTime;
+    const progress = Math.min(1, elapsed / DWELL_DURATION_MS);
+    retryRingFg.style.strokeDashoffset = String(276.5 * (1 - progress));
+    if(progress >= 1){
+      resetDwell();
+      doRetry();
+    }
+  }else{
+    resetDwell();
   }
+}
+
+function tryGrab(){
+  if(gameEnded) return;
+  if(holding) return;
+  for(const f of fruits){
+    if(f.collected) continue;
+    if(distPct(handX, handY, f.x, f.y) < 9){
+      holding = f.type;
+      f.collected = true; // 見た目上は木から消える(手に持っている状態)
+      f.el.classList.add('collected');
+      heldFruitEl.textContent = FRUITS[f.type].emoji;
+      heldFruitEl.style.left = handX + '%';
+      heldFruitEl.style.top = handY + '%';
+      statusEl.textContent = FRUITS[f.type].label + ' をもいだ!パーでかごへ';
+      return;
+    }
+  }
+}
+
+function tryRelease(){
+  if(gameEnded) return;
+  if(!holding) return;
+  const type = holding;
+  fallingFruits.push({
+    type, x: handX, y: handY, vy: 0,
+    el: heldFruitEl_makeFallingEl(type, handX, handY),
+  });
+  statusEl.textContent = FRUITS[type].label + 'を離した!落ちていく…';
+  holding = null;
+  heldFruitEl.textContent = '';
+}
+
+function heldFruitEl_makeFallingEl(type, x, y){
+  const el = document.createElement('div');
+  el.className = 'falling-fruit';
+  el.textContent = FRUITS[type].emoji;
+  el.style.left = x + '%';
+  el.style.top = y + '%';
+  stageEl.appendChild(el);
+  return el;
+}
+
+const GRAVITY = 0.55; // %/tick^2 相当
+function showCallout(text){
+  clearTimeout(calloutTimer);
+  calloutEl.textContent = text;
+  calloutEl.classList.add('show');
+  calloutTimer = setTimeout(()=> calloutEl.classList.remove('show'), 700);
+}
+
+function catReact(kind){
+  catReactionEl.textContent = kind==='happy' ? '😸' : '😿';
+  catReactionEl.classList.remove('bounce','sad');
+  void catReactionEl.offsetWidth; // reflow
+  catReactionEl.classList.add(kind==='happy' ? 'bounce' : 'sad');
+  setTimeout(()=>{ if(!gameEnded) catReactionEl.textContent = '😺'; }, 500);
+}
+
+function comboMessage(){
+  if(combo===3) return 'ニャイス!';
+  if(combo===6) return 'スーパーコンボ!';
+  if(combo>=10 && combo%5===0) return '猫神コンボ!';
+  return null;
+}
+
+function onFruitSuccess(type){
+  score[type]++;
+  updateScoreDisplay();
+  combo++;
+  bestCombo = Math.max(bestCombo, combo);
+  totalSuccess++;
+  comboDisplayEl.textContent = combo>=2 ? combo+'コンボ' : '';
+  statusEl.textContent = FRUITS[type].label + '、正解のかごにストン!';
+  catReact('happy');
+  const msg = comboMessage();
+  showCallout(msg || 'ナイスキャッチ!');
+}
+
+function onFruitMiss(type, reason){
+  combo = 0;
+  totalMiss++;
+  comboDisplayEl.textContent = '';
+  statusEl.textContent = reason;
+  catReact('sad');
+}
+
+function updateFallingFruits(){
+  if(gameEnded) return;
+  for(let i = fallingFruits.length - 1; i >= 0; i--){
+    const ff = fallingFruits[i];
+    ff.vy += GRAVITY;
+    ff.y += ff.vy;
+    ff.el.style.left = ff.x + '%';
+    ff.el.style.top = ff.y + '%';
+
+    let resolved = false;
+    // かごの上端の高さまで落ちてきたら、その時のx位置でどのかごかを判定
+    for(const type of FRUIT_KEYS){
+      const b = basketBounds(type);
+      if(ff.y >= b.yTop && ff.x >= b.xMin && ff.x <= b.xMax){
+        if(type === ff.type){
+          onFruitSuccess(type);
+          baskets[type].el.classList.add('glow');
+          setTimeout(()=> baskets[type].el.classList.remove('glow'), 300);
+        }else{
+          onFruitMiss(ff.type, 'あっ、' + FRUITS[ff.type].label + 'は違うかごに落ちちゃった');
+          const f = fruits.find(f=>f.type===ff.type && f.collected);
+          if(f){ f.collected = false; f.el.classList.remove('collected'); }
+        }
+        resolved = true;
+        break;
+      }
+    }
+    // かご段の高さを過ぎても入らなかった(地面に落ちた)場合は木に戻す
+    if(!resolved && ff.y >= 92){
+      onFruitMiss(ff.type, FRUITS[ff.type].label + 'は地面に落ちちゃった…');
+      const f = fruits.find(f=>f.type===ff.type && f.collected);
+      if(f){ f.collected = false; f.el.classList.remove('collected'); }
+      resolved = true;
+    }
+
+    if(resolved){
+      ff.el.remove();
+      fallingFruits.splice(i, 1);
+      if(fruits.filter(f=>!f.collected).length === 0){
+        setTimeout(respawnAllFruits, 500);
+      }
+    }
+  }
+}
+
+function updateHandCursor(){
+  handCursorEl.style.left = handX + '%';
+  handCursorEl.style.top = handY + '%';
+  handCursorEl.innerHTML = handOpen ? PAW_OPEN_SVG : PAW_CLOSED_SVG;
+  if(holding){
+    heldFruitEl.style.left = handX + '%';
+    heldFruitEl.style.top = handY + '%';
+  }
+}
+
+function countExtendedFingers(lm){
+  // 手首(0)からの距離で、指先(tip)がPIP関節より遠ければ「伸びている」とみなす簡易判定
+  const wrist = lm[0];
+  const pairs = [[8,6],[12,10],[16,14],[20,18]]; // [tip, pip]
+  let extended = 0;
+  pairs.forEach(([tipIdx, pipIdx])=>{
+    const tip = lm[tipIdx], pip = lm[pipIdx];
+    const dTip = Math.hypot(tip.x-wrist.x, tip.y-wrist.y);
+    const dPip = Math.hypot(pip.x-wrist.x, pip.y-wrist.y);
+    if(dTip > dPip * 1.15) extended++;
+  });
+  return extended;
 }
 
 function onResults(results){
@@ -157,15 +489,25 @@ function onResults(results){
 
   if(results.multiHandLandmarks && results.multiHandLandmarks.length > 0){
     lastHandSeen = Date.now();
-    statusEl.textContent = '手を検出中';
     const lm = results.multiHandLandmarks[0];
-    // 人差し指の先端(8番)を基準にする。ミラー表示のためxは反転
-    const tip = lm[8];
-    const xPct = (1 - tip.x) * 100;
-    const yPct = tip.y * 100;
-    updateCatPos(xPct, yPct);
+    const tip = lm[9]; // 手のひら中央あたり(中指の付け根)を基準に、位置が安定するように
+    handX = (1 - tip.x) * 100;
+    handY = tip.y * 100;
 
-    // デバッグ用に手の骨格を描画(鏡合わせに合わせてx反転)
+    const extended = countExtendedFingers(lm);
+    prevHandOpen = handOpen;
+    handOpen = extended >= 3;
+
+    // ジェスチャーの切り替わり(遷移)を検知して、その瞬間だけ処理する
+    if(!prevHandOpen && handOpen){
+      tryRelease(); // 閉→開 = 離す
+    }else if(prevHandOpen && !handOpen){
+      tryGrab(); // 開→閉 = つかむ
+    }
+
+    updateHandCursor();
+    checkRetryDwell();
+
     ctx.fillStyle = 'rgba(212,175,55,.8)';
     lm.forEach(p=>{
       const px = (1 - p.x) * canvasEl.width;
@@ -177,11 +519,69 @@ function onResults(results){
   }else{
     if(Date.now() - lastHandSeen > 800){
       statusEl.textContent = '手が見つかりません。カメラに手をかざしてください';
+      resetDwell();
     }
   }
 }
 
-let hands, rafId, stream;
+let hands, stream, running2;
+
+function ratingFor(){
+  const scoreVal = totalSuccess*3 + bestCombo*2 - totalMiss*2;
+  if(scoreVal >= 30) return { star:'★★★★★', label:'猫神' };
+  if(scoreVal >= 20) return { star:'★★★★', label:'名手' };
+  if(scoreVal >= 12) return { star:'★★★', label:'いい調子' };
+  if(scoreVal >= 5)  return { star:'★★', label:'修行中' };
+  return { star:'★', label:'また挑戦しよう' };
+}
+
+function endGame(){
+  gameEnded = true;
+  running = false;
+  clearInterval(timerInterval);
+  const r = ratingFor();
+  document.getElementById('ratingStar').textContent = r.star;
+  document.getElementById('ratingLabel').textContent = r.label;
+  document.getElementById('ratingDetail').textContent =
+    `成功 ${totalSuccess}個 ／ 最高コンボ ${bestCombo} ／ ミス ${totalMiss}回`;
+  resultOverlay.classList.remove('hidden');
+}
+
+function startTimer(){
+  timeLeft = GAME_SECONDS;
+  timerDisplayEl.textContent = '⏱ ' + timeLeft;
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    timerDisplayEl.textContent = '⏱ ' + Math.max(0,timeLeft);
+    if(timeLeft <= 0){
+      endGame();
+    }
+  }, 1000);
+}
+
+function resetGameState(){
+  score = { apple:0, mikan:0, grape:0 };
+  combo = 0; bestCombo = 0; totalSuccess = 0; totalMiss = 0;
+  gameEnded = false;
+  holding = null;
+  fallingFruits.forEach(ff=>ff.el.remove());
+  fallingFruits = [];
+  heldFruitEl.textContent = '';
+  comboDisplayEl.textContent = '';
+  catReactionEl.textContent = '😺';
+  updateScoreDisplay();
+  resultOverlay.classList.add('hidden');
+}
+
+function doRetry(){
+  resetGameState();
+  buildBaskets();
+  respawnAllFruits();
+  running = true;
+  startTimer();
+  statusEl.textContent = '手を検出中';
+}
+document.getElementById('retryBtn').addEventListener('click', doRetry);
 
 async function startCamera(){
   startOverlay.classList.add('hidden');
@@ -206,15 +606,22 @@ async function startCamera(){
     await videoEl.play();
 
     running = true;
-    placeTargetRandom();
+    cameraActive = true;
+    buildBaskets();
+    respawnAllFruits();
+    updateScoreDisplay();
+    startTimer();
     statusEl.textContent = '手を検出中';
 
     async function frameLoop(){
-      if(!running) return;
+      if(!cameraActive) return;
       await hands.send({image: videoEl});
-      rafId = requestAnimationFrame(frameLoop);
+      requestAnimationFrame(frameLoop);
     }
     frameLoop();
+
+    // 落下物理は手の検出フレームレートとは切り離し、一定間隔で常に更新する
+    setInterval(()=>{ if(running) updateFallingFruits(); }, 30);
   }catch(e){
     statusEl.textContent = 'カメラを開始できませんでした: ' + e.message;
     startOverlay.classList.remove('hidden');
@@ -223,11 +630,9 @@ async function startCamera(){
 
 document.getElementById('startBtn').addEventListener('click', startCamera);
 document.getElementById('resetBtn').addEventListener('click', ()=>{
-  score = 0; scoreEl.textContent = '0';
+  score = { apple:0, mikan:0, grape:0 };
+  updateScoreDisplay();
 });
-
-// 初期表示位置
-catEl.style.left = '50%'; catEl.style.top = '50%';
 </script>
 </body>
 </html>
