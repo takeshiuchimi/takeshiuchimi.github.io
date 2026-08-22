@@ -3,21 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>てにゃーもぎ(試作)</title>
+<title>ニャーリハ</title>
 <style>
   :root{
     --cream:#FBF3E7; --cream-deep:#F3E6D0; --brown:#8B6F47; --brown-deep:#6B5335;
     --gold:#D4AF37; --player-body:#F7C99B; --player-accent:#D9622B;
-    --line-dark:#3A2E20;
+    --line-dark:#3A2E20; --card-bg:#FFFDF9;
+  }
+  html.dark-mode{
+    --cream:#241E18; --cream-deep:#2E2620; --brown:#B08A5E; --brown-deep:#8C6C48;
+    --gold:#E0C158; --player-body:#F7C99B; --player-accent:#E07840;
+    --line-dark:#F0E6D8; --card-bg:#302820;
   }
   *{box-sizing:border-box;}
   html,body{
     margin:0; padding:0; background:var(--cream); color:var(--line-dark);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
-    overscroll-behavior:none; touch-action:none;
+    overscroll-behavior:none;
   }
   .app{ max-width:480px; margin:0 auto; padding:10px; }
-  h1{ font-size:18px; text-align:center; margin:6px 0; color:var(--brown-deep); }
+  .top-bar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+  h1{ font-size:20px; margin:6px 0 2px; color:var(--brown-deep); text-align:center; }
+  .subtitle{ font-size:12px; text-align:center; color:var(--brown-deep); margin:0 0 10px; }
+  .util-btn{
+    font-family:inherit; font-size:16px; background:var(--brown); color:#fff;
+    border:none; border-radius:10px; padding:6px 10px; cursor:pointer;
+    box-shadow:0 2px 0 var(--brown-deep);
+  }
+  .util-btn:active{ transform:translateY(2px); box-shadow:none; }
+
+  .card{
+    width:100%; background:var(--card-bg); border:3px dashed var(--gold);
+    border-radius:16px; padding:14px; box-shadow:0 6px 0 rgba(139,111,71,.15);
+    margin-bottom:10px;
+  }
+  .hidden{ display:none !important; }
+
+  .area-heading{ font-size:14px; font-weight:bold; color:var(--brown-deep); margin:14px 4px 6px; }
+  .program-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .program-card{
+    background:var(--card-bg); border:2px solid var(--gold); border-radius:14px;
+    padding:12px 8px; text-align:center; cursor:pointer;
+    box-shadow:0 4px 0 rgba(139,111,71,.12);
+    position:relative; overflow:hidden;
+  }
+  .program-card:active{ transform:translateY(3px); box-shadow:none; }
+  .program-card .icon{ font-size:30px; }
+  .program-card .name{ font-size:13px; font-weight:bold; margin-top:4px; }
+  .program-card .desc{ font-size:10px; color:var(--brown-deep); margin-top:2px; line-height:1.3; }
+  .program-card.disabled{ opacity:.45; cursor:default; }
+  .program-card.disabled .name::after{ content:' (準備中)'; font-size:9px; font-weight:normal; }
+  .card-dwell-fill{
+    position:absolute; left:0; bottom:0; width:100%; height:0%;
+    background:rgba(212,175,55,.35); z-index:0; pointer-events:none;
+    transition:height .05s linear;
+  }
+  .program-card.dwelling{ box-shadow:0 0 0 3px var(--gold), 0 4px 0 rgba(139,111,71,.12); }
+  .program-card > *:not(.card-dwell-fill){ position:relative; z-index:1; }
+
+  .btn{
+    font-family:inherit; font-size:14px; background:var(--brown); color:#fff;
+    border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
+    box-shadow:0 3px 0 var(--brown-deep);
+  }
+  .btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--brown-deep); }
+  .btn.back{ background:var(--cream-deep); color:var(--brown-deep); box-shadow:0 3px 0 rgba(139,111,71,.3); }
+
+  .game-header{ display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+  .game-header .title{ flex:1; font-size:14px; font-weight:bold; color:var(--brown-deep); }
+
   .stage{
     position:relative; width:100%; aspect-ratio:3/4; background:#000;
     border-radius:16px; overflow:hidden; border:3px dashed var(--gold);
@@ -29,41 +83,16 @@
   }
   canvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 
-  .fruit{
-    position:absolute; width:44px; height:44px; transform:translate(-50%,-50%);
-    font-size:36px; line-height:44px; text-align:center; pointer-events:none;
-    filter:drop-shadow(0 3px 3px rgba(0,0,0,.5));
-    transition:opacity .15s ease;
-  }
-  .fruit.collected{ opacity:0; }
-
-  .basket-row{
-    position:absolute; left:0; right:0; bottom:6%; display:flex; justify-content:space-around;
-    pointer-events:none;
-  }
-  .basket{
-    width:26%; aspect-ratio:1/1; max-width:110px;
-    background:rgba(139,111,71,.55); border:3px solid var(--gold); border-radius:14px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    color:#fff; font-size:13px; font-weight:bold; text-shadow:0 1px 2px rgba(0,0,0,.6);
-  }
-  .basket .icon{ font-size:26px; }
-  .basket .count{ font-size:14px; }
-  .basket.glow{ box-shadow:0 0 0 4px #fff, 0 0 14px 4px var(--gold); }
-
   .hand-cursor{
     position:absolute; width:50px; height:50px; transform:translate(-50%,-50%);
     pointer-events:none; z-index:3; transition:left .05s linear, top .05s linear;
   }
   .hand-cursor svg{ width:100%; height:100%; filter:drop-shadow(0 3px 3px rgba(0,0,0,.5)); }
-  .held-fruit{
-    position:absolute; font-size:26px; transform:translate(-50%,-120%);
-    pointer-events:none; z-index:4;
-  }
   .falling-fruit{
     position:absolute; font-size:26px; transform:translate(-50%,-50%);
     pointer-events:none; z-index:4;
   }
+
   .game-hud{
     position:absolute; top:6px; left:6px; right:6px; z-index:6;
     display:flex; justify-content:space-between; align-items:center;
@@ -73,14 +102,24 @@
   #catReaction.bounce{ transform:scale(1.3) rotate(-8deg); }
   #catReaction.sad{ transform:scale(0.9) rotate(6deg); }
   #comboDisplay{ min-width:70px; text-align:right; color:var(--gold); }
-  .mogi-callout{
+
+  .callout{
     position:absolute; left:50%; top:38%; transform:translate(-50%,-50%) scale(0.7);
     font-size:22px; font-weight:bold; color:var(--gold); z-index:6;
     text-shadow:0 0 6px rgba(0,0,0,.6), 0 0 2px #fff;
     opacity:0; pointer-events:none; transition:opacity .12s ease, transform .12s ease;
     text-align:center; width:90%;
   }
-  .mogi-callout.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .callout.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+
+  .status{ text-align:center; font-size:12px; color:var(--brown-deep); min-height:18px; margin:6px 0; }
+  .note{ font-size:11px; color:var(--brown-deep); text-align:center; margin-top:8px; line-height:1.6; }
+
+  .overlay-msg{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:10px; padding:20px; text-align:center;
+    background:rgba(0,0,0,.55); color:#fff; font-size:14px; z-index:5;
+  }
   .rating-star{ font-size:44px; text-align:center; }
   .dwell-btn{
     position:relative; width:120px; height:120px; margin-top:6px;
@@ -96,77 +135,283 @@
   .dwell-label small{ font-size:10px; font-weight:normal; opacity:.85; }
   .dwell-btn.active .dwell-ring-bg{ fill:var(--brown-deep); }
 
-  .hud{
-    display:flex; justify-content:space-between; align-items:center;
-    margin:8px 2px; font-size:13px; font-weight:bold; color:var(--brown-deep);
+  /* もぎ用 */
+  .tree-area{
+    position:absolute; left:0; right:0; top:0; height:42%;
+    background:linear-gradient(180deg, rgba(107,83,53,.35), transparent);
+    pointer-events:none;
   }
-  .status{ text-align:center; font-size:12px; color:var(--brown-deep); min-height:18px; margin:4px 0; }
-  .row{ display:flex; gap:8px; margin-top:8px; }
-  .btn{
-    flex:1; font-family:inherit; font-size:14px; background:var(--brown); color:#fff;
-    border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
-    box-shadow:0 3px 0 var(--brown-deep);
+  .fruit{
+    position:absolute; width:44px; height:44px; transform:translate(-50%,-50%);
+    font-size:36px; line-height:44px; text-align:center; pointer-events:none;
+    filter:drop-shadow(0 3px 3px rgba(0,0,0,.5));
+    transition:opacity .15s ease;
   }
-  .btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--brown-deep); }
-  .overlay-msg{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    flex-direction:column; gap:10px; padding:20px; text-align:center;
-    background:rgba(0,0,0,.55); color:#fff; font-size:14px; z-index:5;
+  .fruit.collected{ opacity:0; }
+  .basket-row{
+    position:absolute; left:0; right:0; bottom:6%; display:flex; justify-content:space-around;
+    pointer-events:none;
   }
-  .overlay-msg.hidden{ display:none; }
-  .note{ font-size:11px; color:var(--brown-deep); text-align:center; margin-top:10px; line-height:1.6; }
+  .basket{
+    width:26%; aspect-ratio:1/1; max-width:110px;
+    background:rgba(139,111,71,.55); border:3px solid var(--gold); border-radius:14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:#fff; font-size:13px; font-weight:bold; text-shadow:0 1px 2px rgba(0,0,0,.6);
+  }
+  .basket .icon{ font-size:26px; }
+  .basket .count{ font-size:14px; }
+  .basket.glow{ box-shadow:0 0 0 4px #fff, 0 0 14px 4px var(--gold); }
+
+  /* ゆらし用 */
+  .net-area{
+    position:absolute; left:50%; bottom:6%; transform:translateX(-50%);
+    width:70%; max-width:220px; aspect-ratio:3/1;
+    display:flex; align-items:center; justify-content:center;
+    font-size:36px; pointer-events:none;
+    filter:drop-shadow(0 3px 3px rgba(0,0,0,.4));
+  }
+  .shake-gauge{
+    position:absolute; left:8%; right:8%; bottom:2%; height:8px;
+    background:rgba(0,0,0,.4); border-radius:6px; overflow:hidden; z-index:6;
+  }
+  .shake-gauge-fill{ height:100%; width:0%; background:var(--gold); transition:width .08s linear; }
+
+  /* ---- ニャーズと同じ外枠・モーダル ---- */
+  .card{
+    width:100%; background:var(--card-bg); border:3px dashed var(--gold);
+    border-radius:18px; padding:12px 10px; box-shadow:0 6px 0 rgba(139,111,71,.15);
+  }
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(74,59,42,.55);
+    display:flex; align-items:center; justify-content:center;
+    z-index:200; padding:16px;
+  }
+  .modal-overlay.hidden{ display:none; }
+  .modal-box{
+    background:var(--card-bg); border-radius:18px; padding:16px;
+    max-width:340px; width:100%; max-height:82vh; overflow-y:auto;
+    border:3px dashed var(--gold);
+  }
+  .modal-box h2{ margin:0 0 8px; font-size:16px; color:var(--brown-deep); text-align:center; }
+  .modal-box .rules-text{ font-size:13px; line-height:1.7; margin-bottom:10px; }
+  .modal-box .rules-text p{ margin:0 0 8px; }
+  .modal-box .rules-text p:last-child{ margin-bottom:0; }
+  .tech-group-heading{ font-size:14px; color:var(--brown-deep); margin:12px 0 4px; border-bottom:2px dashed var(--gold); padding-bottom:3px; }
+  .tech-group-heading:first-child{ margin-top:0; }
+  .intent-box{
+    background:var(--cream-deep); border-radius:10px; padding:8px 10px; margin:6px 0; font-size:12px; line-height:1.6;
+  }
+  .util-row{ display:flex; gap:6px; margin:8px 0; }
+  .util-row .util-btn{ flex:1; margin:0; font-size:12px; padding:6px 4px; }
+
+  /* ---- ハブ画面: カメラを背景に、コンテンツを半透明で重ねる ---- */
+  .hub-with-camera{
+    position:relative; overflow:hidden; min-height:70vh;
+    padding:0 !important; border-radius:18px;
+  }
+  #hubVideo{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    transform:scaleX(-1); background:#000; z-index:0;
+  }
+  #hubCanvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1; }
+  .hub-camera-msg{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    z-index:2; color:#fff; font-size:13px; text-align:center; padding:14px;
+    background:rgba(0,0,0,.5); border-radius:12px; width:80%;
+  }
+  .hub-camera-status{
+    position:absolute; top:6px; left:0; right:0; text-align:center;
+    font-size:11px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.8); z-index:3;
+  }
+  .hub-content{
+    position:relative; z-index:2; padding:10px;
+    background:rgba(251,243,231,.82);
+  }
+  html.dark-mode .hub-content{ background:rgba(36,30,24,.82); }
 </style>
 </head>
 <body>
 <div class="app">
-  <h1>🐾 てにゃーもぎ(試作)</h1>
-  <div class="hud">
-    <span>手を<b>パー</b>で近づいて<b>グー</b>でもぎ取り、かごで<b>パー</b>を開いて入れよう</span>
-  </div>
-  <div class="stage" id="stage">
-    <video id="video" playsinline muted></video>
-    <canvas id="canvas"></canvas>
-    <div id="fruitsLayer"></div>
-    <div class="basket-row" id="basketRow"></div>
-    <div class="hand-cursor" id="handCursor"></div>
-    <div class="held-fruit" id="heldFruit"></div>
-    <div class="game-hud" id="gameHud">
-      <span id="catReaction">😺</span>
-      <span id="timerDisplay">⏱ 30</span>
-      <span id="comboDisplay"></span>
+
+  <!-- ============ ハブ画面 ============ -->
+  <div id="screen-hub" class="card hub-with-camera">
+    <video id="hubVideo" playsinline muted></video>
+    <canvas id="hubCanvas"></canvas>
+    <div class="hub-camera-msg" id="hubCameraMsg">
+      まずカメラをオンにしてください。<br>手が映ると、それぞれのプログラムにそのまま入れます。
     </div>
-    <div class="mogi-callout" id="mogiCallout"></div>
-    <div class="overlay-msg" id="startOverlay">
-      <div>カメラを使って、手の動きで果物をもぎ取ります。<br>30秒でどれだけかごに入れられるか挑戦!<br>カメラへのアクセスを許可してください。</div>
-      <button class="btn" id="startBtn" style="flex:none;padding:12px 24px;">はじめる</button>
-    </div>
-    <div class="overlay-msg hidden" id="resultOverlay">
-      <div class="rating-star" id="ratingStar"></div>
-      <div id="ratingLabel" style="font-size:18px;font-weight:bold;"></div>
-      <div id="ratingDetail" style="font-size:13px;"></div>
-      <div class="dwell-btn" id="retryDwellBtn">
-        <svg class="dwell-ring" viewBox="0 0 100 100">
-          <circle class="dwell-ring-bg" cx="50" cy="50" r="44"/>
-          <circle class="dwell-ring-fg" id="retryRingFg" cx="50" cy="50" r="44"/>
-        </svg>
-        <span class="dwell-label">もう一回!<br><small>手をここに乗せてね</small></span>
+    <div class="hub-camera-status hidden" id="hubCameraStatus">手を検出中</div>
+
+    <div class="hub-content">
+      <div class="top-bar">
+        <span></span>
+        <button class="util-btn" id="darkModeToggle">🌙</button>
       </div>
-      <button class="btn" id="retryBtn" style="flex:none;padding:8px 20px;margin-top:6px;">(タップでもOK)</button>
+      <h1>🐾 ニャーリハ</h1>
+      <p class="subtitle">PC・スマホのカメラを使った猫のリハビリプログラム</p>
+
+      <div class="row" style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="btn" id="hubCameraBtn" style="flex:1;">📷 カメラをオンにする</button>
+      </div>
+
+      <div class="util-row">
+        <button class="util-btn" id="aboutToggle">🐾 ニャーリハとは</button>
+        <button class="util-btn" id="techInfoToggle">🔧 技術情報</button>
+      </div>
+
+      <div class="area-heading">🌳 木のエリア</div>
+      <div class="program-grid">
+        <div class="program-card" data-key="mogi">
+          <div class="card-dwell-fill"></div>
+          <div class="icon">🍎</div><div class="name">てにゃーもぎ</div>
+          <div class="desc">グーパーで実をもいで、かごに仕分け</div>
+        </div>
+        <div class="program-card" data-key="yurashi">
+          <div class="card-dwell-fill"></div>
+          <div class="icon">🌳</div><div class="name">てにゃーゆらし</div>
+          <div class="desc">左右に振って木を揺らし、実をキャッチ</div>
+        </div>
+      </div>
+
+      <div class="area-heading">🏞️ 川のエリア</div>
+      <div class="program-grid">
+        <div class="program-card disabled" data-key="oyogi">
+          <div class="icon">🏊</div><div class="name">およぎ</div>
+          <div class="desc">近日公開</div>
+        </div>
+        <div class="program-card disabled" data-key="tsuri">
+          <div class="icon">🎣</div><div class="name">つり</div>
+          <div class="desc">近日公開</div>
+        </div>
+      </div>
+
+      <div class="area-heading">⛰️ 山のエリア</div>
+      <div class="program-grid">
+        <div class="program-card disabled" data-key="tozan">
+          <div class="icon">🧗</div><div class="name">やまのぼり</div>
+          <div class="desc">近日公開</div>
+        </div>
+        <div class="program-card disabled" data-key="ski">
+          <div class="icon">⛷️</div><div class="name">すきー</div>
+          <div class="desc">近日公開</div>
+        </div>
+      </div>
+
+      <p class="note">
+        各プログラムは手の動きをカメラで検知して遊びます。サーバーには何も送信されません。<br>
+        <b>注意: カメラ機能はHTTPS配信(またはlocalhost)でないと動作しません。</b>
+      </p>
     </div>
   </div>
-  <div class="status" id="status">&nbsp;</div>
-  <div class="row">
-    <button class="btn" id="resetBtn">スコアをリセット</button>
+
+
+  <!-- ============ モーダル: ニャーリハとは ============ -->
+  <div class="modal-overlay hidden" id="aboutModal">
+    <div class="modal-box">
+      <h2>🐾 ニャーリハとは</h2>
+      <div class="rules-text" id="aboutBody"></div>
+      <div class="row" style="text-align:center;margin-top:10px;">
+        <button class="btn" onclick="document.getElementById('aboutModal').classList.add('hidden')">とじる</button>
+      </div>
+    </div>
   </div>
-  <p class="note">
-    試作版です。MediaPipe Hands(Google製、ブラウザ内で完結)を使って手の開閉と位置を検出しています。<br>
-    サーバーには何も送信されません。手の動きの検出精度は照明条件によって変わります。<br>
-    <b>注意: カメラ機能はHTTPS配信(またはlocalhost)でないと動作しません。</b>
-  </p>
+
+  <!-- ============ モーダル: 技術情報 ============ -->
+  <div class="modal-overlay hidden" id="techInfoModal">
+    <div class="modal-box">
+      <h2>🔧 技術情報</h2>
+      <div class="rules-text" id="techInfoBody"></div>
+      <div class="row" style="text-align:center;margin-top:10px;">
+        <button class="btn" onclick="document.getElementById('techInfoModal').classList.add('hidden')">とじる</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============ ゲーム画面(共通) ============ -->
+  <div id="screen-game" class="hidden">
+    <div class="game-header">
+      <button class="btn back" id="backToHubBtn">← 一覧</button>
+      <span class="title" id="gameTitle"></span>
+    </div>
+    <div class="stage" id="stage">
+      <video id="video" playsinline muted></video>
+      <canvas id="canvas"></canvas>
+      <div id="programLayer"></div>
+      <div class="hand-cursor" id="handCursor"></div>
+      <div class="game-hud" id="gameHud">
+        <span id="catReaction">😺</span>
+        <span id="timerDisplay">⏱ 30</span>
+        <span id="comboDisplay"></span>
+      </div>
+      <div class="callout" id="callout"></div>
+      <div class="overlay-msg" id="startOverlay">
+        <div id="startOverlayText"></div>
+        <button class="btn" id="startBtn" style="flex:none;padding:12px 24px;">はじめる</button>
+      </div>
+      <div class="overlay-msg hidden" id="resultOverlay">
+        <div class="rating-star" id="ratingStar"></div>
+        <div id="ratingLabel" style="font-size:18px;font-weight:bold;"></div>
+        <div id="ratingDetail" style="font-size:13px;"></div>
+        <div class="dwell-btn" id="retryDwellBtn">
+          <svg class="dwell-ring" viewBox="0 0 100 100">
+            <circle class="dwell-ring-bg" cx="50" cy="50" r="44"/>
+            <circle class="dwell-ring-fg" id="retryRingFg" cx="50" cy="50" r="44"/>
+          </svg>
+          <span class="dwell-label">もう一回!<br><small>手をここに乗せてね</small></span>
+        </div>
+        <button class="btn" id="retryBtn" style="flex:none;padding:8px 20px;margin-top:6px;">(タップでもOK)</button>
+        <button class="btn back" id="resultBackBtn" style="flex:none;padding:8px 20px;margin-top:4px;">一覧に戻る</button>
+      </div>
+    </div>
+    <div class="status" id="status">&nbsp;</div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 <script>
+/* ============================================================
+   共通エンジン: ダークモード・画面遷移・カメラ/手検出・
+   物理演算・ドウェル選択・掛け声・猫リアクション・タイマー
+   ============================================================ */
+
+// ---- ダークモード ----
+document.getElementById('darkModeToggle').addEventListener('click', ()=>{
+  document.documentElement.classList.toggle('dark-mode');
+});
+
+// ---- プログラム登録の仕組み(ニャーズと同じ発想) ----
+const PROGRAMS = {};
+function registerProgram(key, def){ PROGRAMS[key] = def; }
+
+let currentProgramKey = null;
+
+// ---- 共通DOM参照 ----
+const stageEl = document.getElementById('stage');
+const hubVideoEl = document.getElementById('hubVideo');
+const hubCanvasEl = document.getElementById('hubCanvas');
+const hubCtx = hubCanvasEl.getContext('2d');
+const hubCameraMsg = document.getElementById('hubCameraMsg');
+const hubCameraStatus = document.getElementById('hubCameraStatus');
+const hubCameraBtn = document.getElementById('hubCameraBtn');
+const videoEl = document.getElementById('video');
+const canvasEl = document.getElementById('canvas');
+const ctx = canvasEl.getContext('2d');
+const programLayer = document.getElementById('programLayer');
+const handCursorEl = document.getElementById('handCursor');
+const statusEl = document.getElementById('status');
+const startOverlay = document.getElementById('startOverlay');
+const startOverlayText = document.getElementById('startOverlayText');
+const resultOverlay = document.getElementById('resultOverlay');
+const catReactionEl = document.getElementById('catReaction');
+const timerDisplayEl = document.getElementById('timerDisplay');
+const comboDisplayEl = document.getElementById('comboDisplay');
+const calloutEl = document.getElementById('callout');
+const retryDwellBtn = document.getElementById('retryDwellBtn');
+const retryRingFg = document.getElementById('retryRingFg');
+const gameTitleEl = document.getElementById('gameTitle');
+
 const PAW_OPEN_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="62" r="24" fill="var(--player-body)"/>
   <circle cx="26" cy="40" r="12" fill="var(--player-body)"/>
@@ -176,200 +421,28 @@ const PAW_OPEN_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/s
 const PAW_CLOSED_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="55" r="30" fill="var(--player-accent)"/>
 </svg>`;
-
-const FRUITS = {
-  apple: { emoji:'🍎', label:'りんご' },
-  mikan: { emoji:'🍊', label:'みかん' },
-  grape: { emoji:'🍇', label:'ぶどう' },
-};
-const FRUIT_KEYS = Object.keys(FRUITS);
-
-const videoEl = document.getElementById('video');
-const canvasEl = document.getElementById('canvas');
-const ctx = canvasEl.getContext('2d');
-const stageEl = document.getElementById('stage');
-const fruitsLayer = document.getElementById('fruitsLayer');
-const basketRow = document.getElementById('basketRow');
-const handCursorEl = document.getElementById('handCursor');
-const heldFruitEl = document.getElementById('heldFruit');
-const statusEl = document.getElementById('status');
-const startOverlay = document.getElementById('startOverlay');
-const resultOverlay = document.getElementById('resultOverlay');
-const catReactionEl = document.getElementById('catReaction');
-const timerDisplayEl = document.getElementById('timerDisplay');
-const comboDisplayEl = document.getElementById('comboDisplay');
-const calloutEl = document.getElementById('mogiCallout');
-const retryDwellBtn = document.getElementById('retryDwellBtn');
-const retryRingFg = document.getElementById('retryRingFg');
-
 handCursorEl.innerHTML = PAW_OPEN_SVG;
 
+// ---- 共通ゲーム状態 ----
 const GAME_SECONDS = 30;
-let score = { apple:0, mikan:0, grape:0 };
-let fruits = []; // {type, x, y, el, collected}
-let baskets = {}; // type -> {el, x, y}
-let holding = null; // null | type
-let fallingFruits = []; // 自由落下中の果物 {type,x,y,vy,el}
-let handX = 50, handY = 50; // %
-let handOpen = true;
-let prevHandOpen = true;
+let handX = 50, handY = 50;
+let handOpen = true, prevHandOpen = true;
 let lastHandSeen = 0;
-let running = false;
+let running = false, gameEnded = false, cameraActive = false;
 let timeLeft = GAME_SECONDS;
-let combo = 0, bestCombo = 0;
-let totalSuccess = 0, totalMiss = 0;
-let gameEnded = false;
-let cameraActive = false;
-let timerInterval = null;
-let calloutTimer = null;
+let combo = 0, bestCombo = 0, totalSuccess = 0, totalMiss = 0;
+let timerInterval = null, calloutTimer = null;
+let fallingFruits = []; // {type,x,y,vy,el}
+const GRAVITY = 0.55;
 
-function updateScoreDisplay(){
-  FRUIT_KEYS.forEach(k=>{
-    if(baskets[k]) baskets[k].countEl.textContent = score[k];
-  });
-}
+let hands, stream;
+let handXHistory = [], shakeReversals = 0, lastShakeAt = 0;
+const SHAKE_REQUIRED = 4, SHAKE_WINDOW_MS = 900, SHAKE_COOLDOWN_MS = 900, SHAKE_NOISE_THRESHOLD = 2.5;
 
-function spawnFruit(type, x, y){
-  const el = document.createElement('div');
-  el.className = 'fruit';
-  el.textContent = FRUITS[type].emoji;
-  el.style.left = x + '%';
-  el.style.top = y + '%';
-  fruitsLayer.appendChild(el);
-  fruits.push({ type, x, y, el, collected:false });
-}
+function distPct(x1,y1,x2,y2){ const dx=x1-x2, dy=y1-y2; return Math.sqrt(dx*dx+dy*dy); }
 
-function respawnAllFruits(){
-  fruitsLayer.innerHTML = '';
-  fruits = [];
-  // 木のイメージで上部にランダム配置(重ならないよう帯を分ける)
-  const positions = [
-    { xMin:12, xMax:38, yMin:10, yMax:35 },
-    { xMin:38, xMax:62, yMin:8, yMax:30 },
-    { xMin:62, xMax:88, yMin:10, yMax:35 },
-  ];
-  const shuffled = FRUIT_KEYS.slice().sort(()=>Math.random()-0.5);
-  shuffled.forEach((type,i)=>{
-    const p = positions[i];
-    const x = p.xMin + Math.random()*(p.xMax-p.xMin);
-    const y = p.yMin + Math.random()*(p.yMax-p.yMin);
-    spawnFruit(type, x, y);
-  });
-}
+function vibrate(pattern){ try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){} }
 
-function buildBaskets(){
-  basketRow.innerHTML = '';
-  baskets = {};
-  FRUIT_KEYS.forEach(type=>{
-    const el = document.createElement('div');
-    el.className = 'basket';
-    el.innerHTML = `<div class="icon">${FRUITS[type].emoji}</div><div>${FRUITS[type].label}</div><div class="count">0</div>`;
-    basketRow.appendChild(el);
-    baskets[type] = { el, countEl: el.querySelector('.count') };
-  });
-}
-
-function basketCenter(type){
-  const rect = baskets[type].el.getBoundingClientRect();
-  const stageRect = stageEl.getBoundingClientRect();
-  return {
-    x: ((rect.left + rect.width/2 - stageRect.left) / stageRect.width) * 100,
-    y: ((rect.top + rect.height/2 - stageRect.top) / stageRect.height) * 100,
-  };
-}
-
-function basketBounds(type){
-  const rect = baskets[type].el.getBoundingClientRect();
-  const stageRect = stageEl.getBoundingClientRect();
-  return {
-    xMin: ((rect.left - stageRect.left) / stageRect.width) * 100,
-    xMax: ((rect.right - stageRect.left) / stageRect.width) * 100,
-    yTop: ((rect.top - stageRect.top) / stageRect.height) * 100,
-  };
-}
-
-function distPct(x1,y1,x2,y2){
-  const dx = x1-x2, dy = y1-y2;
-  return Math.sqrt(dx*dx + dy*dy);
-}
-
-const DWELL_DURATION_MS = 1200;
-let dwellStartTime = null;
-
-function resetDwell(){
-  dwellStartTime = null;
-  if(retryRingFg){ retryRingFg.style.strokeDashoffset = '276.5'; }
-  if(retryDwellBtn){ retryDwellBtn.classList.remove('active'); }
-}
-
-function checkRetryDwell(){
-  if(!gameEnded){ resetDwell(); return; }
-  const rect = retryDwellBtn.getBoundingClientRect();
-  const stageRect = stageEl.getBoundingClientRect();
-  const bx = ((rect.left + rect.width/2 - stageRect.left) / stageRect.width) * 100;
-  const by = ((rect.top + rect.height/2 - stageRect.top) / stageRect.height) * 100;
-  const bw = (rect.width / stageRect.width) * 100;
-  const dist = distPct(handX, handY, bx, by);
-
-  if(dist < bw/2){
-    if(dwellStartTime === null){
-      dwellStartTime = Date.now();
-      retryDwellBtn.classList.add('active');
-    }
-    const elapsed = Date.now() - dwellStartTime;
-    const progress = Math.min(1, elapsed / DWELL_DURATION_MS);
-    retryRingFg.style.strokeDashoffset = String(276.5 * (1 - progress));
-    if(progress >= 1){
-      resetDwell();
-      doRetry();
-    }
-  }else{
-    resetDwell();
-  }
-}
-
-function tryGrab(){
-  if(gameEnded) return;
-  if(holding) return;
-  for(const f of fruits){
-    if(f.collected) continue;
-    if(distPct(handX, handY, f.x, f.y) < 9){
-      holding = f.type;
-      f.collected = true; // 見た目上は木から消える(手に持っている状態)
-      f.el.classList.add('collected');
-      heldFruitEl.textContent = FRUITS[f.type].emoji;
-      heldFruitEl.style.left = handX + '%';
-      heldFruitEl.style.top = handY + '%';
-      statusEl.textContent = FRUITS[f.type].label + ' をもいだ!パーでかごへ';
-      return;
-    }
-  }
-}
-
-function tryRelease(){
-  if(gameEnded) return;
-  if(!holding) return;
-  const type = holding;
-  fallingFruits.push({
-    type, x: handX, y: handY, vy: 0,
-    el: heldFruitEl_makeFallingEl(type, handX, handY),
-  });
-  statusEl.textContent = FRUITS[type].label + 'を離した!落ちていく…';
-  holding = null;
-  heldFruitEl.textContent = '';
-}
-
-function heldFruitEl_makeFallingEl(type, x, y){
-  const el = document.createElement('div');
-  el.className = 'falling-fruit';
-  el.textContent = FRUITS[type].emoji;
-  el.style.left = x + '%';
-  el.style.top = y + '%';
-  stageEl.appendChild(el);
-  return el;
-}
-
-const GRAVITY = 0.55; // %/tick^2 相当
 function showCallout(text){
   clearTimeout(calloutTimer);
   calloutEl.textContent = text;
@@ -380,10 +453,37 @@ function showCallout(text){
 function catReact(kind){
   catReactionEl.textContent = kind==='happy' ? '😸' : '😿';
   catReactionEl.classList.remove('bounce','sad');
-  void catReactionEl.offsetWidth; // reflow
+  void catReactionEl.offsetWidth;
   catReactionEl.classList.add(kind==='happy' ? 'bounce' : 'sad');
+  vibrate(kind==='happy' ? [15,30,15] : [40]);
   setTimeout(()=>{ if(!gameEnded) catReactionEl.textContent = '😺'; }, 500);
 }
+
+document.getElementById('aboutBody').innerHTML = `
+  <p>デジリハという、専用センサーで体の動きを検知するリハビリプログラムのデモを見たのがきっかけで生まれました。</p>
+  <p>専用センサーは無いけれど、Googleが無料公開しているMediaPipe Handsという技術を使えば、普通のPC・スマホのカメラだけで手の動きを検知できます。それをニャーズゲームセンターと同じ「猫」の世界観で、リハビリになりそうな動きに落とし込んでいます。</p>
+  <div class="intent-box">
+    <b>🌳🏞️⛰️「森の仲間たち」構想</b><br>
+    木・川・山、それぞれのエリアで違う体の動きを引き出すプログラムを増やしていく予定です。今は木のエリア(もぎ・ゆらし)だけですが、少しずつ増やしていきます。
+  </div>
+  <p>サーバーには何も送信されません。手の映像は全てブラウザの中だけで処理されます。</p>
+`;
+
+document.getElementById('techInfoBody').innerHTML = `
+  <h3 class="tech-group-heading">🖐️ 手の検出の仕組み</h3>
+  <p>Google製のMediaPipe Hands(CDN経由、ブラウザ内で完結)を使い、手の21箇所のランドマーク(関節位置)をリアルタイムに検出しています。</p>
+  <p><b>グーパー判定</b>：人差し指・中指・薬指・小指それぞれの指先と、その一つ手前の関節(PIP)の、手首からの距離を比較しています。指先の方が明らかに遠ければ「伸びている」と判定し、4本中3本以上伸びていれば「パー」、そうでなければ「グー」としています。</p>
+  <p><b>シェイク(左右振り)判定</b>：手のx座標の変化を0.9秒分さかのぼって記録し、方向が反転した回数を数えています。ジッター(細かい震え)を無視するため、2.5%未満の変化は無視しています。4回反転(=2往復)で「揺れた」と判定します。</p>
+  <h3 class="tech-group-heading">🍎 落下の物理演算</h3>
+  <p>もいだ・落ちた果物は、単純な重力加速度シミュレーション(1tickごとに速度が加算されていく)で落下させています。特別なライブラリは使っていません。</p>
+  <h3 class="tech-group-heading">👆 手だけでボタン操作(ドウェル選択)</h3>
+  <p>リザルト画面の「もう一回」は、視線入力デバイス等でも使われる「滞在選択(ドウェルクリック)」方式です。手を約1.2秒乗せ続けると、円形のゲージが満ちて自動的に選ばれます。</p>
+  <h3 class="tech-group-heading">⚠️ 動作条件</h3>
+  <p>カメラ機能(getUserMedia)は、HTTPS配信かlocalhost環境でないとブラウザの制約で動作しません。ファイルをそのまま開いただけでは、カメラの許可が出ない場合があります。</p>
+  <p>サーバーには何も送信されません。全てブラウザの中だけで完結しています。</p>
+  <h3 class="tech-group-heading">📦 容量</h3>
+  <p>このファイル1本で約42KB(共通エンジン+2プログラム分)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。</p>
+`;
 
 function comboMessage(){
   if(combo===3) return 'ニャイス!';
@@ -392,139 +492,23 @@ function comboMessage(){
   return null;
 }
 
-function onFruitSuccess(type){
-  score[type]++;
-  updateScoreDisplay();
+function onSuccess(){
   combo++;
   bestCombo = Math.max(bestCombo, combo);
   totalSuccess++;
   comboDisplayEl.textContent = combo>=2 ? combo+'コンボ' : '';
-  statusEl.textContent = FRUITS[type].label + '、正解のかごにストン!';
   catReact('happy');
   const msg = comboMessage();
-  showCallout(msg || 'ナイスキャッチ!');
+  showCallout(msg || 'ナイス!');
 }
 
-function onFruitMiss(type, reason){
+function onMiss(reason){
   combo = 0;
   totalMiss++;
   comboDisplayEl.textContent = '';
   statusEl.textContent = reason;
   catReact('sad');
 }
-
-function updateFallingFruits(){
-  if(gameEnded) return;
-  for(let i = fallingFruits.length - 1; i >= 0; i--){
-    const ff = fallingFruits[i];
-    ff.vy += GRAVITY;
-    ff.y += ff.vy;
-    ff.el.style.left = ff.x + '%';
-    ff.el.style.top = ff.y + '%';
-
-    let resolved = false;
-    // かごの上端の高さまで落ちてきたら、その時のx位置でどのかごかを判定
-    for(const type of FRUIT_KEYS){
-      const b = basketBounds(type);
-      if(ff.y >= b.yTop && ff.x >= b.xMin && ff.x <= b.xMax){
-        if(type === ff.type){
-          onFruitSuccess(type);
-          baskets[type].el.classList.add('glow');
-          setTimeout(()=> baskets[type].el.classList.remove('glow'), 300);
-        }else{
-          onFruitMiss(ff.type, 'あっ、' + FRUITS[ff.type].label + 'は違うかごに落ちちゃった');
-          const f = fruits.find(f=>f.type===ff.type && f.collected);
-          if(f){ f.collected = false; f.el.classList.remove('collected'); }
-        }
-        resolved = true;
-        break;
-      }
-    }
-    // かご段の高さを過ぎても入らなかった(地面に落ちた)場合は木に戻す
-    if(!resolved && ff.y >= 92){
-      onFruitMiss(ff.type, FRUITS[ff.type].label + 'は地面に落ちちゃった…');
-      const f = fruits.find(f=>f.type===ff.type && f.collected);
-      if(f){ f.collected = false; f.el.classList.remove('collected'); }
-      resolved = true;
-    }
-
-    if(resolved){
-      ff.el.remove();
-      fallingFruits.splice(i, 1);
-      if(fruits.filter(f=>!f.collected).length === 0){
-        setTimeout(respawnAllFruits, 500);
-      }
-    }
-  }
-}
-
-function updateHandCursor(){
-  handCursorEl.style.left = handX + '%';
-  handCursorEl.style.top = handY + '%';
-  handCursorEl.innerHTML = handOpen ? PAW_OPEN_SVG : PAW_CLOSED_SVG;
-  if(holding){
-    heldFruitEl.style.left = handX + '%';
-    heldFruitEl.style.top = handY + '%';
-  }
-}
-
-function countExtendedFingers(lm){
-  // 手首(0)からの距離で、指先(tip)がPIP関節より遠ければ「伸びている」とみなす簡易判定
-  const wrist = lm[0];
-  const pairs = [[8,6],[12,10],[16,14],[20,18]]; // [tip, pip]
-  let extended = 0;
-  pairs.forEach(([tipIdx, pipIdx])=>{
-    const tip = lm[tipIdx], pip = lm[pipIdx];
-    const dTip = Math.hypot(tip.x-wrist.x, tip.y-wrist.y);
-    const dPip = Math.hypot(pip.x-wrist.x, pip.y-wrist.y);
-    if(dTip > dPip * 1.15) extended++;
-  });
-  return extended;
-}
-
-function onResults(results){
-  canvasEl.width = stageEl.clientWidth;
-  canvasEl.height = stageEl.clientHeight;
-  ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-
-  if(results.multiHandLandmarks && results.multiHandLandmarks.length > 0){
-    lastHandSeen = Date.now();
-    const lm = results.multiHandLandmarks[0];
-    const tip = lm[9]; // 手のひら中央あたり(中指の付け根)を基準に、位置が安定するように
-    handX = (1 - tip.x) * 100;
-    handY = tip.y * 100;
-
-    const extended = countExtendedFingers(lm);
-    prevHandOpen = handOpen;
-    handOpen = extended >= 3;
-
-    // ジェスチャーの切り替わり(遷移)を検知して、その瞬間だけ処理する
-    if(!prevHandOpen && handOpen){
-      tryRelease(); // 閉→開 = 離す
-    }else if(prevHandOpen && !handOpen){
-      tryGrab(); // 開→閉 = つかむ
-    }
-
-    updateHandCursor();
-    checkRetryDwell();
-
-    ctx.fillStyle = 'rgba(212,175,55,.8)';
-    lm.forEach(p=>{
-      const px = (1 - p.x) * canvasEl.width;
-      const py = p.y * canvasEl.height;
-      ctx.beginPath();
-      ctx.arc(px, py, 3, 0, Math.PI*2);
-      ctx.fill();
-    });
-  }else{
-    if(Date.now() - lastHandSeen > 800){
-      statusEl.textContent = '手が見つかりません。カメラに手をかざしてください';
-      resetDwell();
-    }
-  }
-}
-
-let hands, stream, running2;
 
 function ratingFor(){
   const scoreVal = totalSuccess*3 + bestCombo*2 - totalMiss*2;
@@ -553,86 +537,561 @@ function startTimer(){
   timerInterval = setInterval(()=>{
     timeLeft--;
     timerDisplayEl.textContent = '⏱ ' + Math.max(0,timeLeft);
-    if(timeLeft <= 0){
-      endGame();
-    }
+    if(timeLeft <= 0) endGame();
   }, 1000);
 }
 
-function resetGameState(){
-  score = { apple:0, mikan:0, grape:0 };
+function resetCommonState(){
   combo = 0; bestCombo = 0; totalSuccess = 0; totalMiss = 0;
   gameEnded = false;
-  holding = null;
-  fallingFruits.forEach(ff=>ff.el.remove());
+  fallingFruits.forEach(ff=>ff.el && ff.el.remove());
   fallingFruits = [];
-  heldFruitEl.textContent = '';
+  handXHistory = []; shakeReversals = 0;
   comboDisplayEl.textContent = '';
   catReactionEl.textContent = '😺';
-  updateScoreDisplay();
   resultOverlay.classList.add('hidden');
 }
 
+function makeFallingEl(emoji, x, y){
+  const el = document.createElement('div');
+  el.className = 'falling-fruit';
+  el.textContent = emoji;
+  el.style.left = x + '%';
+  el.style.top = y + '%';
+  stageEl.appendChild(el);
+  return el;
+}
+
+function updateHandCursor(){
+  handCursorEl.style.left = handX + '%';
+  handCursorEl.style.top = handY + '%';
+  handCursorEl.innerHTML = handOpen ? PAW_OPEN_SVG : PAW_CLOSED_SVG;
+}
+
+function countExtendedFingers(lm){
+  const wrist = lm[0];
+  const pairs = [[8,6],[12,10],[16,14],[20,18]];
+  let extended = 0;
+  pairs.forEach(([tipIdx, pipIdx])=>{
+    const tip = lm[tipIdx], pip = lm[pipIdx];
+    const dTip = Math.hypot(tip.x-wrist.x, tip.y-wrist.y);
+    const dPip = Math.hypot(pip.x-wrist.x, pip.y-wrist.y);
+    if(dTip > dPip * 1.15) extended++;
+  });
+  return extended;
+}
+
+function updateShakeDetection(){
+  if(gameEnded) return null;
+  const now = Date.now();
+  handXHistory.push({ x: handX, t: now });
+  handXHistory = handXHistory.filter(s => now - s.t <= SHAKE_WINDOW_MS);
+  let reversals = 0, dir = 0;
+  for(let i=1;i<handXHistory.length;i++){
+    const delta = handXHistory[i].x - handXHistory[i-1].x;
+    if(Math.abs(delta) < SHAKE_NOISE_THRESHOLD) continue;
+    const newDir = delta > 0 ? 1 : -1;
+    if(dir !== 0 && newDir !== dir) reversals++;
+    dir = newDir;
+  }
+  shakeReversals = reversals;
+  const progress = Math.min(1, reversals / SHAKE_REQUIRED);
+  if(triggered_shakeGaugeFill) triggered_shakeGaugeFill.style.width = (progress*100) + '%';
+  if(reversals >= SHAKE_REQUIRED && (now - lastShakeAt) > SHAKE_COOLDOWN_MS){
+    lastShakeAt = now;
+    handXHistory = [];
+    if(triggered_shakeGaugeFill) triggered_shakeGaugeFill.style.width = '0%';
+    return true; // 揺れが発生した合図。呼び出し側(各プログラム)が処理する
+  }
+  return false;
+}
+let triggered_shakeGaugeFill = null; // プログラム側でDOMをセットする
+
+// ---- ドウェル選択(手を乗せて待つとボタンが押される) ----
+const DWELL_DURATION_MS = 1200;
+let dwellStartTime = null;
+function resetDwell(){
+  dwellStartTime = null;
+  if(retryRingFg) retryRingFg.style.strokeDashoffset = '276.5';
+  if(retryDwellBtn) retryDwellBtn.classList.remove('active');
+}
+function checkRetryDwell(){
+  if(!gameEnded){ resetDwell(); return; }
+  const rect = retryDwellBtn.getBoundingClientRect();
+  const stageRect = stageEl.getBoundingClientRect();
+  const bx = ((rect.left + rect.width/2 - stageRect.left) / stageRect.width) * 100;
+  const by = ((rect.top + rect.height/2 - stageRect.top) / stageRect.height) * 100;
+  const bw = (rect.width / stageRect.width) * 100;
+  const dist = distPct(handX, handY, bx, by);
+  if(dist < bw/2){
+    if(dwellStartTime === null){ dwellStartTime = Date.now(); retryDwellBtn.classList.add('active'); }
+    const elapsed = Date.now() - dwellStartTime;
+    const progress = Math.min(1, elapsed / DWELL_DURATION_MS);
+    retryRingFg.style.strokeDashoffset = String(276.5 * (1 - progress));
+    if(progress >= 1){ resetDwell(); doRetry(); }
+  }else{
+    resetDwell();
+  }
+}
+
+// ---- ハブ画面: プログラムカードも手のドウェルで選べるようにする ----
+let hubDwellKey = null;
+let hubDwellStartTime = null;
+function resetHubDwell(){
+  hubDwellKey = null;
+  hubDwellStartTime = null;
+  document.querySelectorAll('.program-card').forEach(card=>{
+    card.classList.remove('dwelling');
+    const fill = card.querySelector('.card-dwell-fill');
+    if(fill) fill.style.height = '0%';
+  });
+}
+function checkHubDwell(){
+  const hubRect = document.getElementById('screen-hub').getBoundingClientRect();
+  let hovered = null;
+  document.querySelectorAll('.program-card').forEach(card=>{
+    if(card.classList.contains('disabled')) return;
+    const rect = card.getBoundingClientRect();
+    const cx = ((rect.left + rect.width/2 - hubRect.left) / hubRect.width) * 100;
+    const cy = ((rect.top + rect.height/2 - hubRect.top) / hubRect.height) * 100;
+    const cw = (rect.width / hubRect.width) * 100;
+    const ch = (rect.height / hubRect.height) * 100;
+    // 手の位置がカードの矩形内にあるか(円形近似ではなく矩形で判定)
+    const hx = handX, hy = handY;
+    if(Math.abs(hx-cx) < cw/2 && Math.abs(hy-cy) < ch/2){
+      hovered = card;
+    }
+  });
+
+  if(hovered){
+    const key = hovered.dataset.key;
+    if(hubDwellKey !== key){
+      resetHubDwell();
+      hubDwellKey = key;
+      hubDwellStartTime = Date.now();
+      hovered.classList.add('dwelling');
+    }
+    const elapsed = Date.now() - hubDwellStartTime;
+    const progress = Math.min(1, elapsed / DWELL_DURATION_MS);
+    const fill = hovered.querySelector('.card-dwell-fill');
+    if(fill) fill.style.height = (progress*100) + '%';
+    if(progress >= 1){
+      resetHubDwell();
+      openProgram(key);
+    }
+  }else{
+    resetHubDwell();
+  }
+}
+
 function doRetry(){
-  resetGameState();
-  buildBaskets();
-  respawnAllFruits();
+  resetCommonState();
+  const def = PROGRAMS[currentProgramKey];
+  def.reset();
   running = true;
   startTimer();
   statusEl.textContent = '手を検出中';
 }
 document.getElementById('retryBtn').addEventListener('click', doRetry);
+document.getElementById('resultBackBtn').addEventListener('click', backToHub);
 
-async function startCamera(){
-  startOverlay.classList.add('hidden');
-  statusEl.textContent = 'カメラを起動しています…';
-  try{
-    hands = new Hands({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-    });
-    hands.setOptions({
-      maxNumHands: 1,
-      modelComplexity: 0,
-      minDetectionConfidence: 0.6,
-      minTrackingConfidence: 0.5,
-    });
-    hands.onResults(onResults);
+// ---- 手の検出結果を、現在のプログラムに配る ----
+let onHubScreen = true;
 
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } },
-      audio: false,
-    });
-    videoEl.srcObject = stream;
-    await videoEl.play();
+function onResults(results){
+  // どちらの画面が表示中かで、描画先・処理内容を切り替える
+  const activeCanvas = onHubScreen ? hubCanvasEl : canvasEl;
+  const activeCtx = onHubScreen ? hubCtx : ctx;
+  activeCanvas.width = onHubScreen ? hubVideoEl.clientWidth : stageEl.clientWidth;
+  activeCanvas.height = onHubScreen ? hubVideoEl.clientHeight : stageEl.clientHeight;
+  activeCtx.clearRect(0, 0, activeCanvas.width, activeCanvas.height);
 
-    running = true;
-    cameraActive = true;
-    buildBaskets();
-    respawnAllFruits();
-    updateScoreDisplay();
-    startTimer();
-    statusEl.textContent = '手を検出中';
+  if(results.multiHandLandmarks && results.multiHandLandmarks.length > 0){
+    lastHandSeen = Date.now();
+    const lm = results.multiHandLandmarks[0];
+    const tip = lm[9];
+    handX = (1 - tip.x) * 100;
+    handY = tip.y * 100;
 
-    async function frameLoop(){
-      if(!cameraActive) return;
-      await hands.send({image: videoEl});
-      requestAnimationFrame(frameLoop);
+    const extended = countExtendedFingers(lm);
+    prevHandOpen = handOpen;
+    handOpen = extended >= 3;
+
+    if(onHubScreen){
+      hubCameraStatus.classList.remove('hidden');
+      hubCameraStatus.textContent = '手を検出中 🐾';
+      checkHubDwell();
+    }else{
+      updateHandCursor();
+      checkRetryDwell();
+      const def = PROGRAMS[currentProgramKey];
+      if(def && def.onHand && running && !gameEnded) def.onHand();
     }
-    frameLoop();
 
-    // 落下物理は手の検出フレームレートとは切り離し、一定間隔で常に更新する
-    setInterval(()=>{ if(running) updateFallingFruits(); }, 30);
-  }catch(e){
-    statusEl.textContent = 'カメラを開始できませんでした: ' + e.message;
-    startOverlay.classList.remove('hidden');
+    activeCtx.fillStyle = 'rgba(212,175,55,.8)';
+    lm.forEach(p=>{
+      const px = (1 - p.x) * activeCanvas.width;
+      const py = p.y * activeCanvas.height;
+      activeCtx.beginPath(); activeCtx.arc(px, py, 3, 0, Math.PI*2); activeCtx.fill();
+    });
+  }else{
+    if(Date.now() - lastHandSeen > 800){
+      if(onHubScreen){
+        hubCameraStatus.textContent = '手が見つかりません。カメラに手をかざしてください';
+        resetHubDwell();
+      }else{
+        statusEl.textContent = '手が見つかりません。カメラに手をかざしてください';
+        resetDwell();
+      }
+    }
   }
 }
 
-document.getElementById('startBtn').addEventListener('click', startCamera);
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  score = { apple:0, mikan:0, grape:0 };
-  updateScoreDisplay();
+// ハブ画面で1回だけ呼ぶ: カメラ+MediaPipeを起動する(プログラムはまだ始めない)
+async function startCameraOnly(){
+  hubCameraBtn.disabled = true;
+  hubCameraMsg.textContent = 'カメラを起動しています…';
+  try{
+    if(!hands){
+      hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+      hands.setOptions({ maxNumHands:1, modelComplexity:0, minDetectionConfidence:0.6, minTrackingConfidence:0.5 });
+      hands.onResults(onResults);
+    }
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode:'user', width:{ideal:480}, height:{ideal:640} }, audio:false,
+    });
+    hubVideoEl.srcObject = stream;
+    await hubVideoEl.play();
+    videoEl.srcObject = stream;
+    await videoEl.play();
+    cameraActive = true;
+    hubCameraMsg.classList.add('hidden');
+    hubCameraBtn.textContent = '✅ カメラ起動ずみ';
+
+    async function frameLoop(){
+      if(!cameraActive) return;
+      const sourceVideo = onHubScreen ? hubVideoEl : videoEl;
+      await hands.send({image: sourceVideo});
+      requestAnimationFrame(frameLoop);
+    }
+    frameLoop();
+    setInterval(()=>{ const def = PROGRAMS[currentProgramKey]; if(running && def && def.onTick) def.onTick(); }, 30);
+  }catch(e){
+    hubCameraMsg.classList.remove('hidden');
+    hubCameraMsg.textContent = 'カメラを開始できませんでした: ' + e.message;
+    hubCameraBtn.disabled = false;
+  }
+}
+hubCameraBtn.addEventListener('click', startCameraOnly);
+
+// プログラム画面で「はじめる」を押した時: カメラは起動済み前提で、プログラムだけ開始する
+function startProgram(){
+  startOverlay.classList.add('hidden');
+  running = true;
+  const def = PROGRAMS[currentProgramKey];
+  def.start();
+  startTimer();
+  statusEl.textContent = '手を検出中';
+}
+
+document.getElementById('startBtn').addEventListener('click', startProgram);
+
+// ---- 画面遷移 ----
+function openProgram(key){
+  if(!cameraActive){
+    alert('先にハブ画面で「カメラをオンにする」を押してください');
+    return;
+  }
+  currentProgramKey = key;
+  const def = PROGRAMS[key];
+  onHubScreen = false;
+  document.getElementById('screen-hub').classList.add('hidden');
+  document.getElementById('screen-game').classList.remove('hidden');
+  gameTitleEl.textContent = def.title;
+  startOverlayText.innerHTML = def.introHtml + '<br><small>(カメラは起動済みです)</small>';
+  programLayer.innerHTML = def.layerHtml || '';
+  running = false; gameEnded = false;
+  resultOverlay.classList.add('hidden');
+  startOverlay.classList.remove('hidden');
+  statusEl.textContent = '';
+  def.setup();
+}
+
+function backToHub(){
+  running = false;
+  onHubScreen = true;
+  document.getElementById('screen-game').classList.add('hidden');
+  document.getElementById('screen-hub').classList.remove('hidden');
+}
+document.getElementById('backToHubBtn').addEventListener('click', backToHub);
+
+document.querySelectorAll('.program-card').forEach(card=>{
+  if(card.classList.contains('disabled')) return;
+  card.addEventListener('click', ()=> openProgram(card.dataset.key));
 });
+
+document.getElementById('aboutToggle').addEventListener('click', ()=>{
+  document.getElementById('aboutModal').classList.remove('hidden');
+});
+document.getElementById('techInfoToggle').addEventListener('click', ()=>{
+  document.getElementById('techInfoModal').classList.remove('hidden');
+});
+
+
+/* ============================================================
+   プログラム: てにゃーもぎ
+   ============================================================ */
+(function(){
+  const FRUITS = {
+    apple: { emoji:'🍎', label:'りんご' },
+    mikan: { emoji:'🍊', label:'みかん' },
+    grape: { emoji:'🍇', label:'ぶどう' },
+  };
+  const FRUIT_KEYS = Object.keys(FRUITS);
+  let fruits = [];
+  let holding = null;
+  let baskets = {};
+  let fruitsLayerEl, basketRowEl, heldFruitEl;
+
+  function spawnFruit(type, x, y){
+    const el = document.createElement('div');
+    el.className = 'fruit';
+    el.textContent = FRUITS[type].emoji;
+    el.style.left = x + '%'; el.style.top = y + '%';
+    fruitsLayerEl.appendChild(el);
+    fruits.push({ type, x, y, el, collected:false });
+  }
+
+  function respawnAllFruits(){
+    fruitsLayerEl.innerHTML = '';
+    fruits = [];
+    const positions = [
+      { xMin:12, xMax:38, yMin:10, yMax:35 },
+      { xMin:38, xMax:62, yMin:8, yMax:30 },
+      { xMin:62, xMax:88, yMin:10, yMax:35 },
+    ];
+    const shuffled = FRUIT_KEYS.slice().sort(()=>Math.random()-0.5);
+    shuffled.forEach((type,i)=>{
+      const p = positions[i];
+      spawnFruit(type, p.xMin+Math.random()*(p.xMax-p.xMin), p.yMin+Math.random()*(p.yMax-p.yMin));
+    });
+  }
+
+  function buildBaskets(){
+    basketRowEl.innerHTML = '';
+    baskets = {};
+    FRUIT_KEYS.forEach(type=>{
+      const el = document.createElement('div');
+      el.className = 'basket';
+      el.innerHTML = `<div class="icon">${FRUITS[type].emoji}</div><div>${FRUITS[type].label}</div><div class="count">0</div>`;
+      basketRowEl.appendChild(el);
+      baskets[type] = { el, countEl: el.querySelector('.count') };
+    });
+  }
+
+  function basketBounds(type){
+    const rect = baskets[type].el.getBoundingClientRect();
+    const stageRect = stageEl.getBoundingClientRect();
+    return {
+      xMin: ((rect.left - stageRect.left) / stageRect.width) * 100,
+      xMax: ((rect.right - stageRect.left) / stageRect.width) * 100,
+      yTop: ((rect.top - stageRect.top) / stageRect.height) * 100,
+    };
+  }
+
+  function tryGrab(){
+    if(holding) return;
+    for(const f of fruits){
+      if(f.collected) continue;
+      if(distPct(handX, handY, f.x, f.y) < 9){
+        holding = f.type;
+        f.collected = true;
+        f.el.classList.add('collected');
+        heldFruitEl.textContent = FRUITS[f.type].emoji;
+        heldFruitEl.style.left = handX+'%'; heldFruitEl.style.top = handY+'%';
+        statusEl.textContent = FRUITS[f.type].label + ' をもいだ!パーでかごへ';
+        return;
+      }
+    }
+  }
+
+  function tryRelease(){
+    if(!holding) return;
+    const type = holding;
+    fallingFruits.push({ type, x:handX, y:handY, vy:0, el: makeFallingEl(FRUITS[type].emoji, handX, handY) });
+    holding = null;
+    heldFruitEl.textContent = '';
+  }
+
+  function updateFallingMogi(){
+    for(let i=fallingFruits.length-1;i>=0;i--){
+      const ff = fallingFruits[i];
+      ff.vy += GRAVITY; ff.y += ff.vy;
+      ff.el.style.left = ff.x+'%'; ff.el.style.top = ff.y+'%';
+      let resolved = false;
+      for(const type of FRUIT_KEYS){
+        const b = basketBounds(type);
+        if(ff.y >= b.yTop && ff.x >= b.xMin && ff.x <= b.xMax){
+          if(type === ff.type){
+            onSuccess();
+            statusEl.textContent = FRUITS[type].label + '、正解のかごにストン!';
+            baskets[type].el.classList.add('glow');
+            setTimeout(()=> baskets[type].el.classList.remove('glow'), 300);
+          }else{
+            onMiss('あっ、'+FRUITS[ff.type].label+'は違うかごに落ちちゃった');
+            const f = fruits.find(f=>f.type===ff.type && f.collected);
+            if(f){ f.collected=false; f.el.classList.remove('collected'); }
+          }
+          resolved = true; break;
+        }
+      }
+      if(!resolved && ff.y >= 92){
+        onMiss(FRUITS[ff.type].label + 'は地面に落ちちゃった…');
+        const f = fruits.find(f=>f.type===ff.type && f.collected);
+        if(f){ f.collected=false; f.el.classList.remove('collected'); }
+        resolved = true;
+      }
+      if(resolved){
+        ff.el.remove();
+        fallingFruits.splice(i,1);
+        if(fruits.filter(f=>!f.collected).length === 0) setTimeout(respawnAllFruits, 500);
+      }
+    }
+  }
+
+  registerProgram('mogi', {
+    title: '🍎 てにゃーもぎ',
+    introHtml: 'カメラを使って、手の動きで果物をもぎ取ります。<br>30秒でどれだけかごに入れられるか挑戦!<br>カメラへのアクセスを許可してください。',
+    layerHtml: `
+      <div class="tree-area"></div>
+      <div id="mogiFruitsLayer"></div>
+      <div class="basket-row" id="mogiBasketRow"></div>
+      <div class="held-fruit-mogi" id="mogiHeldFruit" style="position:absolute;font-size:26px;transform:translate(-50%,-120%);pointer-events:none;z-index:4;"></div>
+    `,
+    setup(){
+      fruitsLayerEl = document.getElementById('mogiFruitsLayer');
+      basketRowEl = document.getElementById('mogiBasketRow');
+      heldFruitEl = document.getElementById('mogiHeldFruit');
+    },
+    start(){
+      holding = null;
+      buildBaskets();
+      respawnAllFruits();
+    },
+    reset(){
+      holding = null;
+      heldFruitEl.textContent = '';
+      this.start();
+    },
+    onHand(){
+      if(!prevHandOpen && handOpen) tryRelease();
+      else if(prevHandOpen && !handOpen) tryGrab();
+      if(holding){ heldFruitEl.style.left = handX+'%'; heldFruitEl.style.top = handY+'%'; }
+    },
+    onTick(){ updateFallingMogi(); },
+  });
+})();
+
+/* ============================================================
+   プログラム: てにゃーゆらし
+   ============================================================ */
+(function(){
+  const FRUITS = {
+    apple: { emoji:'🍎' }, mikan: { emoji:'🍊' }, grape: { emoji:'🍇' },
+  };
+  const FRUIT_KEYS = Object.keys(FRUITS);
+  let fruits = [];
+  let fruitsLayerEl, shakeGaugeFillEl;
+  const CATCH_RADIUS = 10;
+
+  function spawnFruit(type, x, y){
+    const el = document.createElement('div');
+    el.className = 'fruit';
+    el.textContent = FRUITS[type].emoji;
+    el.style.left = x+'%'; el.style.top = y+'%';
+    fruitsLayerEl.appendChild(el);
+    fruits.push({ type, x, y, el, collected:false });
+  }
+
+  function respawnAllFruits(){
+    fruitsLayerEl.innerHTML = '';
+    fruits = [];
+    const positions = [
+      { xMin:12, xMax:38, yMin:10, yMax:35 },
+      { xMin:38, xMax:62, yMin:8, yMax:30 },
+      { xMin:62, xMax:88, yMin:10, yMax:35 },
+    ];
+    const shuffled = FRUIT_KEYS.slice().sort(()=>Math.random()-0.5);
+    shuffled.forEach((type,i)=>{
+      const p = positions[i];
+      spawnFruit(type, p.xMin+Math.random()*(p.xMax-p.xMin), p.yMin+Math.random()*(p.yMax-p.yMin));
+    });
+  }
+
+  function triggerShake(){
+    const remaining = fruits.filter(f=>!f.collected);
+    if(remaining.length === 0) return;
+    statusEl.textContent = '木が揺れた!実が落ちてくる';
+    showCallout('ゆさっ!');
+    const dropCount = Math.min(remaining.length, 1 + (Math.random()<0.4?1:0));
+    const shuffled = remaining.slice().sort(()=>Math.random()-0.5);
+    for(let i=0;i<dropCount;i++){
+      const f = shuffled[i];
+      f.collected = true; f.el.classList.add('collected');
+      fallingFruits.push({ type:f.type, x:f.x, y:f.y, vy:0, el: makeFallingEl(FRUITS[f.type].emoji, f.x, f.y) });
+    }
+  }
+
+  function updateFallingYurashi(){
+    for(let i=fallingFruits.length-1;i>=0;i--){
+      const ff = fallingFruits[i];
+      ff.vy += GRAVITY; ff.y += ff.vy;
+      ff.el.style.left = ff.x+'%'; ff.el.style.top = ff.y+'%';
+      let resolved = false;
+      if(distPct(handX, handY, ff.x, ff.y) < CATCH_RADIUS){
+        onSuccess();
+        statusEl.textContent = 'キャッチ成功!';
+        resolved = true;
+      }else if(ff.y >= 90){
+        onMiss('あーん、キャッチできなかった…');
+        resolved = true;
+      }
+      if(resolved){
+        ff.el.remove();
+        fallingFruits.splice(i,1);
+        if(fruits.filter(f=>!f.collected).length === 0) setTimeout(respawnAllFruits, 500);
+      }
+    }
+  }
+
+  registerProgram('yurashi', {
+    title: '🌳 てにゃーゆらし',
+    introHtml: 'カメラを使って、手を左右に振って木を揺らします。<br>落ちてきた実を手でキャッチ!30秒で何個キャッチできるか挑戦。<br>カメラへのアクセスを許可してください。',
+    layerHtml: `
+      <div class="tree-area"></div>
+      <div id="yurashiFruitsLayer"></div>
+      <div class="net-area">🧺</div>
+      <div class="shake-gauge"><div class="shake-gauge-fill" id="yurashiShakeGaugeFill"></div></div>
+    `,
+    setup(){
+      fruitsLayerEl = document.getElementById('yurashiFruitsLayer');
+      shakeGaugeFillEl = document.getElementById('yurashiShakeGaugeFill');
+      triggered_shakeGaugeFill = shakeGaugeFillEl;
+    },
+    start(){
+      triggered_shakeGaugeFill = shakeGaugeFillEl;
+      respawnAllFruits();
+    },
+    reset(){ this.start(); },
+    onHand(){
+      const shaken = updateShakeDetection();
+      if(shaken) triggerShake();
+    },
+    onTick(){ updateFallingYurashi(); },
+  });
+})();
+
+
 </script>
 </body>
 </html>
