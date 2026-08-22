@@ -84,7 +84,7 @@
   canvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 
   .hand-cursor{
-    position:absolute; width:50px; height:50px; transform:translate(-50%,-50%);
+    position:absolute; width:70px; height:70px; transform:translate(-50%,-50%);
     pointer-events:none; z-index:3; transition:left .05s linear, top .05s linear;
   }
   .hand-cursor svg{ width:100%; height:100%; filter:drop-shadow(0 3px 3px rgba(0,0,0,.5)); }
@@ -241,6 +241,7 @@
       まずカメラをオンにしてください。<br>手が映ると、それぞれのプログラムにそのまま入れます。
     </div>
     <div class="hub-camera-status hidden" id="hubCameraStatus">手を検出中</div>
+    <div class="hand-cursor" id="hubHandCursor" style="z-index:5;"></div>
 
     <div class="hub-content">
       <div class="top-bar">
@@ -333,6 +334,7 @@
     <div class="game-header">
       <button class="btn back" id="backToHubBtn">← 一覧</button>
       <span class="title" id="gameTitle"></span>
+      <button class="util-btn" id="darkModeToggleGame">🌙</button>
     </div>
     <div class="stage" id="stage">
       <video id="video" playsinline muted></video>
@@ -347,7 +349,14 @@
       <div class="callout" id="callout"></div>
       <div class="overlay-msg" id="startOverlay">
         <div id="startOverlayText"></div>
-        <button class="btn" id="startBtn" style="flex:none;padding:12px 24px;">はじめる</button>
+        <div class="dwell-btn" id="startDwellBtn">
+          <svg class="dwell-ring" viewBox="0 0 100 100">
+            <circle class="dwell-ring-bg" cx="50" cy="50" r="44"/>
+            <circle class="dwell-ring-fg" id="startRingFg" cx="50" cy="50" r="44"/>
+          </svg>
+          <span class="dwell-label">はじめる<br><small>手をここに乗せてね</small></span>
+        </div>
+        <button class="btn" id="startBtn" style="flex:none;padding:8px 20px;margin-top:6px;">(タップでもOK)</button>
       </div>
       <div class="overlay-msg hidden" id="resultOverlay">
         <div class="rating-star" id="ratingStar"></div>
@@ -377,9 +386,9 @@
    ============================================================ */
 
 // ---- ダークモード ----
-document.getElementById('darkModeToggle').addEventListener('click', ()=>{
-  document.documentElement.classList.toggle('dark-mode');
-});
+function toggleDarkMode(){ document.documentElement.classList.toggle('dark-mode'); }
+document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+document.getElementById('darkModeToggleGame').addEventListener('click', toggleDarkMode);
 
 // ---- プログラム登録の仕組み(ニャーズと同じ発想) ----
 const PROGRAMS = {};
@@ -400,6 +409,7 @@ const canvasEl = document.getElementById('canvas');
 const ctx = canvasEl.getContext('2d');
 const programLayer = document.getElementById('programLayer');
 const handCursorEl = document.getElementById('handCursor');
+const hubHandCursorEl = document.getElementById('hubHandCursor');
 const statusEl = document.getElementById('status');
 const startOverlay = document.getElementById('startOverlay');
 const startOverlayText = document.getElementById('startOverlayText');
@@ -477,7 +487,7 @@ document.getElementById('techInfoBody').innerHTML = `
   <h3 class="tech-group-heading">🍎 落下の物理演算</h3>
   <p>もいだ・落ちた果物は、単純な重力加速度シミュレーション(1tickごとに速度が加算されていく)で落下させています。特別なライブラリは使っていません。</p>
   <h3 class="tech-group-heading">👆 手だけでボタン操作(ドウェル選択)</h3>
-  <p>リザルト画面の「もう一回」は、視線入力デバイス等でも使われる「滞在選択(ドウェルクリック)」方式です。手を約1.2秒乗せ続けると、円形のゲージが満ちて自動的に選ばれます。</p>
+  <p>「はじめる」「もう一回」だけでなく、ハブ画面のプログラム選択も同じ方式です。手を約1.2秒乗せ続けると、円形(またはカードの下からの塗りつぶし)のゲージが満ちて自動的に選ばれます。タップでも操作できます。</p>
   <h3 class="tech-group-heading">⚠️ 動作条件</h3>
   <p>カメラ機能(getUserMedia)は、HTTPS配信かlocalhost環境でないとブラウザの制約で動作しません。ファイルをそのまま開いただけでは、カメラの許可が出ない場合があります。</p>
   <p>サーバーには何も送信されません。全てブラウザの中だけで完結しています。</p>
@@ -563,9 +573,10 @@ function makeFallingEl(emoji, x, y){
 }
 
 function updateHandCursor(){
-  handCursorEl.style.left = handX + '%';
-  handCursorEl.style.top = handY + '%';
-  handCursorEl.innerHTML = handOpen ? PAW_OPEN_SVG : PAW_CLOSED_SVG;
+  const target = onHubScreen ? hubHandCursorEl : handCursorEl;
+  target.style.left = handX + '%';
+  target.style.top = handY + '%';
+  target.innerHTML = handOpen ? PAW_OPEN_SVG : PAW_CLOSED_SVG;
 }
 
 function countExtendedFingers(lm){
@@ -610,25 +621,41 @@ let triggered_shakeGaugeFill = null; // プログラム側でDOMをセットす�
 // ---- ドウェル選択(手を乗せて待つとボタンが押される) ----
 const DWELL_DURATION_MS = 1200;
 let dwellStartTime = null;
+let dwellActiveBtn = null;
+const startDwellBtn = document.getElementById('startDwellBtn');
+const startRingFg = document.getElementById('startRingFg');
+
 function resetDwell(){
   dwellStartTime = null;
-  if(retryRingFg) retryRingFg.style.strokeDashoffset = '276.5';
-  if(retryDwellBtn) retryDwellBtn.classList.remove('active');
+  dwellActiveBtn = null;
+  [[retryDwellBtn,retryRingFg],[startDwellBtn,startRingFg]].forEach(([btn,ring])=>{
+    if(ring) ring.style.strokeDashoffset = '276.5';
+    if(btn) btn.classList.remove('active');
+  });
 }
-function checkRetryDwell(){
-  if(!gameEnded){ resetDwell(); return; }
-  const rect = retryDwellBtn.getBoundingClientRect();
+function checkGameDwell(){
+  let targetBtn = null, targetRing = null, onComplete = null;
+  if(gameEnded){
+    targetBtn = retryDwellBtn; targetRing = retryRingFg; onComplete = doRetry;
+  }else if(!running){
+    targetBtn = startDwellBtn; targetRing = startRingFg; onComplete = startProgram;
+  }else{
+    resetDwell(); return;
+  }
+  const rect = targetBtn.getBoundingClientRect();
   const stageRect = stageEl.getBoundingClientRect();
   const bx = ((rect.left + rect.width/2 - stageRect.left) / stageRect.width) * 100;
   const by = ((rect.top + rect.height/2 - stageRect.top) / stageRect.height) * 100;
   const bw = (rect.width / stageRect.width) * 100;
   const dist = distPct(handX, handY, bx, by);
   if(dist < bw/2){
-    if(dwellStartTime === null){ dwellStartTime = Date.now(); retryDwellBtn.classList.add('active'); }
+    if(dwellStartTime === null || dwellActiveBtn !== targetBtn){
+      dwellStartTime = Date.now(); dwellActiveBtn = targetBtn; targetBtn.classList.add('active');
+    }
     const elapsed = Date.now() - dwellStartTime;
     const progress = Math.min(1, elapsed / DWELL_DURATION_MS);
-    retryRingFg.style.strokeDashoffset = String(276.5 * (1 - progress));
-    if(progress >= 1){ resetDwell(); doRetry(); }
+    targetRing.style.strokeDashoffset = String(276.5 * (1 - progress));
+    if(progress >= 1){ resetDwell(); onComplete(); }
   }else{
     resetDwell();
   }
@@ -720,10 +747,11 @@ function onResults(results){
     if(onHubScreen){
       hubCameraStatus.classList.remove('hidden');
       hubCameraStatus.textContent = '手を検出中 🐾';
+      updateHandCursor();
       checkHubDwell();
     }else{
       updateHandCursor();
-      checkRetryDwell();
+      checkGameDwell();
       const def = PROGRAMS[currentProgramKey];
       if(def && def.onHand && running && !gameEnded) def.onHand();
     }
@@ -814,6 +842,8 @@ function openProgram(key){
   resultOverlay.classList.add('hidden');
   startOverlay.classList.remove('hidden');
   statusEl.textContent = '';
+  resetDwell();
+  resetHubDwell();
   def.setup();
 }
 
@@ -822,6 +852,8 @@ function backToHub(){
   onHubScreen = true;
   document.getElementById('screen-game').classList.add('hidden');
   document.getElementById('screen-hub').classList.remove('hidden');
+  resetDwell();
+  resetHubDwell();
 }
 document.getElementById('backToHubBtn').addEventListener('click', backToHub);
 
