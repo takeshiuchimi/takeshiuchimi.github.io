@@ -47,7 +47,6 @@
 
   .hidden{ display:none !important; }
 
-  .area-heading{ font-size:14px; font-weight:bold; color:var(--brown-deep); margin:14px 4px 6px; }
   .program-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
   /* ---- ニャーズと同じ左右スワイプ無限ループカルーセル ---- */
@@ -244,10 +243,11 @@
   }
   .util-row{ display:flex; gap:6px; margin:8px 0; }
   .util-row .util-btn{ flex:1; margin:0; font-size:12px; padding:6px 4px; }
+  .util-row .util-btn-icon{ flex:none; width:34px; padding:6px 0; }
 
   /* ---- ハブ画面: カメラを背景に、コンテンツを半透明で重ねる ---- */
   .hub-with-camera{
-    position:relative; overflow:hidden; min-height:70vh;
+    position:relative; overflow:hidden;
     padding:0 !important; border-radius:18px;
   }
   #hubVideo{
@@ -283,7 +283,8 @@
     "paragraphs": [
       "デジリハという、専用センサーで体の動きを検知するリハビリプログラムのデモを見たのがきっかけで生まれました。",
       "専用センサーは無いけれど、Googleが無料公開しているMediaPipe Handsという技術を使えば、普通のPC・スマホのカメラだけで手の動きを検知できます。それをニャーズゲームセンターと同じ「猫」の世界観で、リハビリになりそうな動きに落とし込んでいます。",
-      "サーバーには何も送信されません。手の映像は全てブラウザの中だけで処理されます。"
+      "サーバーには何も送信されません。手の映像は全てブラウザの中だけで処理されます。",
+      "<b>注意: カメラ機能はHTTPS配信(またはlocalhost)でないと動作しません。</b>"
     ],
     "conceptBox": {
       "heading": "🌳🏞️⛰️「森の仲間たち」構想",
@@ -355,15 +356,10 @@
         <div class="card-pages" id="cardPages"></div>
       </div>
 
-      <p class="note">
-        各プログラムは手の動きをカメラで検知して遊びます。サーバーには何も送信されません。<br>
-        <b>注意: カメラ機能はHTTPS配信(またはlocalhost)でないと動作しません。</b>
-      </p>
-
       <div class="util-row" style="margin-top:10px;">
         <button class="util-btn" id="aboutToggleFooter">🐾 ニャーリハとは</button>
         <button class="util-btn" id="techInfoToggleFooter">🔧 技術情報</button>
-        <button class="util-btn" id="darkModeToggleFooter">🌙 ダークモード</button>
+        <button class="util-btn util-btn-icon" id="darkModeToggleFooter">🌙</button>
       </div>
     </div>
   </div>
@@ -539,12 +535,10 @@ function makeProgramCard(item){
 }
 
 const CARDS_PER_PAGE = 6;
-// エリア構造をフラット化し、各エリアの先頭アイテムにだけ見出し情報を持たせる
+// エリア構造をフラット化(見出しは使わず、全プログラムを1つのグリッドに並べる)
 const FLAT_ITEMS = [];
 AREAS.forEach(area=>{
-  area.items.forEach((item,i)=>{
-    FLAT_ITEMS.push(Object.assign({}, item, { areaHeading: i===0 ? area.heading : null }));
-  });
+  area.items.forEach(item=> FLAT_ITEMS.push(item));
 });
 
 let pageDotEls = [];
@@ -555,22 +549,10 @@ const cardCarousel = makeInfiniteCarousel({
     const pageEl = document.createElement('div');
     pageEl.className = 'card-page';
     const pageItems = FLAT_ITEMS.slice(pageIndex*CARDS_PER_PAGE, pageIndex*CARDS_PER_PAGE+CARDS_PER_PAGE);
-    let grid = null;
+    const grid = document.createElement('div');
+    grid.className = 'program-grid';
+    pageEl.appendChild(grid);
     pageItems.forEach(item=>{
-      if(item.areaHeading){
-        const heading = document.createElement('div');
-        heading.className = 'area-heading';
-        heading.textContent = item.areaHeading;
-        pageEl.appendChild(heading);
-        grid = document.createElement('div');
-        grid.className = 'program-grid';
-        pageEl.appendChild(grid);
-      }
-      if(!grid){
-        grid = document.createElement('div');
-        grid.className = 'program-grid';
-        pageEl.appendChild(grid);
-      }
       grid.appendChild(makeProgramCard(item));
     });
     return pageEl;
