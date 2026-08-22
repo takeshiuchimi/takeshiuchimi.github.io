@@ -79,7 +79,7 @@
   }
   video{
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-    transform:scaleX(-1);
+    transform:scaleX(-1); filter:brightness(.28) saturate(.5);
   }
   canvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 
@@ -138,9 +138,9 @@
   /* もぎ用 */
   .tree-area{
     position:absolute; left:0; right:0; top:0; height:42%;
-    background:linear-gradient(180deg, rgba(107,83,53,.35), transparent);
     pointer-events:none;
   }
+  .tree-area svg{ width:100%; height:100%; display:block; }
   .fruit{
     position:absolute; width:44px; height:44px; transform:translate(-50%,-50%);
     font-size:36px; line-height:44px; text-align:center; pointer-events:none;
@@ -153,12 +153,14 @@
     pointer-events:none;
   }
   .basket{
-    width:26%; aspect-ratio:1/1; max-width:110px;
-    background:rgba(139,111,71,.55); border:3px solid var(--gold); border-radius:14px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    color:#fff; font-size:13px; font-weight:bold; text-shadow:0 1px 2px rgba(0,0,0,.6);
+    width:28%; aspect-ratio:6/5; max-width:120px;
+    position:relative; border-radius:8px;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+    padding-bottom:6%;
+    color:#fff; font-size:12px; font-weight:bold; text-shadow:0 1px 3px rgba(0,0,0,.8);
   }
-  .basket .icon{ font-size:26px; }
+  .basket > *{ position:relative; z-index:1; }
+  .basket .icon{ font-size:22px; }
   .basket .count{ font-size:14px; }
   .basket.glow{ box-shadow:0 0 0 4px #fff, 0 0 14px 4px var(--gold); }
 
@@ -211,7 +213,7 @@
   }
   #hubVideo{
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-    transform:scaleX(-1); background:#000; z-index:0;
+    transform:scaleX(-1); background:#000; z-index:0; filter:brightness(.28) saturate(.5);
   }
   #hubCanvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1; }
   .hub-camera-msg{
@@ -432,6 +434,26 @@ const PAW_CLOSED_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000
   <circle cx="50" cy="55" r="30" fill="var(--player-accent)"/>
 </svg>`;
 handCursorEl.innerHTML = PAW_OPEN_SVG;
+
+// ---- 木のビジュアル(幹+葉っぱの塊) ----
+const TREE_SVG = `<svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+  <path d="M142 150 L146 78 L154 78 L158 150 Z" fill="#6B5335"/>
+  <path d="M150 95 L120 118 M150 88 L182 108" stroke="#6B5335" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <ellipse cx="150" cy="55" rx="95" ry="52" fill="#5C8A52"/>
+  <ellipse cx="90" cy="70" rx="55" ry="38" fill="#6B9A5E"/>
+  <ellipse cx="215" cy="68" rx="58" ry="40" fill="#6B9A5E"/>
+  <ellipse cx="150" cy="34" rx="62" ry="34" fill="#7CAA6C"/>
+</svg>`;
+
+// ---- かごのビジュアル(編みかご) ----
+function basketSvg(){
+  return `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;">
+    <path d="M18 40 L102 40 L92 92 Q60 100 28 92 Z" fill="#8B6F47" stroke="#6B5335" stroke-width="3"/>
+    <path d="M22 54 L98 54 M24 68 L96 68 M27 82 L93 82" stroke="#6B5335" stroke-width="2.5" opacity=".55"/>
+    <path d="M14 40 Q60 26 106 40" fill="none" stroke="#6B5335" stroke-width="5" stroke-linecap="round"/>
+    <path d="M45 40 Q60 14 75 40" fill="none" stroke="#6B5335" stroke-width="5" stroke-linecap="round"/>
+  </svg>`;
+}
 
 // ---- 共通ゲーム状態 ----
 const GAME_SECONDS = 30;
@@ -915,7 +937,7 @@ document.getElementById('techInfoToggle').addEventListener('click', ()=>{
     FRUIT_KEYS.forEach(type=>{
       const el = document.createElement('div');
       el.className = 'basket';
-      el.innerHTML = `<div class="icon">${FRUITS[type].emoji}</div><div>${FRUITS[type].label}</div><div class="count">0</div>`;
+      el.innerHTML = `${basketSvg()}<div class="icon">${FRUITS[type].emoji}</div><div>${FRUITS[type].label}</div><div class="count">0</div>`;
       basketRowEl.appendChild(el);
       baskets[type] = { el, countEl: el.querySelector('.count') };
     });
@@ -995,7 +1017,7 @@ document.getElementById('techInfoToggle').addEventListener('click', ()=>{
     title: '🍎 てにゃーもぎ',
     introHtml: 'カメラを使って、手の動きで果物をもぎ取ります。<br>30秒でどれだけかごに入れられるか挑戦!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
-      <div class="tree-area"></div>
+      <div class="tree-area">${TREE_SVG}</div>
       <div id="mogiFruitsLayer"></div>
       <div class="basket-row" id="mogiBasketRow"></div>
       <div class="held-fruit-mogi" id="mogiHeldFruit" style="position:absolute;font-size:26px;transform:translate(-50%,-120%);pointer-events:none;z-index:4;"></div>
@@ -1100,7 +1122,7 @@ document.getElementById('techInfoToggle').addEventListener('click', ()=>{
     title: '🌳 てにゃーゆらし',
     introHtml: 'カメラを使って、手を左右に振って木を揺らします。<br>落ちてきた実を手でキャッチ!30秒で何個キャッチできるか挑戦。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
-      <div class="tree-area"></div>
+      <div class="tree-area">${TREE_SVG}</div>
       <div id="yurashiFruitsLayer"></div>
       <div class="net-area">🧺</div>
       <div class="shake-gauge"><div class="shake-gauge-fill" id="yurashiShakeGaugeFill"></div></div>
