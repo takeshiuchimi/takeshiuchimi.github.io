@@ -216,6 +216,33 @@
   }
   .shake-gauge-fill{ height:100%; width:0%; background:var(--gold); transition:width .08s linear; }
 
+  /* ---- カヌー用 ---- */
+  .river-area{
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, #7EC8E3, #4A9BC9);
+    pointer-events:none;
+  }
+  .river-lane{
+    position:absolute; top:0; bottom:0; width:2px;
+    background:rgba(255,255,255,.25);
+  }
+  .canoe-el{
+    position:absolute; width:56px; height:56px; transform:translate(-50%,-50%);
+    font-size:44px; text-align:center; line-height:56px; pointer-events:none;
+    filter:drop-shadow(0 3px 3px rgba(0,0,0,.4));
+    transition:left .1s linear;
+  }
+  .river-obj{
+    position:absolute; width:38px; height:38px; transform:translate(-50%,-50%);
+    font-size:30px; text-align:center; line-height:38px; pointer-events:none;
+  }
+  .paddle-splash{
+    position:absolute; width:40px; height:40px; transform:translate(-50%,-50%);
+    font-size:24px; text-align:center; line-height:40px; pointer-events:none;
+    opacity:0; transition:opacity .3s ease;
+  }
+  .paddle-splash.show{ opacity:1; }
+
   /* ---- ニャーズと同じ外枠・モーダル ---- */
   .card{
     width:100%; background:var(--card-bg); border:3px dashed var(--gold);
@@ -293,7 +320,8 @@
   },
   "techInfo": {
     "sections": [
-      { "heading": "🖐️ 手の検出の仕組み", "body": "Google製のMediaPipe Hands(CDN経由、ブラウザ内で完結)を使い、手の21箇所のランドマーク(関節位置)をリアルタイムに検出しています。" },
+      { "heading": "🖐️ 手の検出の仕組み", "body": "Google製のMediaPipe Hands(CDN経由、ブラウザ内で完結)を使い、手の21箇所のランドマーク(関節位置)をリアルタイムに検出しています。最大2本まで検出できます。" },
+      { "heading": null, "body": "<b>片手の方への配慮</b>：カヌーは本来両手でパドルを漕ぐものですが、検出できた手の本数に自動で合わせる設計にしています。片手しか映っていない・使えない場合は、その1本で操縦と漕ぎの両方を兼用します。両手が映れば、中央位置での操縦と、左右どちらの漕ぎ動作も別々に認識します。" },
       { "heading": null, "body": "<b>グーパー判定</b>：人差し指・中指・薬指・小指それぞれの指先と、その一つ手前の関節(PIP)の、手首からの距離を比較しています。指先の方が明らかに遠ければ「伸びている」と判定し、4本中3本以上伸びていれば「パー」、そうでなければ「グー」としています。" },
       { "heading": null, "body": "<b>シェイク(左右振り)判定</b>：手のx座標の変化を0.9秒分さかのぼって記録し、方向が反転した回数を数えています。ジッター(細かい震え)を無視するため、2.5%未満の変化は無視しています。4回反転(=2往復)で「揺れた」と判定します。" },
       { "heading": "🍎 落下の物理演算", "body": "もいだ・落ちた果物は、単純な重力加速度シミュレーション(1tickごとに速度が加算されていく)で落下させています。特別なライブラリは使っていません。" },
@@ -309,7 +337,7 @@
       { "key":"yurashi", "icon":"🌳", "name":"てにゃーゆらし", "desc":"左右に振って木を揺らし、実をキャッチ", "disabled": false }
     ]},
     { "heading": "🏞️ 川のエリア", "items": [
-      { "key":"oyogi", "icon":"🏊", "name":"およぎ", "desc":"近日公開", "disabled": true },
+      { "key":"canoe", "icon":"🛶", "name":"てにゃーカヌー", "desc":"手を左右に動かして操縦、上下に振って漕ごう", "disabled": false },
       { "key":"tsuri", "icon":"🎣", "name":"つり", "desc":"近日公開", "disabled": true }
     ]},
     { "heading": "⛰️ 山のエリア", "items": [
@@ -331,6 +359,7 @@
     </div>
     <div class="hub-camera-status hidden" id="hubCameraStatus">手を検出中</div>
     <div class="hand-cursor" id="hubHandCursor" style="z-index:5;"></div>
+    <div class="hand-cursor hidden" id="hubHandCursor2" style="z-index:5;"></div>
 
     <div class="hub-content">
       <div class="title-row">
@@ -400,6 +429,7 @@
       <canvas id="canvas"></canvas>
       <div id="programLayer"></div>
       <div class="hand-cursor" id="handCursor"></div>
+      <div class="hand-cursor hidden" id="handCursor2"></div>
       <div class="game-hud" id="gameHud">
         <span id="catReaction">😺</span>
         <span id="scoreDisplay">0点</span>
@@ -610,7 +640,9 @@ const canvasEl = document.getElementById('canvas');
 const ctx = canvasEl.getContext('2d');
 const programLayer = document.getElementById('programLayer');
 const handCursorEl = document.getElementById('handCursor');
+const handCursor2El = document.getElementById('handCursor2');
 const hubHandCursorEl = document.getElementById('hubHandCursor');
+const hubHandCursor2El = document.getElementById('hubHandCursor2');
 const statusEl = document.getElementById('status');
 const startOverlay = document.getElementById('startOverlay');
 const startOverlayText = document.getElementById('startOverlayText');
@@ -715,6 +747,7 @@ function respawnAllFruitsInto(layerEl){
 // ---- 共通ゲーム状態 ----
 const GAME_SECONDS = 30;
 let handX = 50, handY = 50;
+let handsList = []; // 検出された全ての手(x昇順)。要素: {x,y,open,lm}
 let handOpen = true, prevHandOpen = true;
 let lastHandSeen = 0;
 let running = false, gameEnded = false, cameraActive = false;
@@ -853,6 +886,17 @@ function updateHandCursor(){
   target.style.left = handX + '%';
   target.style.top = handY + '%';
   target.innerHTML = handOpen ? PAW_OPEN_SVG : PAW_CLOSED_SVG;
+
+  const target2 = onHubScreen ? hubHandCursor2El : handCursor2El;
+  if(handsList.length >= 2){
+    const h2 = handsList[1];
+    target2.classList.remove('hidden');
+    target2.style.left = h2.x + '%';
+    target2.style.top = h2.y + '%';
+    target2.innerHTML = h2.open ? PAW_OPEN_SVG : PAW_CLOSED_SVG;
+  }else{
+    target2.classList.add('hidden');
+  }
 }
 
 function countExtendedFingers(lm){
@@ -1072,18 +1116,28 @@ function onResults(results){
 
   if(results.multiHandLandmarks && results.multiHandLandmarks.length > 0){
     lastHandSeen = Date.now();
-    const lm = results.multiHandLandmarks[0];
-    const tip = lm[9];
-    handX = (1 - tip.x) * 100;
-    handY = tip.y * 100;
 
-    const extended = countExtendedFingers(lm);
+    // 検出された手を全てhandsListに格納(X座標順に並べ、左右がブレにくくする)
+    handsList = results.multiHandLandmarks.map(lm=>{
+      const tip = lm[9];
+      return {
+        x: (1 - tip.x) * 100,
+        y: tip.y * 100,
+        open: countExtendedFingers(lm) >= 3,
+        lm,
+      };
+    }).sort((a,b)=> a.x - b.x);
+
+    // 後方互換: 1本目(画面向かって左側)の手をhandX/handY/handOpenとして扱う
+    const primary = handsList[0];
+    handX = primary.x;
+    handY = primary.y;
     prevHandOpen = handOpen;
-    handOpen = extended >= 3;
+    handOpen = primary.open;
 
     if(onHubScreen){
       hubCameraStatus.classList.remove('hidden');
-      hubCameraStatus.textContent = '手を検出中 🐾';
+      hubCameraStatus.textContent = handsList.length >= 2 ? '両手を検出中 🐾🐾' : '手を検出中 🐾';
       updateHandCursor();
       checkHubDwell();
     }else{
@@ -1094,12 +1148,15 @@ function onResults(results){
     }
 
     activeCtx.fillStyle = 'rgba(212,175,55,.8)';
-    lm.forEach(p=>{
-      const px = (1 - p.x) * activeCanvas.width;
-      const py = p.y * activeCanvas.height;
-      activeCtx.beginPath(); activeCtx.arc(px, py, 3, 0, Math.PI*2); activeCtx.fill();
+    handsList.forEach(h=>{
+      h.lm.forEach(p=>{
+        const px = (1 - p.x) * activeCanvas.width;
+        const py = p.y * activeCanvas.height;
+        activeCtx.beginPath(); activeCtx.arc(px, py, 3, 0, Math.PI*2); activeCtx.fill();
+      });
     });
   }else{
+    handsList = [];
     if(Date.now() - lastHandSeen > 800){
       if(onHubScreen){
         hubCameraStatus.textContent = '手が見つかりません。カメラに手をかざしてください';
@@ -1119,7 +1176,7 @@ async function startCameraOnly(){
   try{
     if(!hands){
       hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-      hands.setOptions({ maxNumHands:1, modelComplexity:0, minDetectionConfidence:0.6, minTrackingConfidence:0.5 });
+      hands.setOptions({ maxNumHands:2, modelComplexity:0, minDetectionConfidence:0.6, minTrackingConfidence:0.5 });
       hands.onResults(onResults);
     }
     stream = await navigator.mediaDevices.getUserMedia({
@@ -1418,6 +1475,141 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       if(shaken) triggerShake();
     },
     onTick(){ updateFallingYurashi(); },
+  });
+})();
+
+/* ============================================================
+   プログラム: てにゃーカヌー
+   ============================================================ */
+(function(){
+  const CANOE_Y = 82; // カヌーのy位置(%、固定)
+  const OBSTACLE_SPEED = 0.45; // %/tick
+  const HIT_RADIUS_X = 9; // %
+  const SPAWN_CHANCE = 0.045; // tickごとの出現確率
+
+  const RIVER_OBJS = {
+    rock:  { emoji:'🪨', kind:'obstacle' },
+    fish:  { emoji:'🐟', kind:'item' },
+    leaf:  { emoji:'🍃', kind:'item' },
+  };
+  const ROCK_WEIGHT = 3, ITEM_WEIGHT = 2; // rock: item = 3:2くらいの出現比率
+
+  let canoeEl, riverLayerEl, splashEl;
+  let canoeX = 50;
+  let objects = []; // {type, x, y, el}
+  // 手ごとに独立した「漕ぎ」履歴を持つ(片手の時はindex0だけ使う、両手の時はindex0,1両方)
+  let paddleYHistoryByHand = [[], []];
+  let lastPaddleAtByHand = [0, 0];
+  const PADDLE_WINDOW_MS = 500;
+  const PADDLE_DROP_PCT = 12; // この割合以上、短時間でYが下がったら1回の漕ぎと判定
+  const PADDLE_COOLDOWN_MS = 350;
+
+  function pickObjType(){
+    const r = Math.random() * (ROCK_WEIGHT + ITEM_WEIGHT*2);
+    if(r < ROCK_WEIGHT) return 'rock';
+    if(r < ROCK_WEIGHT + ITEM_WEIGHT) return 'fish';
+    return 'leaf';
+  }
+
+  function spawnObject(){
+    const type = pickObjType();
+    const x = 15 + Math.random()*70;
+    const el = document.createElement('div');
+    el.className = 'river-obj';
+    el.textContent = RIVER_OBJS[type].emoji;
+    el.style.left = x+'%'; el.style.top = '-6%';
+    riverLayerEl.appendChild(el);
+    objects.push({ type, x, y:-6, el });
+  }
+
+  // 片手なら「その手が操縦もパドルも兼用」、両手なら「中央位置で操縦、どちらの手のひと漕ぎも検知」
+  function updateCanoeFromHands(){
+    if(handsList.length === 0) return;
+    const xs = handsList.map(h=>h.x);
+    const avgX = xs.reduce((a,b)=>a+b,0) / xs.length;
+    canoeX = Math.max(8, Math.min(92, avgX));
+    canoeEl.style.left = canoeX+'%';
+    handsList.slice(0,2).forEach((h,i)=>{
+      if(checkPaddleStrokeForHand(i, h.y)) showPaddleSplash();
+    });
+  }
+
+  function checkPaddleStrokeForHand(idx, y){
+    const now = Date.now();
+    const hist = paddleYHistoryByHand[idx];
+    hist.push({ y, t: now });
+    paddleYHistoryByHand[idx] = hist.filter(s => now - s.t <= PADDLE_WINDOW_MS);
+    if(paddleYHistoryByHand[idx].length < 2) return false;
+    const oldest = paddleYHistoryByHand[idx][0];
+    const drop = y - oldest.y;
+    if(drop >= PADDLE_DROP_PCT && (now - lastPaddleAtByHand[idx]) > PADDLE_COOLDOWN_MS){
+      lastPaddleAtByHand[idx] = now;
+      paddleYHistoryByHand[idx] = [];
+      return true;
+    }
+    return false;
+  }
+
+  function showPaddleSplash(){
+    splashEl.style.left = canoeX+'%';
+    splashEl.style.top = (CANOE_Y+6)+'%';
+    splashEl.textContent = '💦';
+    splashEl.classList.add('show');
+    setTimeout(()=> splashEl.classList.remove('show'), 300);
+  }
+
+  function updateRiver(){
+    for(let i=objects.length-1; i>=0; i--){
+      const o = objects[i];
+      o.y += OBSTACLE_SPEED;
+      o.el.style.top = o.y+'%';
+      if(Math.abs(o.y - CANOE_Y) < 6 && Math.abs(o.x - canoeX) < HIT_RADIUS_X){
+        if(RIVER_OBJS[o.type].kind === 'obstacle'){
+          onMiss('岩にぶつかった!');
+        }else{
+          onSuccess();
+          statusEl.textContent = RIVER_OBJS[o.type].emoji + ' ゲット!';
+        }
+        o.el.remove();
+        objects.splice(i,1);
+        continue;
+      }
+      if(o.y > 106){
+        o.el.remove();
+        objects.splice(i,1);
+      }
+    }
+    if(Math.random() < SPAWN_CHANCE) spawnObject();
+  }
+
+  registerProgram('canoe', {
+    title: '🛶 てにゃーカヌー',
+    introHtml: 'カメラを使って、手の位置でカヌーを操縦します。<br>手を上下に振って漕ぎながら、岩を避けて魚をゲット!<br>両手でも片手でも遊べます。<br>カメラへのアクセスを許可してください。',
+    layerHtml: `
+      <div class="river-area"></div>
+      <div id="canoeRiverLayer"></div>
+      <div class="canoe-el" id="canoeEl">🛶</div>
+      <div class="paddle-splash" id="paddleSplash"></div>
+    `,
+    setup(){
+      canoeEl = document.getElementById('canoeEl');
+      riverLayerEl = document.getElementById('canoeRiverLayer');
+      splashEl = document.getElementById('paddleSplash');
+    },
+    start(){
+      canoeX = 50;
+      canoeEl.style.left = '50%';
+      canoeEl.style.top = CANOE_Y+'%';
+      objects.forEach(o=>o.el.remove());
+      objects = [];
+      paddleYHistoryByHand = [[], []];
+      lastPaddleAtByHand = [0, 0];
+    },
+    reset(){ this.start(); },
+    onHand(){
+      updateCanoeFromHands();
+    },
+    onTick(){ updateRiver(); },
   });
 })();
 
