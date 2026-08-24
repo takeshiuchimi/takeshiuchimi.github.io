@@ -1439,7 +1439,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     introHtml: 'カメラを使って、手の動きで果物をもぎ取ります。<br>60秒でどれだけかごに入れられるか挑戦!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       ${FOREST_BG_HTML}
-      <div class="tree-area">\${TREE_SVG}</div>
+      <div class="tree-area">${TREE_SVG}</div>
       <div id="mogiFruitsLayer"></div>
       <div class="basket-row" id="mogiBasketRow"></div>
       <div class="held-fruit-mogi" id="mogiHeldFruit" style="position:absolute;font-size:26px;transform:translate(-50%,-120%);pointer-events:none;z-index:4;"></div>
@@ -1522,7 +1522,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     introHtml: 'カメラを使って、手を左右に振って木を揺らします。<br>落ちてきた実を手でキャッチ!60秒で何個キャッチできるか挑戦。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       ${FOREST_BG_HTML}
-      <div class="tree-area">\${TREE_SVG}</div>
+      <div class="tree-area">${TREE_SVG}</div>
       <div id="yurashiFruitsLayer"></div>
       <div class="net-area">🧺</div>
       <div class="shake-gauge"><div class="shake-gauge-fill" id="yurashiShakeGaugeFill"></div></div>
