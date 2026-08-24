@@ -755,7 +755,7 @@ function respawnAllFruitsInto(layerEl){
 }
 
 // ---- 共通ゲーム状態 ----
-const GAME_SECONDS = 30;
+const GAME_SECONDS = 30; // デフォルトの制限時間(秒)。プログラムごとに durationSec で上書き可能
 let handX = 50, handY = 50;
 let handsList = []; // 検出された全ての手(x昇順)。要素: {x,y,open,lm}
 let handOpen = true, prevHandOpen = true;
@@ -866,7 +866,9 @@ function endGame(){
 }
 
 function startTimer(){
-  timeLeft = GAME_SECONDS;
+  const def = PROGRAMS[currentProgramKey];
+  const duration = (def && def.durationSec) || GAME_SECONDS;
+  timeLeft = duration;
   timerDisplayEl.textContent = '⏱ ' + timeLeft;
   timerInterval = setInterval(()=>{
     timeLeft--;
@@ -1388,7 +1390,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   registerProgram('mogi', {
     title: '🍎 てにゃーもぎ',
-    introHtml: 'カメラを使って、手の動きで果物をもぎ取ります。<br>30秒でどれだけかごに入れられるか挑戦!<br>カメラへのアクセスを許可してください。',
+    durationSec: 60,
+    introHtml: 'カメラを使って、手の動きで果物をもぎ取ります。<br>60秒でどれだけかごに入れられるか挑戦!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="tree-area">${TREE_SVG}</div>
       <div id="mogiFruitsLayer"></div>
@@ -1469,7 +1472,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   registerProgram('yurashi', {
     title: '🌳 てにゃーゆらし',
-    introHtml: 'カメラを使って、手を左右に振って木を揺らします。<br>落ちてきた実を手でキャッチ!30秒で何個キャッチできるか挑戦。<br>カメラへのアクセスを許可してください。',
+    durationSec: 60,
+    introHtml: 'カメラを使って、手を左右に振って木を揺らします。<br>落ちてきた実を手でキャッチ!60秒で何個キャッチできるか挑戦。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="tree-area">${TREE_SVG}</div>
       <div id="yurashiFruitsLayer"></div>
