@@ -222,6 +222,21 @@
     background:linear-gradient(180deg, #7EC8E3, #4A9BC9);
     pointer-events:none;
   }
+
+  /* ---- もぎ・ゆらし共通: カメラを隠す森の背景(手だけ見えればいい) ---- */
+  .forest-bg{
+    position:absolute; inset:0; pointer-events:none; overflow:hidden;
+    background:linear-gradient(180deg, #FFFDF6 0%, #FFFDF6 74%, #A8D68A 74%, #8FC470 100%);
+  }
+  .forest-bg .sun{ position:absolute; top:5%; right:8%; font-size:34px; opacity:.9; }
+  .forest-bg .cloud{ position:absolute; font-size:26px; opacity:.85; }
+  .forest-bg .cloud.c1{ top:8%; left:6%; }
+  .forest-bg .cloud.c2{ top:16%; left:38%; font-size:20px; opacity:.7; }
+  .forest-bg .flower{ position:absolute; bottom:3%; font-size:18px; }
+  .forest-bg .flower.f1{ left:10%; }
+  .forest-bg .flower.f2{ left:32%; bottom:2%; }
+  .forest-bg .flower.f3{ left:58%; }
+  .forest-bg .flower.f4{ left:80%; bottom:2%; }
   .river-lane{
     position:absolute; top:0; bottom:0; width:2px;
     background:rgba(255,255,255,.25);
@@ -690,16 +705,21 @@ document.getElementById('mascotSlot').innerHTML = MASCOT_CAT_SVG;
 document.getElementById('versionBadge').textContent = SITE_DATA.meta.version;
 document.getElementById('devBuildBadge').textContent = SITE_DATA.meta.buildDate;
 
-const PAW_OPEN_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+const PAW_PAA_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="62" r="24" fill="var(--player-body)"/>
   <circle cx="26" cy="40" r="12" fill="var(--player-body)"/>
   <circle cx="50" cy="26" r="12" fill="var(--player-body)"/>
   <circle cx="74" cy="40" r="12" fill="var(--player-body)"/>
 </svg>`;
-const PAW_CLOSED_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+const PAW_CHOKI_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="62" r="24" fill="var(--player-body)"/>
+  <circle cx="38" cy="28" r="12" fill="var(--player-body)"/>
+  <circle cx="62" cy="28" r="12" fill="var(--player-body)"/>
+</svg>`;
+const PAW_GUU_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="55" r="30" fill="var(--player-accent)"/>
 </svg>`;
-handCursorEl.innerHTML = PAW_OPEN_SVG;
+handCursorEl.innerHTML = PAW_PAA_SVG;
 
 // ---- 木のビジュアル(幹+葉っぱの塊) ----
 const TREE_SVG = `<svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
@@ -720,6 +740,19 @@ function basketSvg(){
     <path d="M45 40 Q60 14 75 40" fill="none" stroke="#6B5335" stroke-width="5" stroke-linecap="round"/>
   </svg>`;
 }
+
+// ---- もぎ・ゆらし共通: カメラを隠す森の背景 ----
+const FOREST_BG_HTML = `
+  <div class="forest-bg">
+    <div class="sun">☀️</div>
+    <div class="cloud c1">☁️</div>
+    <div class="cloud c2">☁️</div>
+    <div class="flower f1">🌼</div>
+    <div class="flower f2">🌸</div>
+    <div class="flower f3">🌼</div>
+    <div class="flower f4">🌸</div>
+  </div>
+`;
 
 // ---- 果物の種類・木への出現ロジック(もぎ・ゆらし共通) ----
 const FRUITS = {
@@ -759,6 +792,7 @@ const GAME_SECONDS = 30; // デフォルトの制限時間(秒)。プログラ�
 let handX = 50, handY = 50;
 let handsList = []; // 検出された全ての手(x昇順)。要素: {x,y,open,lm}
 let handOpen = true, prevHandOpen = true;
+let handShape = 'paa'; // 'guu'|'choki'|'paa'
 let lastHandSeen = 0;
 let running = false, gameEnded = false, cameraActive = false;
 let timeLeft = GAME_SECONDS;
@@ -899,11 +933,16 @@ function makeFallingEl(emoji, x, y){
   return el;
 }
 
+function pawSvgForShape(shape){
+  if(shape === 'choki') return PAW_CHOKI_SVG;
+  if(shape === 'guu') return PAW_GUU_SVG;
+  return PAW_PAA_SVG;
+}
 function updateHandCursor(){
   const target = onHubScreen ? hubHandCursorEl : handCursorEl;
   target.style.left = handX + '%';
   target.style.top = handY + '%';
-  target.innerHTML = handOpen ? PAW_OPEN_SVG : PAW_CLOSED_SVG;
+  target.innerHTML = pawSvgForShape(handShape);
 
   const target2 = onHubScreen ? hubHandCursor2El : handCursor2El;
   if(handsList.length >= 2){
@@ -911,23 +950,26 @@ function updateHandCursor(){
     target2.classList.remove('hidden');
     target2.style.left = h2.x + '%';
     target2.style.top = h2.y + '%';
-    target2.innerHTML = h2.open ? PAW_OPEN_SVG : PAW_CLOSED_SVG;
+    target2.innerHTML = pawSvgForShape(h2.shape);
   }else{
     target2.classList.add('hidden');
   }
 }
 
-function countExtendedFingers(lm){
+function classifyHandShape(lm){
   const wrist = lm[0];
-  const pairs = [[8,6],[12,10],[16,14],[20,18]];
-  let extended = 0;
-  pairs.forEach(([tipIdx, pipIdx])=>{
+  const pairs = [[8,6],[12,10],[16,14],[20,18]]; // 人差し指・中指・薬指・小指
+  const extended = pairs.map(([tipIdx, pipIdx])=>{
     const tip = lm[tipIdx], pip = lm[pipIdx];
     const dTip = Math.hypot(tip.x-wrist.x, tip.y-wrist.y);
     const dPip = Math.hypot(pip.x-wrist.x, pip.y-wrist.y);
-    if(dTip > dPip * 1.15) extended++;
+    return dTip > dPip * 1.15;
   });
-  return extended;
+  const count = extended.filter(Boolean).length;
+  // チョキ: 人差し指・中指だけが伸びていて、薬指・小指は曲がっている
+  if(extended[0] && extended[1] && !extended[2] && !extended[3]) return 'choki';
+  if(count >= 3) return 'paa';
+  return 'guu';
 }
 
 function updateShakeDetection(){
@@ -1138,10 +1180,12 @@ function onResults(results){
     // 検出された手を全てhandsListに格納(X座標順に並べ、左右がブレにくくする)
     handsList = results.multiHandLandmarks.map(lm=>{
       const tip = lm[9];
+      const shape = classifyHandShape(lm); // 'guu'|'choki'|'paa'
       return {
         x: (1 - tip.x) * 100,
         y: tip.y * 100,
-        open: countExtendedFingers(lm) >= 3,
+        shape,
+        open: shape === 'paa', // 後方互換(グリップ判定はパー=開いている扱い)
         lm,
       };
     }).sort((a,b)=> a.x - b.x);
@@ -1152,6 +1196,7 @@ function onResults(results){
     handY = primary.y;
     prevHandOpen = handOpen;
     handOpen = primary.open;
+    handShape = primary.shape;
 
     if(onHubScreen){
       hubCameraStatus.classList.remove('hidden');
@@ -1393,7 +1438,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     durationSec: 60,
     introHtml: 'カメラを使って、手の動きで果物をもぎ取ります。<br>60秒でどれだけかごに入れられるか挑戦!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
-      <div class="tree-area">${TREE_SVG}</div>
+      ${FOREST_BG_HTML}
+      <div class="tree-area">\${TREE_SVG}</div>
       <div id="mogiFruitsLayer"></div>
       <div class="basket-row" id="mogiBasketRow"></div>
       <div class="held-fruit-mogi" id="mogiHeldFruit" style="position:absolute;font-size:26px;transform:translate(-50%,-120%);pointer-events:none;z-index:4;"></div>
@@ -1475,7 +1521,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     durationSec: 60,
     introHtml: 'カメラを使って、手を左右に振って木を揺らします。<br>落ちてきた実を手でキャッチ!60秒で何個キャッチできるか挑戦。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
-      <div class="tree-area">${TREE_SVG}</div>
+      ${FOREST_BG_HTML}
+      <div class="tree-area">\${TREE_SVG}</div>
       <div id="yurashiFruitsLayer"></div>
       <div class="net-area">🧺</div>
       <div class="shake-gauge"><div class="shake-gauge-fill" id="yurashiShakeGaugeFill"></div></div>
