@@ -793,6 +793,7 @@ let handX = 50, handY = 50;
 let handsList = []; // 検出された全ての手(x昇順)。要素: {x,y,open,lm}
 let handOpen = true, prevHandOpen = true;
 let handShape = 'paa'; // 'guu'|'choki'|'paa'
+let prevHandsShapes = []; // 前フレームの各手の形状(handsListとindexが対応)
 let lastHandSeen = 0;
 let running = false, gameEnded = false, cameraActive = false;
 let timeLeft = GAME_SECONDS;
@@ -802,7 +803,7 @@ let fallingFruits = []; // {type,x,y,vy,el}
 const GRAVITY = 0.55;
 
 let hands, stream;
-let handXHistory = [], shakeReversals = 0, lastShakeAt = 0;
+let handXHistoryByHand = [[], []], shakeReversals = 0, lastShakeAt = 0;
 const SHAKE_REQUIRED = 4, SHAKE_WINDOW_MS = 900, SHAKE_COOLDOWN_MS = 900, SHAKE_NOISE_THRESHOLD = 2.5;
 
 function distPct(x1,y1,x2,y2){ const dx=x1-x2, dy=y1-y2; return Math.sqrt(dx*dx+dy*dy); }
@@ -916,7 +917,7 @@ function resetCommonState(){
   gameEnded = false;
   fallingFruits.forEach(ff=>ff.el && ff.el.remove());
   fallingFruits = [];
-  handXHistory = []; shakeReversals = 0;
+  handXHistoryByHand = [[], []]; shakeReversals = 0;
   comboDisplayEl.textContent = '';
   scoreDisplayEl.textContent = '0点';
   catReactionEl.textContent = '😺';
@@ -975,22 +976,35 @@ function classifyHandShape(lm){
 function updateShakeDetection(){
   if(gameEnded) return null;
   const now = Date.now();
-  handXHistory.push({ x: handX, t: now });
-  handXHistory = handXHistory.filter(s => now - s.t <= SHAKE_WINDOW_MS);
-  let reversals = 0, dir = 0;
-  for(let i=1;i<handXHistory.length;i++){
-    const delta = handXHistory[i].x - handXHistory[i-1].x;
-    if(Math.abs(delta) < SHAKE_NOISE_THRESHOLD) continue;
-    const newDir = delta > 0 ? 1 : -1;
-    if(dir !== 0 && newDir !== dir) reversals++;
-    dir = newDir;
-  }
-  shakeReversals = reversals;
-  const progress = Math.min(1, reversals / SHAKE_REQUIRED);
+  const hands = handsList.length > 0 ? handsList.slice(0,2) : [{x:handX}];
+
+  let maxProgress = 0, triggered = false;
+  hands.forEach((h, idx)=>{
+    const hist = handXHistoryByHand[idx] || (handXHistoryByHand[idx] = []);
+    hist.push({ x: h.x, t: now });
+    handXHistoryByHand[idx] = hist.filter(s => now - s.t <= SHAKE_WINDOW_MS);
+    let reversals = 0, dir = 0;
+    const arr = handXHistoryByHand[idx];
+    for(let i=1;i<arr.length;i++){
+      const delta = arr[i].x - arr[i-1].x;
+      if(Math.abs(delta) < SHAKE_NOISE_THRESHOLD) continue;
+      const newDir = delta > 0 ? 1 : -1;
+      if(dir !== 0 && newDir !== dir) reversals++;
+      dir = newDir;
+    }
+    maxProgress = Math.max(maxProgress, reversals / SHAKE_REQUIRED);
+    if(reversals >= SHAKE_REQUIRED && (now - lastShakeAt) > SHAKE_COOLDOWN_MS){
+      triggered = true;
+      handXHistoryByHand[idx] = [];
+    }
+  });
+
+  shakeReversals = Math.round(maxProgress * SHAKE_REQUIRED);
+  const progress = Math.min(1, maxProgress);
   if(triggered_shakeGaugeFill) triggered_shakeGaugeFill.style.width = (progress*100) + '%';
-  if(reversals >= SHAKE_REQUIRED && (now - lastShakeAt) > SHAKE_COOLDOWN_MS){
+
+  if(triggered){
     lastShakeAt = now;
-    handXHistory = [];
     if(triggered_shakeGaugeFill) triggered_shakeGaugeFill.style.width = '0%';
     return true; // 揺れが発生した合図。呼び出し側(各プログラム)が処理する
   }
@@ -1190,6 +1204,12 @@ function onResults(results){
       };
     }).sort((a,b)=> a.x - b.x);
 
+    // 各手に「1フレーム前の自分の形状」を付与(位置の並び順=同じ手という単純な対応)
+    handsList.forEach((h,i)=>{
+      h.prevShape = prevHandsShapes[i] || h.shape;
+    });
+    prevHandsShapes = handsList.map(h=>h.shape);
+
     // 後方互換: 1本目(画面向かって左側)の手をhandX/handY/handOpenとして扱う
     const primary = handsList[0];
     handX = primary.x;
@@ -1220,6 +1240,7 @@ function onResults(results){
     });
   }else{
     handsList = [];
+    prevHandsShapes = [];
     if(Date.now() - lastHandSeen > 800){
       if(onHubScreen){
         hubCameraStatus.textContent = '手が見つかりません。カメラに手をかざしてください';
@@ -1333,10 +1354,10 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
    ============================================================ */
 (function(){
   let fruits = [];
-  let holding = null;
+  let holdingByHand = [null, null]; // 各手が今もいでいる果物の種類
   let baskets = {};
   let basketCounts = { apple:0, mikan:0, grape:0 };
-  let fruitsLayerEl, basketRowEl, heldFruitEl;
+  let fruitsLayerEl, basketRowEl, heldFruitEl, heldFruitEl2;
 
   function respawnAllFruits(){
     fruits = respawnAllFruitsInto(fruitsLayerEl);
@@ -1366,28 +1387,30 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     };
   }
 
-  function tryGrab(){
-    if(holding) return;
+  function tryGrab(idx, hx, hy){
+    if(holdingByHand[idx]) return;
     for(const f of fruits){
       if(f.collected) continue;
-      if(distPct(handX, handY, f.x, f.y) < 9){
-        holding = f.type;
+      if(distPct(hx, hy, f.x, f.y) < 9){
+        holdingByHand[idx] = f.type;
         f.collected = true;
         f.el.classList.add('collected');
-        heldFruitEl.textContent = FRUITS[f.type].emoji;
-        heldFruitEl.style.left = handX+'%'; heldFruitEl.style.top = handY+'%';
+        const hel = idx===0 ? heldFruitEl : heldFruitEl2;
+        hel.textContent = FRUITS[f.type].emoji;
+        hel.style.left = hx+'%'; hel.style.top = hy+'%';
         statusEl.textContent = FRUITS[f.type].label + ' をもいだ!パーでかごへ';
         return;
       }
     }
   }
 
-  function tryRelease(){
-    if(!holding) return;
-    const type = holding;
-    fallingFruits.push({ type, x:handX, y:handY, vy:0, el: makeFallingEl(FRUITS[type].emoji, handX, handY) });
-    holding = null;
-    heldFruitEl.textContent = '';
+  function tryRelease(idx, hx, hy){
+    if(!holdingByHand[idx]) return;
+    const type = holdingByHand[idx];
+    fallingFruits.push({ type, x:hx, y:hy, vy:0, el: makeFallingEl(FRUITS[type].emoji, hx, hy) });
+    holdingByHand[idx] = null;
+    const hel = idx===0 ? heldFruitEl : heldFruitEl2;
+    hel.textContent = '';
   }
 
   function updateFallingMogi(){
@@ -1443,26 +1466,34 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div id="mogiFruitsLayer"></div>
       <div class="basket-row" id="mogiBasketRow"></div>
       <div class="held-fruit-mogi" id="mogiHeldFruit" style="position:absolute;font-size:26px;transform:translate(-50%,-120%);pointer-events:none;z-index:4;"></div>
+      <div class="held-fruit-mogi" id="mogiHeldFruit2" style="position:absolute;font-size:26px;transform:translate(-50%,-120%);pointer-events:none;z-index:4;"></div>
     `,
     setup(){
       fruitsLayerEl = document.getElementById('mogiFruitsLayer');
       basketRowEl = document.getElementById('mogiBasketRow');
       heldFruitEl = document.getElementById('mogiHeldFruit');
+      heldFruitEl2 = document.getElementById('mogiHeldFruit2');
     },
     start(){
-      holding = null;
+      holdingByHand = [null, null];
       buildBaskets();
       respawnAllFruits();
     },
     reset(){
-      holding = null;
+      holdingByHand = [null, null];
       heldFruitEl.textContent = '';
+      heldFruitEl2.textContent = '';
       this.start();
     },
     onHand(){
-      if(!prevHandOpen && handOpen) tryRelease();
-      else if(prevHandOpen && !handOpen) tryGrab();
-      if(holding){ heldFruitEl.style.left = handX+'%'; heldFruitEl.style.top = handY+'%'; }
+      handsList.slice(0,2).forEach((h,i)=>{
+        if(h.prevShape !== 'paa' && h.shape === 'paa') tryRelease(i, h.x, h.y);
+        else if(h.prevShape === 'paa' && h.shape !== 'paa') tryGrab(i, h.x, h.y);
+        if(holdingByHand[i]){
+          const hel = i===0 ? heldFruitEl : heldFruitEl2;
+          hel.style.left = h.x+'%'; hel.style.top = h.y+'%';
+        }
+      });
     },
     onTick(){ updateFallingMogi(); },
   });
@@ -1500,7 +1531,9 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       ff.vy += GRAVITY; ff.y += ff.vy;
       ff.el.style.left = ff.x+'%'; ff.el.style.top = ff.y+'%';
       let resolved = false;
-      if(distPct(handX, handY, ff.x, ff.y) < CATCH_RADIUS){
+      // 両手のうち、どちらか近い方でキャッチできればOK
+      const caught = handsList.some(h => distPct(h.x, h.y, ff.x, ff.y) < CATCH_RADIUS);
+      if(caught){
         onSuccess();
         statusEl.textContent = 'キャッチ成功!';
         resolved = true;
