@@ -1043,13 +1043,14 @@ function checkGameDwell(){
 
   const stageRect = stageEl.getBoundingClientRect();
   let hovered = null;
+  const hands = handsList.length > 0 ? handsList : [{x:handX, y:handY}];
   candidates.forEach(c=>{
     const rect = c.btn.getBoundingClientRect();
     const bx = ((rect.left + rect.width/2 - stageRect.left) / stageRect.width) * 100;
     const by = ((rect.top + rect.height/2 - stageRect.top) / stageRect.height) * 100;
     const bw = (rect.width / stageRect.width) * 100;
-    const dist = distPct(handX, handY, bx, by);
-    if(dist < bw/2) hovered = c;
+    const onThisBtn = hands.some(h => distPct(h.x, h.y, bx, by) < bw/2);
+    if(onThisBtn) hovered = c;
   });
 
   if(hovered){
@@ -1098,13 +1099,15 @@ function checkHubDwell(){
   const edgeLeft = document.getElementById('cardEdgeLeft');
   const edgeRight = document.getElementById('cardEdgeRight');
   let edgeHovered = null;
+  const hands = handsList.length > 0 ? handsList : [{x:handX, y:handY}];
   [['left',edgeLeft,-1],['right',edgeRight,1]].forEach(([side,el,delta])=>{
     const rect = el.getBoundingClientRect();
     const cx = ((rect.left + rect.width/2 - hubRect.left) / hubRect.width) * 100;
     const cy = ((rect.top + rect.height/2 - hubRect.top) / hubRect.height) * 100;
     const cw = (rect.width / hubRect.width) * 100;
     const ch = (rect.height / hubRect.height) * 100;
-    if(Math.abs(handX-cx) < cw/2 && Math.abs(handY-cy) < ch/2){
+    const onThisEdge = hands.some(h => Math.abs(h.x-cx) < cw/2 && Math.abs(h.y-cy) < ch/2);
+    if(onThisEdge){
       edgeHovered = { side, el, delta };
     }
   });
@@ -1138,9 +1141,9 @@ function checkHubDwell(){
     const cy = ((rect.top + rect.height/2 - hubRect.top) / hubRect.height) * 100;
     const cw = (rect.width / hubRect.width) * 100;
     const ch = (rect.height / hubRect.height) * 100;
-    // 手の位置がカードの矩形内にあるか(円形近似ではなく矩形で判定)
-    const hx = handX, hy = handY;
-    if(Math.abs(hx-cx) < cw/2 && Math.abs(hy-cy) < ch/2){
+    // 手の位置がカードの矩形内にあるか(円形近似ではなく矩形で判定)。両手のどちらでもOK
+    const onThisCard = hands.some(h => Math.abs(h.x-cx) < cw/2 && Math.abs(h.y-cy) < ch/2);
+    if(onThisCard){
       hovered = card;
     }
   });
