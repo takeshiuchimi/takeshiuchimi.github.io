@@ -327,7 +327,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0829-2222"
+    "buildDate": "0829-2236"
   },
   "about": {
     "paragraphs": [
@@ -492,6 +492,10 @@
             <span class="dwell-label">一覧に戻る<br><small>手を乗せる or タップ</small></span>
           </div>
         </div>
+      </div>
+      <div class="overlay-msg hidden" id="cameraDisconnectedOverlay">
+        <div>📷 カメラが切断されました。<br>端末がスリープしたか、他のアプリに切り替わった可能性があります。</div>
+        <button class="btn" id="reconnectCameraBtn" style="flex:none;padding:12px 24px;">カメラを再接続する</button>
       </div>
     </div>
     <div class="status" id="status">&nbsp;</div>
@@ -1266,6 +1270,7 @@ function onResults(results){
 // ハブ画面で1回だけ呼ぶ: カメラ+MediaPipeを起動する(プログラムはまだ始めない)
 async function startCameraOnly(){
   hubCameraBtn.disabled = true;
+  hubCameraMsg.classList.remove('hidden');
   hubCameraMsg.textContent = 'カメラを起動しています…';
   try{
     if(!hands){
@@ -1276,6 +1281,10 @@ async function startCameraOnly(){
     stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode:'user', width:{ideal:480}, height:{ideal:640} }, audio:false,
     });
+    // 端末スリープや他アプリへの切り替えなどでカメラが切断された時に検知する
+    stream.getVideoTracks().forEach(track=>{
+      track.addEventListener('ended', onCameraDisconnected);
+    });
     hubVideoEl.srcObject = stream;
     await hubVideoEl.play();
     videoEl.srcObject = stream;
@@ -1283,6 +1292,8 @@ async function startCameraOnly(){
     cameraActive = true;
     hubCameraMsg.classList.add('hidden');
     hubCameraBtn.textContent = '✅ カメラ起動ずみ';
+    hubCameraBtn.disabled = false;
+    cameraDisconnectedOverlay.classList.add('hidden');
 
     async function frameLoop(){
       if(!cameraActive) return;
@@ -1291,13 +1302,50 @@ async function startCameraOnly(){
       requestAnimationFrame(frameLoop);
     }
     frameLoop();
-    setInterval(()=>{ const def = PROGRAMS[currentProgramKey]; if(running && def && def.onTick) def.onTick(); }, 30);
+    if(!tickIntervalStarted){
+      tickIntervalStarted = true;
+      setInterval(()=>{ const def = PROGRAMS[currentProgramKey]; if(running && def && def.onTick) def.onTick(); }, 30);
+    }
   }catch(e){
     hubCameraMsg.classList.remove('hidden');
     hubCameraMsg.textContent = 'カメラを開始できませんでした: ' + e.message;
     hubCameraBtn.disabled = false;
   }
 }
+let tickIntervalStarted = false;
+
+// ---- カメラが切断された時の検知・案内・再接続 ----
+const cameraDisconnectedOverlay = document.getElementById('cameraDisconnectedOverlay');
+function onCameraDisconnected(){
+  if(!cameraActive) return; // 既に切断処理済みなら二重に走らせない
+  cameraActive = false;
+  hubCameraBtn.textContent = '📷 カメラを再接続する';
+  hubCameraBtn.disabled = false;
+  hubCameraMsg.classList.remove('hidden');
+  hubCameraMsg.textContent = 'カメラが切断されました。もう一度カメラをオンにしてください。';
+  if(!onHubScreen){
+    // ゲーム画面にいる時は、その場で再接続できるオーバーレイを出す
+    cameraDisconnectedOverlay.classList.remove('hidden');
+  }
+}
+document.getElementById('reconnectCameraBtn').addEventListener('click', ()=>{
+  cameraDisconnectedOverlay.classList.add('hidden');
+  startCameraOnly();
+});
+
+// タブが非表示→表示に戻った時、カメラのトラックが実際に生きているか確認する
+// (端末スリープ・他アプリ切り替え等で、気づかないうちに切断されているケースに対応)
+if(typeof document.addEventListener === 'function'){
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState !== 'visible') return;
+    if(!stream) return;
+    const stillLive = stream.getVideoTracks().some(t => t.readyState === 'live');
+    if(!stillLive && cameraActive){
+      onCameraDisconnected();
+    }
+  });
+}
+
 hubCameraBtn.addEventListener('click', startCameraOnly);
 // ページを開いたら自動でカメラ起動を試みる(ブラウザの許可ダイアログ自体は省略できないが、
 // 「ボタンを押す」という1手順は省ける。拒否された場合はボタンで再試行できる)
