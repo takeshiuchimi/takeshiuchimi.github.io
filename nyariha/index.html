@@ -315,13 +315,11 @@
   }
   #hubCanvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1; }
   .hub-camera-msg{
-    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    z-index:2; color:#fff; font-size:13px; text-align:center; padding:14px;
-    background:rgba(0,0,0,.5); border-radius:12px; width:80%;
+    color:var(--brown-deep); font-size:12px; text-align:center; padding:8px 10px;
+    background:var(--cream-deep); border-radius:10px; margin-bottom:8px; line-height:1.6;
   }
   .hub-camera-status{
-    position:absolute; top:6px; left:0; right:0; text-align:center;
-    font-size:11px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.8); z-index:3;
+    text-align:center; font-size:11px; color:var(--brown-deep); margin-bottom:8px;
   }
   .hub-content{
     position:relative; z-index:2; padding:10px;
@@ -336,7 +334,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0830-2036"
+    "buildDate": "0830-2104"
   },
   "about": {
     "paragraphs": [
@@ -390,10 +388,6 @@
   <div id="screen-hub" class="card hub-with-camera">
     <video id="hubVideo" playsinline muted></video>
     <canvas id="hubCanvas"></canvas>
-    <div class="hub-camera-msg" id="hubCameraMsg">
-      まずカメラをオンにしてください。<br>手が映ると、それぞれのプログラムにそのまま入れます。
-    </div>
-    <div class="hub-camera-status hidden" id="hubCameraStatus">手を検出中</div>
     <div class="hand-cursor" id="hubHandCursor" style="z-index:5;"></div>
     <div class="hand-cursor hidden" id="hubHandCursor2" style="z-index:5;"></div>
 
@@ -409,6 +403,10 @@
       <div class="row" style="display:flex;gap:8px;margin-bottom:10px;">
         <button class="btn" id="hubCameraBtn" style="flex:1;">📷 カメラをオンにする</button>
       </div>
+      <div class="hub-camera-msg" id="hubCameraMsg">
+        まずカメラをオンにしてください。<br>手が映ると、それぞれのプログラムにそのまま入れます。
+      </div>
+      <div class="hub-camera-status hidden" id="hubCameraStatus">手を検出中</div>
 
       <div class="page-dots" id="pageDots"></div>
       <div class="card-pages-wrap" id="cardPagesWrap">
@@ -685,6 +683,7 @@ const hubHandCursorEl = document.getElementById('hubHandCursor');
 const hubHandCursor2El = document.getElementById('hubHandCursor2');
 const statusEl = document.getElementById('status');
 const startOverlay = document.getElementById('startOverlay');
+const gameHudEl = document.getElementById('gameHud');
 const startOverlayText = document.getElementById('startOverlayText');
 const resultOverlay = document.getElementById('resultOverlay');
 const catReactionEl = document.getElementById('catReaction');
@@ -922,6 +921,7 @@ function endGame(){
   gameEnded = true;
   running = false;
   clearInterval(timerInterval);
+  gameHudEl.classList.add('hidden');
   const r = ratingFor();
   document.getElementById('ratingStar').textContent = r.star;
   document.getElementById('ratingLabel').textContent = r.label;
@@ -1393,6 +1393,7 @@ startCameraOnly();
 // プログラム画面で「はじめる」を押した時: カメラは起動済み前提で、プログラムだけ開始する
 function startProgram(){
   startOverlay.classList.add('hidden');
+  gameHudEl.classList.remove('hidden');
   running = true;
   const def = PROGRAMS[currentProgramKey];
   def.start();
@@ -1413,6 +1414,7 @@ function openProgram(key){
   onHubScreen = false;
   document.getElementById('screen-hub').classList.add('hidden');
   document.getElementById('screen-game').classList.remove('hidden');
+  gameHudEl.classList.add('hidden');
   gameTitleEl.textContent = def.title;
   const itemData = FLAT_ITEMS.find(it=>it.key===key);
   const purposeHtml = itemData && itemData.purpose
