@@ -155,6 +155,10 @@
     background:rgba(0,0,0,.55); color:#fff; font-size:14px; z-index:5;
   }
   .rating-star{ font-size:44px; text-align:center; }
+  .purpose-box{
+    font-size:11px; line-height:1.6; text-align:left; opacity:.9;
+    background:rgba(255,255,255,.12); border-radius:8px; padding:8px 10px; margin-top:4px;
+  }
   .dwell-btn{
     position:relative; width:120px; height:120px; margin-top:6px;
     display:flex; align-items:center; justify-content:center; cursor:pointer;
@@ -337,7 +341,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0830-2011"
+    "buildDate": "0830-2025"
   },
   "about": {
     "paragraphs": [
@@ -368,11 +372,11 @@
   },
   "areas": [
     { "heading": "🌳 木のエリア", "items": [
-      { "key":"mogi", "icon":"🍎", "name":"てにゃーもぎ", "desc":"グーパーで実をもいで、かごに仕分け", "disabled": false },
-      { "key":"yurashi", "icon":"🌳", "name":"てにゃーゆらし", "desc":"左右に振って木を揺らし、実をキャッチ", "disabled": false }
+      { "key":"mogi", "icon":"🍎", "name":"てにゃーもぎ", "desc":"グーパーで実をもいで、かごに仕分け", "disabled": false, "purpose":"フルーツに手を伸ばし、手を握ってフルーツを取り、かごまで運んで手を開いて離します。遊びながら「握る・開く」という手指の動きに加え、手を上げる・下げる・左右に動かすといった上肢の動きを自然に引き出します。" },
+      { "key":"yurashi", "icon":"🌳", "name":"てにゃーゆらし", "desc":"上下左右に振って木を揺らし、実をキャッチ", "disabled": false, "purpose":"手を上下左右に動かして木を揺らし、落ちてくるフルーツに合わせて手を動かしてキャッチします。繰り返し手を動かすだけでなく、画面上のフルーツを目で追いながら、その位置に手を合わせる動きを引き出します。" }
     ]},
     { "heading": "🏞️ 川のエリア", "items": [
-      { "key":"canoe", "icon":"🛶", "name":"てにゃーカヌー", "desc":"手を左右に動かして操縦、上下に振って漕ごう", "disabled": false },
+      { "key":"canoe", "icon":"🛶", "name":"てにゃーカヌー", "desc":"手を左右に動かして操縦、上下に振って漕ごう", "disabled": false, "purpose":"手でパドルを握り、腕を上下に動かしてカヌーを漕ぎます。また、手を左右に動かすことで進む方向を調整します。カヌーを進めながら魚を取り、岩を避けることで、上肢の反復運動と方向に合わせた手の動きを自然に引き出します。" },
       { "key":"tsuri", "icon":"🎣", "name":"つり", "desc":"近日公開", "disabled": true }
     ]},
     { "heading": "⛰️ 山のエリア", "items": [
@@ -874,6 +878,19 @@ function comboMessage(){
   return null;
 }
 
+// ---- バイブレーション(ニャーズと同じ考え方: 意味ごとに関数を分ける) ----
+function vibrate(pattern){
+  try{ if(typeof navigator!=='undefined' && navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
+}
+function feedbackTap(){ vibrate([10]); }       // ドウェル選択が決まった瞬間などの軽いタップ
+function feedbackSuccess(){ vibrate([15,40,15]); } // かごに入った・キャッチできた等の成功
+function feedbackMiss(){ vibrate([60,40,80]); }    // 見逃した・岩にぶつかった等の失敗
+function feedbackResult(rating){ // ゲーム終了時、評価が高いほど華やかな振動にする
+  if(rating >= 4) vibrate([15,40,15,40,40]);
+  else if(rating >= 2) vibrate([30,30,30]);
+  else vibrate([60,40,80]);
+}
+
 function onSuccess(){
   combo++;
   bestCombo = Math.max(bestCombo, combo);
@@ -881,6 +898,7 @@ function onSuccess(){
   comboDisplayEl.textContent = combo>=2 ? combo+'コンボ' : '';
   scoreDisplayEl.textContent = totalSuccess + '点';
   catReact('happy');
+  feedbackSuccess();
   const msg = comboMessage();
   showCallout(msg || 'ナイス!');
 }
@@ -891,6 +909,7 @@ function onMiss(reason){
   comboDisplayEl.textContent = '';
   statusEl.textContent = reason;
   catReact('sad');
+  feedbackMiss();
 }
 
 function ratingFor(){
@@ -912,6 +931,7 @@ function endGame(){
   document.getElementById('ratingDetail').textContent =
     `成功 ${totalSuccess}個 ／ 最高コンボ ${bestCombo} ／ ミス ${totalMiss}回`;
   resultOverlay.classList.remove('hidden');
+  feedbackResult(r.star.length); // 星の数(1〜5)に応じて振動の華やかさを変える
 }
 
 function startTimer(){
@@ -990,22 +1010,28 @@ function classifyHandShape(lm){
 function updateShakeDetection(){
   if(gameEnded) return null;
   const now = Date.now();
-  const hands = handsList.length > 0 ? handsList.slice(0,2) : [{x:handX}];
+  const hands = handsList.length > 0 ? handsList.slice(0,2) : [{x:handX, y:handY}];
 
-  let maxProgress = 0, triggered = false;
-  hands.forEach((h, idx)=>{
-    const hist = handXHistoryByHand[idx] || (handXHistoryByHand[idx] = []);
-    hist.push({ x: h.x, t: now });
-    handXHistoryByHand[idx] = hist.filter(s => now - s.t <= SHAKE_WINDOW_MS);
+  function countReversals(arr, axis){
     let reversals = 0, dir = 0;
-    const arr = handXHistoryByHand[idx];
     for(let i=1;i<arr.length;i++){
-      const delta = arr[i].x - arr[i-1].x;
+      const delta = arr[i][axis] - arr[i-1][axis];
       if(Math.abs(delta) < SHAKE_NOISE_THRESHOLD) continue;
       const newDir = delta > 0 ? 1 : -1;
       if(dir !== 0 && newDir !== dir) reversals++;
       dir = newDir;
     }
+    return reversals;
+  }
+
+  let maxProgress = 0, triggered = false;
+  hands.forEach((h, idx)=>{
+    const hist = handXHistoryByHand[idx] || (handXHistoryByHand[idx] = []);
+    hist.push({ x: h.x, y: h.y, t: now });
+    handXHistoryByHand[idx] = hist.filter(s => now - s.t <= SHAKE_WINDOW_MS);
+    const arr = handXHistoryByHand[idx];
+    // 左右(x)・上下(y)どちらの往復でも「揺らした」と認識する(多い方を採用)
+    const reversals = Math.max(countReversals(arr, 'x'), countReversals(arr, 'y'));
     maxProgress = Math.max(maxProgress, reversals / SHAKE_REQUIRED);
     if(reversals >= SHAKE_REQUIRED && (now - lastShakeAt) > SHAKE_COOLDOWN_MS){
       triggered = true;
@@ -1075,7 +1101,7 @@ function checkGameDwell(){
     const elapsed = Date.now() - dwellStartTime;
     const progress = Math.min(1, elapsed / DWELL_DURATION_MS);
     hovered.ring.style.strokeDashoffset = String(276.5 * (1 - progress));
-    if(progress >= 1){ resetDwell(); hovered.onComplete(); }
+    if(progress >= 1){ resetDwell(); feedbackTap(); hovered.onComplete(); }
   }else{
     resetDwell();
   }
@@ -1140,6 +1166,7 @@ function checkHubDwell(){
     fillEl.style.background = `conic-gradient(var(--gold) ${progress*360}deg, transparent ${progress*360}deg)`;
     if(progress >= 1){
       resetEdgeDwell();
+      feedbackTap();
       cardCarousel.step(edgeHovered.delta);
     }
     return;
@@ -1176,6 +1203,7 @@ function checkHubDwell(){
     if(fill) fill.style.height = (progress*100) + '%';
     if(progress >= 1){
       resetHubDwell();
+      feedbackTap();
       openProgram(key);
     }
   }else{
@@ -1389,7 +1417,11 @@ function openProgram(key){
   document.getElementById('screen-hub').classList.add('hidden');
   document.getElementById('screen-game').classList.remove('hidden');
   gameTitleEl.textContent = def.title;
-  startOverlayText.innerHTML = def.introHtml + '<br><small>(カメラは起動済みです)</small>';
+  const itemData = FLAT_ITEMS.find(it=>it.key===key);
+  const purposeHtml = itemData && itemData.purpose
+    ? `<div class="purpose-box">🎯 ${itemData.purpose}</div>`
+    : '';
+  startOverlayText.innerHTML = def.introHtml + purposeHtml + '<br><small>(カメラは起動済みです)</small>';
   programLayer.innerHTML = def.layerHtml || '';
   running = false; gameEnded = false;
   clearInterval(timerInterval);
@@ -1469,6 +1501,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         holdingByHand[handedness] = f.type;
         f.collected = true;
         f.el.classList.add('collected');
+        feedbackTap();
         const hel = handedness==='Left' ? heldFruitEl : heldFruitEl2;
         hel.textContent = FRUITS[f.type].emoji;
         hel.style.left = hx+'%'; hel.style.top = hy+'%';
@@ -1588,6 +1621,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   function triggerShake(){
     const remaining = fruits.filter(f=>!f.collected);
     if(remaining.length === 0) return;
+    feedbackTap();
     statusEl.textContent = '木が揺れた!実が落ちてくる';
     showCallout('ゆさっ!');
     const dropCount = Math.min(remaining.length, 1 + (Math.random()<0.4?1:0));
@@ -1769,6 +1803,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   let paddleDipSide = 'left'; // 次の一漕ぎでどちら側に傾けるか(交互に切り替える)
   function showPaddleSplash(){
+    feedbackTap();
     const splashOffsetX = paddleDipSide === 'left' ? -12 : 12;
     splashEl.style.left = (canoeX + splashOffsetX)+'%';
     splashEl.style.top = (CANOE_Y+4)+'%';
@@ -1810,6 +1845,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   registerProgram('canoe', {
     title: '🛶 てにゃーカヌー',
+    durationSec: 60,
     introHtml: 'カメラを使って、手の位置でカヌーを操縦します。<br>グーで握るとパドルが出ます。そのまま上下に振って漕ぎながら、岩を避けて魚をゲット!<br>両手でも片手でも遊べます。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="river-area"></div>
