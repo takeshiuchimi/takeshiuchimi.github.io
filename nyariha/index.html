@@ -242,12 +242,20 @@
     background:rgba(255,255,255,.25);
   }
   .canoe-el{
-    position:absolute; width:56px; height:56px; transform:translate(-50%,-50%);
+    position:absolute; width:88px; height:88px; transform:translate(-50%,-50%);
     pointer-events:none;
     filter:drop-shadow(0 3px 3px rgba(0,0,0,.4));
     transition:left .1s linear;
   }
   .canoe-el svg{ width:100%; height:100%; }
+  .paddle-el{
+    position:absolute; width:34px; height:70px; transform:translate(-50%,-50%);
+    pointer-events:none; transition:left .1s linear, top .1s linear, opacity .15s ease;
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));
+    opacity:0;
+  }
+  .paddle-el.show{ opacity:1; }
+  .paddle-el svg{ width:100%; height:100%; }
   .river-obj{
     position:absolute; width:38px; height:38px; transform:translate(-50%,-50%);
     font-size:30px; text-align:center; line-height:38px; pointer-events:none;
@@ -327,7 +335,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0830-0132"
+    "buildDate": "0830-0150"
   },
   "about": {
     "paragraphs": [
@@ -1642,24 +1650,29 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
    プログラム: てにゃーカヌー
    ============================================================ */
 (function(){
-  const CANOE_Y = 82; // カヌーのy位置(%、固定)
-  const OBSTACLE_SPEED = 0.45; // %/tick
-  const HIT_RADIUS_X = 9; // %
-  const SPAWN_CHANCE = 0.045; // tickごとの出現確率
+  const CANOE_Y = 78; // カヌーのy位置(%、固定)
+  const OBSTACLE_SPEED = 0.28; // %/tick(前は0.45、ゆっくりに)
+  const HIT_RADIUS_X = 7; // %(前は9、岩に少しシビアに=避けやすく)
+  const SPAWN_CHANCE = 0.028; // tickごとの出現確率(前は0.045、間隔を広く)
 
   const RIVER_OBJS = {
     rock:  { emoji:'🪨', kind:'obstacle' },
     fish:  { emoji:'🐟', kind:'item' },
     leaf:  { emoji:'🍃', kind:'item' },
   };
-  const ROCK_WEIGHT = 3, ITEM_WEIGHT = 2; // rock: item = 3:2くらいの出現比率
+  const ROCK_WEIGHT = 2, ITEM_WEIGHT = 3; // rock:item比率を下げて岩を減らす(前は3:2)
 
-  let canoeEl, riverLayerEl, splashEl;
+  let canoeEl, riverLayerEl, splashEl, paddleEl;
   // 縦向きの舟形。船首(上)・船尾(下)、水面の波線は含めない(背景の川で表現済み)
   const CANOE_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <path d="M50 6 Q76 32 79 50 Q76 68 50 94 Q24 68 21 50 Q24 32 50 6 Z" fill="#A9744F" stroke="#6B5335" stroke-width="3"/>
     <path d="M32 40 L68 40 M30 50 L70 50 M32 60 L68 60" stroke="#6B5335" stroke-width="2" opacity=".5"/>
     <circle cx="50" cy="50" r="9" fill="var(--player-body)"/>
+  </svg>`;
+  // パドル(オール)。グーで握っている間だけカヌーの脇に表示する
+  const PADDLE_SVG = `<svg viewBox="0 0 40 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="15" y="8" width="10" height="58" rx="5" fill="#8B6F47" stroke="#6B5335" stroke-width="2"/>
+    <ellipse cx="20" cy="80" rx="15" ry="20" fill="#C9A876" stroke="#6B5335" stroke-width="2.5"/>
   </svg>`;
   let canoeX = 50;
   let objects = []; // {type, x, y, el}
@@ -1690,14 +1703,32 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   // 片手なら「その手が操縦もパドルも兼用」、両手なら「中央位置で操縦、どちらの手のひと漕ぎも検知」
   function updateCanoeFromHands(){
-    if(handsList.length === 0) return;
+    if(handsList.length === 0){
+      paddleEl.classList.remove('show');
+      return;
+    }
     const xs = handsList.map(h=>h.x);
     const avgX = xs.reduce((a,b)=>a+b,0) / xs.length;
     canoeX = Math.max(8, Math.min(92, avgX));
     canoeEl.style.left = canoeX+'%';
+
+    // グー(パドルを握っている)の手があるかどうかで、パドルの出現・漕ぎ判定を行う
+    let gripping = false;
     handsList.slice(0,2).forEach((h,i)=>{
-      if(checkPaddleStrokeForHand(i, h.y)) showPaddleSplash();
+      if(h.shape === 'guu'){
+        gripping = true;
+        if(checkPaddleStrokeForHand(i, h.y)) showPaddleSplash();
+      }
     });
+
+    if(gripping){
+      // パドルは手の生の位置ではなく、カヌーの手元(脇)に表示する
+      paddleEl.classList.add('show');
+      paddleEl.style.left = (canoeX + 13) + '%';
+      paddleEl.style.top = (CANOE_Y - 4) + '%';
+    }else{
+      paddleEl.classList.remove('show');
+    }
   }
 
   function checkPaddleStrokeForHand(idx, y){
@@ -1750,16 +1781,19 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   registerProgram('canoe', {
     title: '🛶 てにゃーカヌー',
-    introHtml: 'カメラを使って、手の位置でカヌーを操縦します。<br>手を上下に振って漕ぎながら、岩を避けて魚をゲット!<br>両手でも片手でも遊べます。<br>カメラへのアクセスを許可してください。',
+    introHtml: 'カメラを使って、手の位置でカヌーを操縦します。<br>グーで握るとパドルが出ます。そのまま上下に振って漕ぎながら、岩を避けて魚をゲット!<br>両手でも片手でも遊べます。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="river-area"></div>
       <div id="canoeRiverLayer"></div>
       <div class="canoe-el" id="canoeEl"></div>
+      <div class="paddle-el" id="paddleEl"></div>
       <div class="paddle-splash" id="paddleSplash"></div>
     `,
     setup(){
       canoeEl = document.getElementById('canoeEl');
       canoeEl.innerHTML = CANOE_SVG;
+      paddleEl = document.getElementById('paddleEl');
+      paddleEl.innerHTML = PADDLE_SVG;
       riverLayerEl = document.getElementById('canoeRiverLayer');
       splashEl = document.getElementById('paddleSplash');
     },
@@ -1767,6 +1801,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       canoeX = 50;
       canoeEl.style.left = '50%';
       canoeEl.style.top = CANOE_Y+'%';
+      paddleEl.classList.remove('show');
       objects.forEach(o=>o.el.remove());
       objects = [];
       paddleYHistoryByHand = [[], []];
