@@ -337,7 +337,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0830-2000"
+    "buildDate": "0830-2011"
   },
   "about": {
     "paragraphs": [
@@ -1213,9 +1213,13 @@ function onResults(results){
     handsList = results.multiHandLandmarks.map((lm, idx)=>{
       const tip = lm[9];
       const shape = classifyHandShape(lm); // 'guu'|'choki'|'paa'
-      const handedness = (results.multiHandedness && results.multiHandedness[idx])
-        ? results.multiHandedness[idx].label // 'Left'|'Right'
-        : (idx===0 ? 'Left' : 'Right'); // フォールバック(古いテスト等でmultiHandednessが無い場合)
+      // MediaPipeは「入力画像が鏡映し済み」という前提でLeft/Rightを判定する。
+      // 当アプリはCSSの見た目だけ鏡映し(scaleX(-1))にしていて、MediaPipeに渡す実際の画像データは
+      // 鏡映ししていない生の映像のため、判定結果が実際の左右と逆になる。ここで入れ替えて補正する。
+      const rawHandedness = (results.multiHandedness && results.multiHandedness[idx])
+        ? results.multiHandedness[idx].label // 'Left'|'Right'(MediaPipeの生の判定、鏡映し前提とズレて逆になっている)
+        : (idx===0 ? 'Right' : 'Left'); // フォールバック(古いテスト等でmultiHandednessが無い場合)
+      const handedness = rawHandedness === 'Left' ? 'Right' : 'Left';
       return {
         x: (1 - tip.x) * 100,
         y: tip.y * 100,
