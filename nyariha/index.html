@@ -327,7 +327,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0829-2236"
+    "buildDate": "0830-0132"
   },
   "about": {
     "paragraphs": [
@@ -1378,6 +1378,7 @@ function openProgram(key){
   startOverlayText.innerHTML = def.introHtml + '<br><small>(カメラは起動済みです)</small>';
   programLayer.innerHTML = def.layerHtml || '';
   running = false; gameEnded = false;
+  clearInterval(timerInterval);
   totalSuccess = 0; totalMiss = 0; combo = 0; bestCombo = 0;
   scoreDisplayEl.textContent = '0点';
   comboDisplayEl.textContent = '';
@@ -1391,6 +1392,7 @@ function openProgram(key){
 
 function backToHub(){
   running = false;
+  clearInterval(timerInterval);
   onHubScreen = true;
   document.getElementById('screen-game').classList.add('hidden');
   document.getElementById('screen-hub').classList.remove('hidden');
