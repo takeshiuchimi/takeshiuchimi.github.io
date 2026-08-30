@@ -249,12 +249,14 @@
   }
   .canoe-el svg{ width:100%; height:100%; }
   .paddle-el{
-    position:absolute; width:34px; height:70px; transform:translate(-50%,-50%);
-    pointer-events:none; transition:left .1s linear, top .1s linear, opacity .15s ease;
+    position:absolute; width:100px; height:34px; transform:translate(-50%,-50%);
+    pointer-events:none; transition:left .1s linear, top .1s linear, opacity .15s ease, transform .18s ease;
     filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));
     opacity:0;
   }
   .paddle-el.show{ opacity:1; }
+  .paddle-el.dip-left{ transform:translate(-50%,-50%) rotate(-18deg); }
+  .paddle-el.dip-right{ transform:translate(-50%,-50%) rotate(18deg); }
   .paddle-el svg{ width:100%; height:100%; }
   .river-obj{
     position:absolute; width:38px; height:38px; transform:translate(-50%,-50%);
@@ -335,7 +337,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0830-0150"
+    "buildDate": "0830-0200"
   },
   "about": {
     "paragraphs": [
@@ -1669,10 +1671,11 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     <path d="M32 40 L68 40 M30 50 L70 50 M32 60 L68 60" stroke="#6B5335" stroke-width="2" opacity=".5"/>
     <circle cx="50" cy="50" r="9" fill="var(--player-body)"/>
   </svg>`;
-  // パドル(オール)。グーで握っている間だけカヌーの脇に表示する
-  const PADDLE_SVG = `<svg viewBox="0 0 40 100" xmlns="http://www.w3.org/2000/svg">
-    <rect x="15" y="8" width="10" height="58" rx="5" fill="#8B6F47" stroke="#6B5335" stroke-width="2"/>
-    <ellipse cx="20" cy="80" rx="15" ry="20" fill="#C9A876" stroke="#6B5335" stroke-width="2.5"/>
+  // パドル(カヌーパドル、両端に水かきがある1本のオール)。真上から見た構図で、体の前に横向きで持つ
+  const PADDLE_SVG = `<svg viewBox="0 0 140 34" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="14" width="100" height="6" rx="3" fill="#8B6F47" stroke="#6B5335" stroke-width="1.5"/>
+    <ellipse cx="14" cy="17" rx="16" ry="10" fill="#C9A876" stroke="#6B5335" stroke-width="2"/>
+    <ellipse cx="126" cy="17" rx="16" ry="10" fill="#C9A876" stroke="#6B5335" stroke-width="2"/>
   </svg>`;
   let canoeX = 50;
   let objects = []; // {type, x, y, el}
@@ -1722,10 +1725,10 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     });
 
     if(gripping){
-      // パドルは手の生の位置ではなく、カヌーの手元(脇)に表示する
+      // パドルは手の生の位置ではなく、カヌーの体の前に、横向きに持っているように表示する
       paddleEl.classList.add('show');
-      paddleEl.style.left = (canoeX + 13) + '%';
-      paddleEl.style.top = (CANOE_Y - 4) + '%';
+      paddleEl.style.left = canoeX + '%';
+      paddleEl.style.top = (CANOE_Y - 3) + '%';
     }else{
       paddleEl.classList.remove('show');
     }
@@ -1747,12 +1750,21 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     return false;
   }
 
+  let paddleDipSide = 'left'; // 次の一漕ぎでどちら側に傾けるか(交互に切り替える)
   function showPaddleSplash(){
-    splashEl.style.left = canoeX+'%';
-    splashEl.style.top = (CANOE_Y+6)+'%';
+    const splashOffsetX = paddleDipSide === 'left' ? -12 : 12;
+    splashEl.style.left = (canoeX + splashOffsetX)+'%';
+    splashEl.style.top = (CANOE_Y+4)+'%';
     splashEl.textContent = '💦';
     splashEl.classList.add('show');
     setTimeout(()=> splashEl.classList.remove('show'), 300);
+
+    // パドルを実際の漕ぎ動作のように左右交互に傾ける
+    paddleEl.classList.remove('dip-left','dip-right');
+    void paddleEl.offsetWidth; // 再生成してアニメーションをリセット
+    paddleEl.classList.add(paddleDipSide === 'left' ? 'dip-left' : 'dip-right');
+    paddleDipSide = paddleDipSide === 'left' ? 'right' : 'left';
+    setTimeout(()=> paddleEl.classList.remove('dip-left','dip-right'), 220);
   }
 
   function updateRiver(){
@@ -1801,7 +1813,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       canoeX = 50;
       canoeEl.style.left = '50%';
       canoeEl.style.top = CANOE_Y+'%';
-      paddleEl.classList.remove('show');
+      paddleEl.classList.remove('show','dip-left','dip-right');
+      paddleDipSide = 'left';
       objects.forEach(o=>o.el.remove());
       objects = [];
       paddleYHistoryByHand = [[], []];
