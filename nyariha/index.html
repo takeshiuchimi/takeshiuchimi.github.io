@@ -337,7 +337,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0830-0200"
+    "buildDate": "0830-2000"
   },
   "about": {
     "paragraphs": [
@@ -1705,14 +1705,27 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   }
 
   // 片手なら「その手が操縦もパドルも兼用」、両手なら「中央位置で操縦、どちらの手のひと漕ぎも検知」
+  const STEER_OFFSET = 8; // 片手の時、利き手側に応じてカヌーの中心をどれだけずらすか(%)
+  const STEER_SMOOTH = 0.35; // 位置の追従の滑らかさ(0-1、大きいほど追従が速いが手ブレも伝わりやすい)
   function updateCanoeFromHands(){
     if(handsList.length === 0){
       paddleEl.classList.remove('show');
       return;
     }
-    const xs = handsList.map(h=>h.x);
-    const avgX = xs.reduce((a,b)=>a+b,0) / xs.length;
-    canoeX = Math.max(8, Math.min(92, avgX));
+    let targetX;
+    if(handsList.length >= 2){
+      // 両手: 2本の中心をカヌーの位置とする
+      const xs = handsList.slice(0,2).map(h=>h.x);
+      targetX = (xs[0] + xs[1]) / 2;
+    }else{
+      // 片手: 右手なら少し左に、左手なら少し右にずらした位置をカヌーの位置とする
+      // (パドルを片手で持っている時、体の中心は持ち手と逆側に少し寄る感覚に合わせる)
+      const h = handsList[0];
+      targetX = h.handedness === 'Right' ? h.x - STEER_OFFSET : h.x + STEER_OFFSET;
+    }
+    targetX = Math.max(8, Math.min(92, targetX));
+    // 毎フレーム目標位置に少しずつ近づける(手のブレをそのまま反映しないよう滑らかにする)
+    canoeX = canoeX + (targetX - canoeX) * STEER_SMOOTH;
     canoeEl.style.left = canoeX+'%';
 
     // グー(パドルを握っている)の手があるかどうかで、パドルの出現・漕ぎ判定を行う
