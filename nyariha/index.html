@@ -335,7 +335,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0831-2131"
+    "buildDate": "0831-2232"
   },
   "about": {
     "paragraphs": [
@@ -1280,6 +1280,9 @@ function onResults(results){
       updateHandCursor();
       checkHubDwell();
     }else{
+      if(statusEl.textContent === '手が見つかりません。カメラに手をかざしてください'){
+        statusEl.textContent = '手を検出中';
+      }
       updateHandCursor();
       checkGameDwell();
       const def = PROGRAMS[currentProgramKey];
