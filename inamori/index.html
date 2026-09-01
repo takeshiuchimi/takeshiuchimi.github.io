@@ -1,418 +1,92 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📖 稲盛先生</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
-<style>
-/* =============================================
-   稲盛先生 · デザイントークン
-   ベース：v5.3共通 / アクセント：ゴールド×深紅
-   ============================================= */
-:root{
-  /* ベース（v5.3共通） */
-  --bg:#1a1a1f;--bg2:#23232b;--bg3:#2c2c36;--bg4:#35353f;
-  --text:#f0ead8;--text2:#c8bfa8;
-  --muted:#6a6a7a;--muted2:#9a9aaa;
-  --border:#3a3a46;--border2:#46465a;
-  --radius:12px;
-  /* アクセント（稲盛独自：ゴールド×深紅） */
-  --gold:#d4a843;--gold2:#f5d06e;--gold-dim:rgba(212,168,67,0.12);
-  --red:#8b1a1a;--red2:#c0392b;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Shippori Mincho',serif;min-height:100vh;padding-bottom:80px;}
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>📖 稲盛先生</title><style>
+:root{--paper:#f8f3ea;--paper2:#fffaf4;--paper3:#f2eadf;--ink:#58483c;--ink2:#75655a;--muted:#9a8875;--line:#d8c8b1;--line2:#e2d3bc;--brown:#8b6d4d;--brown2:#6b523c;--green:#7f9274;--green2:#66785d;--light:#edf1e8;--shadow:0 8px 28px rgba(88,72,60,.09);--radius:16px}*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{min-height:100vh;background:radial-gradient(circle at 18% 4%,rgba(214,224,196,.42),transparent 28%),radial-gradient(circle at 86% 12%,rgba(230,214,186,.44),transparent 26%),var(--paper);color:var(--ink);font-family:"Yu Mincho","Hiragino Mincho ProN",serif;padding-bottom:64px}body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.3;background-image:linear-gradient(120deg,transparent 0 46%,rgba(255,255,255,.58) 46% 50%,transparent 50% 100%);background-size:220px 220px}header{position:sticky;top:0;z-index:20;background:rgba(248,243,234,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line2)}.hi{max-width:520px;margin:auto;padding:14px 18px;text-align:center;position:relative}.back{position:absolute;left:16px;top:50%;transform:translateY(-50%);text-decoration:none;color:var(--brown);font-size:12px}.logo{font-size:9px;letter-spacing:.28em;color:var(--muted);margin-bottom:3px}h1{font-size:21px;letter-spacing:.16em;font-weight:600;color:var(--brown2)}.badge{font-size:9px;color:var(--green2);margin-top:4px}.wrap{max-width:520px;margin:auto;padding:24px 16px;position:relative;z-index:1}.intro{text-align:center;padding:20px 14px 28px}.icon{font-size:38px;margin-bottom:10px}.name{font-size:21px;color:var(--brown2);letter-spacing:.18em}.divider{width:62px;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent);margin:14px auto}.intro p{font-size:13px;line-height:2.05;color:var(--ink2)}.card,.qcard,.result{background:rgba(255,250,244,.9);border:1px solid var(--line2);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px}.title,.label{font-size:10px;letter-spacing:.18em;color:var(--brown);margin-bottom:14px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}button,textarea{font-family:inherit}.genre,.yn{border:1px solid var(--line);background:rgba(248,243,234,.72);color:var(--ink2);border-radius:11px;cursor:pointer;transition:.16s}.genre{padding:13px 6px;font-size:12px;line-height:1.55}.genre:hover,.yn:hover{border-color:var(--green);background:var(--light)}.genre.selected{border-color:var(--green2);background:var(--light);color:var(--green2)}.num{display:block;font-size:9px;color:var(--muted);margin-bottom:2px}.prompt{font-size:13px;color:var(--ink2);line-height:2;margin-bottom:12px}textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:#fffdf8;color:var(--ink);font-size:13px;padding:13px;resize:vertical;min-height:110px;line-height:1.9}textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(127,146,116,.12)}.btn{width:100%;padding:13px 14px;border-radius:12px;font-size:13px;letter-spacing:.08em;cursor:pointer;margin-top:10px}.primary{border:1px solid var(--green2);background:var(--green2);color:#fff}.secondary{border:1px solid var(--line);background:transparent;color:var(--ink2)}.qtext{font-size:14px;line-height:2;margin-bottom:15px}.ynrow{display:flex;gap:10px}.yn{flex:1;padding:12px}.yn.yes{border-color:var(--green2);background:var(--light);color:var(--green2)}.yn.no{border-color:#b47b6d;background:#f7ece7;color:#915c50}.note{display:none;margin-top:12px;padding:13px 14px;border-left:3px solid var(--green);background:var(--light);border-radius:0 10px 10px 0}.note.show{display:block}.noquote{font-size:14px;line-height:1.9;color:var(--brown2)}.nosub{font-size:11px;color:var(--muted);margin-top:5px}.loading{display:none;text-align:center;padding:38px 0}.loading.on{display:block}.leaf{font-size:28px;display:inline-block;animation:sway 1.4s ease-in-out infinite}@keyframes sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}.ltxt{font-size:12px;letter-spacing:.14em;color:var(--brown);margin-top:10px}.reflection{font-size:13px;line-height:2;color:var(--ink2);padding:14px 15px;margin-bottom:16px;background:linear-gradient(135deg,#f5efe4,#edf1e8);border-radius:12px}.quote{padding:12px 14px;border-left:2px solid var(--brown);margin:10px 0;background:rgba(248,243,234,.7);border-radius:0 10px 10px 0}.qtext2{font-size:14px;line-height:2;color:var(--brown2)}.action{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line2)}.action:last-child{border-bottom:none}.anum{color:var(--green2);font-size:16px;min-width:22px}.atext{font-size:13px;line-height:1.9}.small{font-size:10px;line-height:1.7;color:var(--muted);margin-top:12px;text-align:center}.shime{text-align:center;padding:24px 12px 10px;font-size:14px;color:var(--brown2);letter-spacing:.12em;line-height:2}.source-tag{display:inline-block;font-size:9px;letter-spacing:.1em;padding:4px 8px;border-radius:999px;margin-bottom:8px}.source-tag.words{background:#f1eadf;color:var(--brown2);border:1px solid var(--line)}.source-tag.philosophy{background:var(--light);color:var(--green2);border:1px solid #cfd9c8}.dialogue{font-size:14px;line-height:2.05;color:var(--ink2);padding:15px 16px;background:linear-gradient(135deg,#fffaf4,#f4efe6);border-radius:12px;margin-bottom:16px}.dialogue strong{color:var(--brown2);font-weight:600}.today-word{padding:16px 16px 15px;border-left:3px solid var(--brown);background:rgba(248,243,234,.78);border-radius:0 12px 12px 0;margin:10px 0 16px}.today-word .qtext2{font-size:15px}.one-step{display:flex;gap:12px;align-items:flex-start;padding:15px;background:var(--light);border:1px solid #d8e1d2;border-radius:12px}.one-step .anum{font-size:18px}.context-chip{display:inline-block;font-size:10px;color:var(--green2);background:var(--light);border:1px solid #d8e1d2;border-radius:999px;padding:5px 9px;margin-bottom:12px}footer{max-width:520px;margin:auto;text-align:center;padding:22px 16px;color:var(--muted);font-size:10px;line-height:1.9;position:relative;z-index:1}footer strong{color:var(--brown)}.qr{width:112px;height:112px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:5px;margin:14px auto 5px;display:block}
+html.dark-mode{--paper:#171914;--paper2:#20231d;--paper3:#292d25;--ink:#eee7da;--ink2:#d2c9ba;--muted:#a99e8f;--line:#4a5143;--line2:#394036;--brown:#d0b78f;--brown2:#ead7b5;--green:#9eb28f;--green2:#b7caa8;--light:#2b3328;--shadow:0 8px 28px rgba(0,0,0,.24)}
+html.dark-mode body{background:radial-gradient(circle at 18% 4%,rgba(105,126,88,.16),transparent 28%),radial-gradient(circle at 86% 12%,rgba(128,101,65,.15),transparent 26%),var(--paper)}
+html.dark-mode body:before{opacity:.08}
+html.dark-mode header{background:rgba(23,25,20,.92)}
+html.dark-mode textarea{background:#22261f;color:var(--ink)}
+html.dark-mode .genre,html.dark-mode .yn{background:rgba(32,35,29,.86)}
+html.dark-mode .modal-card{background:var(--paper2)}
+.theme-toggle{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:1px solid var(--line);border-radius:9px;background:var(--paper3);color:var(--brown2);cursor:pointer;font-size:14px}
+.footer-tools{display:flex;justify-content:center;gap:8px;margin:0 auto 12px;max-width:520px}
+.footer-btn{border:0;border-radius:999px;padding:8px 15px;background:var(--green);color:#fff;font-size:11px;cursor:pointer;box-shadow:0 2px 0 var(--green2)}
+.footer-btn:active{transform:translateY(2px);box-shadow:none}
+.modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(48,39,31,.62);opacity:0;pointer-events:none;transition:opacity .2s}
+.modal.open{opacity:1;pointer-events:auto}
+.modal-card{position:relative;width:min(100%,440px);max-height:86vh;overflow:auto;background:var(--paper2);border:1px solid var(--line);border-radius:16px;padding:24px 19px 20px;box-shadow:0 22px 60px rgba(0,0,0,.28)}
+.modal-card h2{text-align:center;font-size:17px;color:var(--brown2);margin-bottom:15px;letter-spacing:.08em}
+.modal-close{position:absolute;right:9px;top:7px;width:30px;height:30px;border:0;background:transparent;color:var(--muted);font-size:22px;cursor:pointer}
+.modal-body p,.tech-section p{font-size:12px;line-height:1.95;color:var(--ink2);margin-bottom:11px}
+.tech-section{margin-bottom:14px}.tech-section h3{font-size:12.5px;color:var(--green2);margin-bottom:5px;padding-bottom:4px;border-bottom:1px dashed var(--line)}
+.qr-wrap{width:min(310px,84vw);margin:20px auto 4px;text-align:center}.qr-wrap img{display:block;width:100%;height:auto;background:#fff;padding:10px;border-radius:6px}.qr-label{font-size:11px;color:var(--brown2);margin-top:8px}.qr-url{font-size:9px;line-height:1.5;color:var(--muted);margin-top:4px;word-break:break-all}
+@media(max-width:380px){.grid{grid-template-columns:repeat(2,1fr)}}
+</style></head><body><header><div class="hi"><a class="back" href="../index.html">‹ TOP</a><div class="logo">INAMORI PHILOSOPHY</div><h1>📖 稲盛先生</h1><div class="badge">ことばと問いから、次の一歩を考える</div><button class="theme-toggle" id="theme-toggle" type="button" aria-label="ダークモード切替" title="ダークモード切替">🌙</button></div></header><main class="wrap"><section class="intro"><div class="icon">🌿</div><div class="name">稲盛先生</div><div class="divider"></div><p>どうしました？<br>少しだけ、今のことを聞かせてください。<br>答えを急がず、一緒に順番に考えてみましょう。</p></section><section class="card" id="step-genre"><div class="title">まず、近いものを選んでください</div><div class="grid"><button class="genre" onclick="selectGenre(0)"><span class="num">1</span>仕事</button><button class="genre" onclick="selectGenre(1)"><span class="num">2</span>人間関係</button><button class="genre" onclick="selectGenre(2)"><span class="num">3</span>お金</button><button class="genre" onclick="selectGenre(3)"><span class="num">4</span>リーダーシップ</button><button class="genre" onclick="selectGenre(4)"><span class="num">5</span>自己成長</button><button class="genre" onclick="selectGenre(5)"><span class="num">6</span>判断</button><button class="genre" onclick="selectGenre(6)"><span class="num">7</span>トラブル対応</button><button class="genre" onclick="selectGenre(7)"><span class="num">8</span>チーム・組織</button><button class="genre" onclick="selectGenre(8)"><span class="num">9</span>挑戦・変化</button></div></section><section class="card" id="step-content" style="display:none"><div class="title">今のことを、ひとこと</div><div class="prompt">きれいにまとめなくて大丈夫です。<br>いま気になっていることを、そのまま書いてください。</div><textarea id="content" placeholder="例）部下との関係がうまくいかず、どう伝えるべきか迷っています。"></textarea><button class="btn primary" onclick="startQuestions()">問いに進む</button></section><section id="step-questions" style="display:none"><div class="qcard" id="q1-card"><div class="title">問い 1</div><div class="qtext" id="q1-text">今のあなたの行動は、<br>人として正しい方向に向かっていますか？</div><div class="ynrow"><button class="yn" id="q1-yes" onclick="answerQ(1,'yes')">イエス</button><button class="yn" id="q1-no" onclick="answerQ(1,'no')">ノー</button></div><div class="note" id="q1-note"></div></div><div class="qcard" id="q2-card" style="display:none"><div class="title">問い 2</div><div class="qtext" id="q2-text">その行動の動機は、<br>誰かのためになるものですか？</div><div class="ynrow"><button class="yn" id="q2-yes" onclick="answerQ(2,'yes')">イエス</button><button class="yn" id="q2-no" onclick="answerQ(2,'no')">ノー</button></div><div class="note" id="q2-note"></div></div><div class="qcard" id="q3-card" style="display:none"><div class="title">問い 3</div><div class="qtext" id="q3-text">今のあなたは、<br>出来ることをすべてやり切っていますか？</div><div class="ynrow"><button class="yn" id="q3-yes" onclick="answerQ(3,'yes')">イエス</button><button class="yn" id="q3-no" onclick="answerQ(3,'no')">ノー</button></div><div class="note" id="q3-note"></div></div></section><div class="loading" id="loading"><div class="leaf">🍃</div><div class="ltxt">ことばを選んでいます…</div></div><section id="result" style="display:none"></section><div id="reset" style="display:none"><button class="btn secondary" onclick="resetAll()">最初から相談する</button></div></main><footer><div class="footer-tools"><button class="footer-btn" id="about-btn" type="button">📖 稲盛先生とは</button><button class="footer-btn" id="tech-btn" type="button">🔧 技術情報</button></div><strong>稲盛先生</strong><br>ことばと問いから、次の一歩を考える小さな対話ページです。<br>外部AI・API通信なし ／ このHTMLだけで動作します</footer>
+<div class="modal" id="about-modal" aria-hidden="true"><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="about-title"><button class="modal-close" type="button" data-close="about-modal" aria-label="閉じる">×</button><h2 id="about-title">稲盛先生とは</h2><div class="modal-body"><p>稲盛和夫氏は、京セラやKDDIの創業に携わり、経営と人生について「人間として何が正しいのか」を判断の軸に置く考え方を説いた経営者です。</p><p>このページは、稲盛哲学の代表的な考え方と三つの問いを手がかりに、自分自身で次の一歩を考えるための小さな対話ツールです。</p><p>表示する文章には、代表的な言葉・考え方と、稲盛哲学をもとにこのページ用に整理した表現が含まれます。直接引用として使用する場合は、原典・出典の確認を推奨します。</p></div><div class="qr-wrap"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACF0lEQVR4nO2aza7rIAyEv7nq+7/y3IVtSLpqFm1MDpFapWUkzMj4Z0Dmw+ffp8CN3MiN3Mg/gXwBKN4NGh9ZPo4ss6IGfGIABXsiKI0/XX8ts6IWSEkARsIIYSHNkSZ2tke+zj8tXJte51JqlRU14tOCDJvmndBVVtSCzwNzHk7q08gqK+rAZ4bIyOpyOqnlGvnS7M9Dnva0YIbPX8z+UGQ4YbIpFHQKpJngG9i5ADIcUREy46NI84rYqQqhq6yoBzIqT8lgHGneyeb2z+v1PGCwNd6j/dTISC3sbI8c9VKVm8loBVBGE7/KihogwwmtrJGMc6sPVnvYuQBy6iHhjcoeSZmSiIh6u51rISXSG12bnMhMRvL2z+tIWUp5ySXcBbf+weyPQWYjFAW8o+Mcg1WVauvJnz5Tn0/hM+v4oPWoMa2yogZ8Qjhn7PT8MtIon263cxXkC+ahhuUUQUlpqVLU7XaugkzlI6MoMEsmUlnW7t+vItNBXZW8wZLHYVIXO/sjM7G/J5+SnLJx2vn906f0+Sw9pxoyhaUdP68ibYNtIY4tO7Z3/LyEPN0PSUI10ntpTt+a/XnIaozGK4zTOEYAvd/OxZDjFgjOUt6h2U+BvoWdqyFVRSfzBOl3sz8QGc54ODaq9N7Mzq7I8/2QCqF5q2EeeXxp9uch3+6HUJ1mXv70vNywyooa5PfbZt/IjdzIjVwX+R8OK+OrlJ3RwgAAAABJRU5ErkJggg==" alt="稲盛先生 共有QRコード"><div class="qr-label">このページを共有</div><div class="qr-url">https://takeshiuchimi.github.io/inamori/index.html</div></div></div></div>
+<div class="modal" id="tech-modal" aria-hidden="true"><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="tech-title"><button class="modal-close" type="button" data-close="tech-modal" aria-label="閉じる">×</button><h2 id="tech-title">技術情報（内海メソッド）</h2><div class="tech-section"><h3>9ジャンルをJavaScript内で管理</h3><p>仕事、人間関係、お金、リーダーシップ、自己成長、判断、トラブル対応、チーム・組織、挑戦・変化の9ジャンルを一つのデータ構造にまとめています。</p></div><div class="tech-section"><h3>ジャンルごとに三つの問い</h3><p>基本軸は「正しさ・動機・努力」。選んだジャンルに合わせて問いの文章を切り替え、ノーの回答にはその場で考えるための言葉を返します。</p></div><div class="tech-section"><h3>相談文を端末内で簡易判定</h3><p>入力した相談文は外部へ送信せず、登録したキーワードだけで関連ジャンルを推定します。外部AIへの問い合わせは行いません。</p></div><div class="tech-section"><h3>対話型の結果表示</h3><p>単なる語録のランダム表示ではなく、回答結果をもとに「いま見えてきたこと」「代表的な言葉・考え方」「稲盛哲学から考える」「今日の一歩」へつなげます。</p></div><div class="tech-section"><h3>一つのHTMLで完結</h3><p>HTML・CSS・JavaScript・登録データ・共有用QRを一つのHTMLに集約しています。GitHub Pagesへ置くだけで動作します。</p></div><div class="tech-section"><h3>こもれび × ダークモード</h3><p>通常は生成り、淡い茶、くすみ緑の「こもれび」トーン。右上のボタンでダークモードへ切り替えられ、選択状態は端末内に保存されます。</p></div></div></div><script>
+const QUOTES={"work": {"label": "仕事", "positive": ["地味なことほど、丁寧に整えなさい。", "正しい努力を積み重ねなさい。", "結果は、考え方・熱意・能力で決まります。", "仕事の結果は、日々の姿勢に現れます。", "一つひとつを完結させなさい。", "小さな仕事を軽く見てはいけません。", "目の前の仕事に心を込めなさい。"], "no_human": ["人として正しいかを外せば、すべては崩れます。", "正しくない仕事は、どれだけ頑張っても価値はありません。", "誤魔化しは必ず表に出ます。", "正しさを犠牲にした成果は、長く続きません。"], "no_motive": ["私心を捨て、動機を磨きなさい。", "誰のための仕事かを、もう一度考えなさい。", "評価ではなく、価値を考えなさい。", "自分の都合ではなく、相手の役に立つことを考えなさい。"], "no_effort": ["努力を尽くしてこそ、結果は語れます。", "やれることをやらずに、状況を嘆いてはいけません。", "途中で止めた仕事に価値はありません。", "最後の一手間を惜しんではいけません。"]}, "relationship": {"label": "人間関係", "positive": ["相手を責める前に、自らを省みなさい。", "心を高めれば、関係も変わります。", "利他の心で接しなさい。", "相手の良いところを見なさい。", "心を開けば、相手も開きます。", "相手を変える前に、自分の心を整えなさい。", "誠実な言葉は、時間をかけて伝わります。"], "no_human": ["相手ではなく、自分の心を正しなさい。", "怒りで判断してはいけません。", "感情で人を判断してはいけません。", "正しさより感情を優先していませんか。"], "no_motive": ["相手のためになっているかを考えなさい。", "利他を忘れた関係は、必ず壊れます。", "自分の正しさを押し付けていませんか。", "相手を打ち負かすことが目的になっていませんか。"], "no_effort": ["向き合う努力を避けていませんか。", "関係を良くするために、まだ出来ることがあります。", "理解しようとする努力をしていますか。", "聞く努力をせずに、分かってもらおうとしていませんか。"]}, "money": {"label": "お金", "positive": ["動機が善であれば、利益は後からついてきます。", "正しいことを、誰にも負けない努力でやりなさい。", "売上ではなく、価値を見なさい。", "利益は結果であり、目的ではありません。", "信用が、お金を生みます。", "正しい利益は、人を幸せにします。", "お金は、価値を届けた結果としていただくものです。"], "no_human": ["その利益は、本当に正しいものですか。", "正しくない利益は、必ず自分に返ってきます。", "正しくない儲けは長く続きません。", "誰かを困らせる利益を求めてはいけません。"], "no_motive": ["私心の入った判断は、必ず歪みます。", "欲だけで動けば、必ず判断を誤ります。", "欲に流されていませんか。", "お金そのものが目的になっていませんか。"], "no_effort": ["努力を尽くしてこそ、結果は語れます。", "お金を追う前に、価値を生み出しなさい。", "価値を生む努力をしていますか。", "信用を積み上げる努力を怠っていませんか。"]}, "leadership": {"label": "リーダーシップ", "positive": ["部下を守るのが、リーダーの責任です。", "率先垂範しなさい。", "厳しさの中に、愛を持ちなさい。", "部下の成長が、組織の成長です。", "言葉より行動で示しなさい。", "リーダーの心が、組織の空気をつくります。", "責任を引き受ける覚悟を持ちなさい。"], "no_human": ["自らできていないことを、部下に求めていませんか。", "責任から逃げるリーダーに、人はついてきません。", "公平さを失っていませんか。", "人を裁く前に、自分の姿勢を見直しなさい。"], "no_motive": ["部下のためか、自分の都合かを見極めなさい。", "私心で人を動かしてはいけません。", "自分の立場を守るための判断ではありませんか。", "部下を育てる心を忘れていませんか。"], "no_effort": ["リーダーがやり切らなければ、組織は動きません。", "まず自分が一番汗をかきなさい。", "部下と向き合う努力をしていますか。", "言うだけで終わっていませんか。"]}, "growth": {"label": "自己成長", "positive": ["日々の反省が、人間をつくります。", "今日の積み重ねが、未来を決めます。", "平凡なことを、非凡な努力で続けなさい。", "小さな努力を続けなさい。", "反省のない成長はありません。", "心の持ち方で、人生は変わります。", "昨日より少し良い自分を目指しなさい。"], "no_human": ["その選択は、自分を大切にしていますか。", "昨日の自分に負けていませんか。", "自分に甘くなっていませんか。", "心の弱さを正当化していませんか。"], "no_motive": ["成長は、自分だけでなく周りのためにもあります。", "誰かの役に立つ自分を目指しなさい。", "楽を求めていませんか。", "成長した先に、誰を助けたいのか考えなさい。"], "no_effort": ["努力していない理由を、探していませんか。", "出来ることをやり切るところから始めなさい。", "まだ出来ることがあります。", "小さな一歩を避けていませんか。"]}, "decision": {"label": "判断", "positive": ["人として正しいか、それだけで判断しなさい。", "正しいと思う道を、勇気を持って進みなさい。", "迷ったら、より誠実な道を選びなさい。", "本質を見なさい。", "迷いは、考えを深める機会です。", "損得ではなく、善悪で判断しなさい。", "決めたなら、迷わず実行しなさい。"], "no_human": ["正しさから目を逸らしていませんか。", "楽な道ではなく、正しい道を選びなさい。", "正しさから逃げていませんか。", "その判断を、胸を張って説明できますか。"], "no_motive": ["動機を疑うところから始めなさい。", "私心が混じると、判断は濁ります。", "誰のための判断ですか。", "自分に都合のよい理由を作っていませんか。"], "no_effort": ["決める前に、出来る確認をやり切りなさい。", "考えるだけでなく、行動に移しなさい。", "判断材料を集め切りましたか。", "決断を先送りしていませんか。"]}, "trouble": {"label": "トラブル対応", "positive": ["まず自らの非を認めなさい。", "誠意は必ず伝わります。", "逃げずに正面から向き合いなさい。", "問題は必ず解決できます。", "誠実さが最も重要です。", "早く、正直に、丁寧に向き合いなさい。", "信頼回復は、最初の一歩で決まります。"], "no_human": ["過ちから目を逸らさず、まず正しさに立ち返りなさい。", "相手の痛みを軽く見てはいけません。", "責任転嫁していませんか。", "事実をごまかしてはいけません。"], "no_motive": ["相手の立場に立てば、取るべき行動は見えてきます。", "保身ではなく、誠意を選びなさい。", "自分を守るための行動ではありませんか。", "相手の安心を取り戻すことを考えなさい。"], "no_effort": ["逃げている限り、問題は終わりません。", "やるべきことを先送りする習慣が、信頼を損ないます。", "最後まで向き合っていますか。", "再発防止まで考えて、初めて対応です。"]}, "team": {"label": "チーム・組織", "positive": ["組織はトップの心を映します。", "信頼は日々の積み重ねです。", "心を一つにすることが、最大の力です。", "信頼は時間をかけて築くものです。", "一体感が成果を生みます。", "良い組織は、良い心から生まれます。", "全員が同じ方向を向くことが大切です。"], "no_human": ["組織の乱れは、心の乱れです。", "公平さを失えば、組織の信頼は崩れます。", "公平な判断をしていますか。", "一部の声だけで、全体を見失っていませんか。"], "no_motive": ["全体のためになっているかを考えなさい。", "誰か一人の都合で、組織を歪めてはいけません。", "全体ではなく一部を見ていませんか。", "組織を良くする動機が本当にありますか。"], "no_effort": ["やれることをやらずして、組織を嘆いてはいけません。", "チームを良くするために、まず一歩動きなさい。", "チームのために動いていますか。", "対話と共有を怠っていませんか。"]}, "challenge": {"label": "挑戦・変化", "positive": ["変化を恐れては成長はありません。", "困難こそがチャンスです。", "正しい動機と努力があるなら、迷わず進みなさい。", "挑戦の先に成長があります。", "恐れずに進みなさい。", "新しい道は、覚悟ある人に開かれます。", "不安があるからこそ、準備を尽くしなさい。"], "no_human": ["変化を恐れて、現状に逃げていませんか。", "その挑戦は、人として正しい方向にありますか。", "逃げていませんか。", "挑戦の名を借りて、責任から逃げていませんか。"], "no_motive": ["挑戦の動機を磨きなさい。", "自分だけのためではなく、誰かの未来のために進みなさい。", "なぜ挑戦するのか明確ですか。", "変化の先に、誰を良くしたいのか考えなさい。"], "no_effort": ["挑戦しない理由を作っていませんか。", "準備と努力をやり切ってから、不安を語りなさい。", "覚悟を持っていますか。", "進むための準備をやり切っていますか。"]}};const ACTIONS={"work": ["いま抱えている仕事を一つに絞り、今日中に完結させる。", "相手にとっての価値を一つ言葉にしてから、次の手を打つ。", "見落としている小さな手間がないか、最後にもう一度確認する。"], "relationship": ["相手を変えようとする前に、自分から直せる言葉や態度を一つ選ぶ。", "結論を急がず、まず相手の話を最後まで聞く時間をつくる。", "感情と事実を分けて、伝えるべきことを短く整理する。"], "money": ["損得だけでなく、相手に渡している価値を書き出す。", "短期の利益より信用を損なわない選択を一つ選ぶ。", "数字の前提を確認し、曖昧な部分を一つ潰す。"], "leadership": ["部下に求める前に、自分が先に示せる行動を一つ実行する。", "誰を守り、誰を育てるための判断なのかを言葉にする。", "指示だけで終わらせず、進み具合を自分から確認する。"], "growth": ["今日できる小さな改善を一つ決め、終わるまでやる。", "昨日の自分より良くできた点と、直す点を一つずつ書く。", "続けることを一つに絞り、明日も同じ時間に行う。"], "decision": ["損得をいったん脇に置き、人として正しいかで選択肢を見直す。", "確認できる事実を集め、推測と分けて整理する。", "決めた後の最初の一歩を、今日中に実行する。"], "trouble": ["まず事実関係を時系列で整理し、自分側の非があれば先に認める。", "相手が何に困っているかを確認し、安心につながる対応を一つ行う。", "その場の収束だけでなく、再発防止策を一つ決める。"], "team": ["チーム全体にとって何が良いかを、一文で共有する。", "認識がずれている点を一つ選び、対話の場をつくる。", "誰が・何を・いつまでに行うかを明確にする。"], "challenge": ["挑戦する理由を一文で書き、誰のためになるかを確認する。", "不安を三つ以内に分け、そのうち準備で減らせるものから着手する。", "完璧を待たず、最小の一歩を今日試す。"]};const KEYWORDS={"work": ["仕事", "業務", "働", "職場", "成果", "作業", "期限", "ミス", "効率"], "relationship": ["人間関係", "嫌", "苦手", "関係", "相手", "怒", "喧嘩", "口論", "家族", "友人"], "money": ["お金", "利益", "売上", "予算", "費用", "赤字", "給与", "賃金", "借金", "収益"], "leadership": ["部下", "上司", "管理者", "リーダー", "指導", "育成", "責任者", "マネジメント"], "growth": ["成長", "勉強", "学び", "自分", "習慣", "努力", "反省", "変わりたい"], "decision": ["判断", "決断", "迷", "選ぶ", "どちら", "決め", "悩", "選択"], "trouble": ["トラブル", "事故", "苦情", "クレーム", "問題", "謝罪", "再発", "失敗", "報告"], "team": ["チーム", "組織", "会議", "共有", "連携", "全員", "部署", "事業所", "職員"], "challenge": ["挑戦", "新しい", "変化", "始め", "転職", "異動", "開発", "改革", "チャレンジ"]};const KEYS=['work','relationship','money','leadership','growth','decision','trouble','team','challenge'];
+const QKEY={1:'no_human',2:'no_motive',3:'no_effort'};
+const QUESTIONS={
+work:["その仕事の進め方を、誰に見られても胸を張って説明できますか？","その仕事は、自分の評価より相手や社会の役に立つことを目的にしていますか？","いま出来る準備・確認・一手間を、やり切っていますか？"],
+relationship:["感情だけでなく、人として正しい態度で相手に向き合えていますか？","相手を負かすことではなく、関係を良くすることを願っていますか？","相手を理解するために、聞く・伝える努力を十分にしていますか？"],
+money:["そのお金や利益の得方を、誰にでも正しいと説明できますか？","自分の得だけでなく、相手に価値を届けることが動機になっていますか？","利益を求める前に、価値と信用を積み上げる努力をやり切っていますか？"],
+leadership:["部下に求めていることを、まず自分自身が実行できていますか？","その判断は、自分の立場より部下や組織の成長を願ったものですか？","結果の責任を引き受ける覚悟で、必要な行動をやり切っていますか？"],
+growth:["いま選ぼうとしている道は、自分をより良い人間にする方向ですか？","自分だけの満足ではなく、成長した先で誰かの役に立とうとしていますか？","小さなことでも、今日できる努力を継続してやり切っていますか？"],
+decision:["損得や好き嫌いを外しても、その判断を正しいと言えますか？","その決断に、保身や自分だけの都合が入り込んでいませんか？","決めるために必要な事実確認と検討を、十分にやり切りましたか？"],
+trouble:["事実をごまかさず、自分側の非も含めて正面から見ていますか？","自分を守ることより、相手の安心と信頼回復を優先していますか？","謝罪・修正・再発防止まで、必要な対応を最後までやり切れますか？"],
+team:["一部の都合ではなく、チーム全体にとって公平な判断になっていますか？","自分の立場より、組織全体を良くすることを願っていますか？","対話・共有・役割整理など、チームのために出来ることをやり切っていますか？"],
+challenge:["その挑戦は、逃げではなく人として正しい方向への一歩ですか？","なぜ挑戦するのか、その先で誰を良くしたいのかが明確ですか？","不安を理由に止まる前に、出来る準備と努力をやり切っていますか？"]
+};
+const CORE_WORDS={
+work:["人生・仕事の結果＝考え方×熱意×能力","誰にも負けない努力をする"],
+relationship:["利他の心","心を高める"],
+money:["動機善なりや、私心なかりしか","売上を最大に、経費を最小に"],
+leadership:["率先垂範","利他の心"],
+growth:["誰にも負けない努力をする","反省ある毎日を送る"],
+decision:["人間として何が正しいのか","動機善なりや、私心なかりしか"],
+trouble:["人間として何が正しいのか","反省ある毎日を送る"],
+team:["ベクトルを合わせる","利他の心"],
+challenge:["誰にも負けない努力をする","強烈な願望を心に抱く"]
+};
+let genre=-1,content='',answers={},noQuotes={};
+function pick(a,x=[]){if(!a||!a.length)return'';const p=a.filter(v=>!x.includes(v));const u=p.length?p:a;return u[Math.floor(Math.random()*u.length)]}
+function selectGenre(i){genre=i;document.querySelectorAll('.genre').forEach((b,j)=>b.classList.toggle('selected',i===j));const e=document.getElementById('step-content');e.style.display='block';e.scrollIntoView({behavior:'smooth',block:'center'})}
+function setGenreQuestions(){const k=KEYS[genre],qs=QUESTIONS[k];qs.forEach((t,i)=>{document.getElementById(`q${i+1}-text`).textContent=t})}
+function startQuestions(){content=document.getElementById('content').value.trim();if(genre<0){alert('まず、近いジャンルを選んでください。');return}if(!content){alert('今のことを、ひとこと書いてください。');return}setGenreQuestions();document.getElementById('step-content').style.display='none';document.getElementById('step-questions').style.display='block';document.getElementById('q1-card').scrollIntoView({behavior:'smooth',block:'center'})}
+function answerQ(q,a){answers[q]=a;const y=document.getElementById(`q${q}-yes`),n=document.getElementById(`q${q}-no`);y.classList.toggle('yes',a==='yes');n.classList.toggle('no',a==='no');y.disabled=n.disabled=true;if(a==='no'){const k=KEYS[genre],qt=pick(QUOTES[k][QKEY[q]]);noQuotes[q]=qt;const ne=document.getElementById(`q${q}-note`);ne.innerHTML=`<div class="source-tag philosophy">🌿 稲盛哲学から考える</div><div class="noquote">${qt}</div><div class="nosub">この問いを「イエス」に近づけるには、何ができそうでしょう。</div>`;ne.classList.add('show')}setTimeout(()=>{if(q<3){const nx=document.getElementById(`q${q+1}-card`);nx.style.display='block';nx.scrollIntoView({behavior:'smooth',block:'center'})}else getResult()},a==='no'?900:350)}
+function inferGenre(t){const s={};KEYS.forEach(k=>s[k]=0);for(const[k,ws]of Object.entries(KEYWORDS))for(const w of ws)if(t.includes(w))s[k]+=w.length>=4?2:1;s[KEYS[genre]]+=2.5;return Object.entries(s).sort((a,b)=>b[1]-a[1])[0][0]}
+function reflection(){const n=Object.values(answers).filter(v=>v==='no').length;return n===0?'三つの問いには、すべて「イエス」でした。方向は大きく外れていないようです。あとは、目の前の一つを丁寧にやり切ることです。':n===1?'三つのうち、一つだけ立ち止まる場所が見つかりました。全部を変える必要はありません。その一点を「イエス」に近づけることから始めましょう。':n===2?'いまは少し立ち止まり、土台を整える時です。「正しさ・動機・努力」のうち、ノーだった二つを順番に見直してみましょう。':'いまは結論を急ぐより、土台から整える時です。「人として正しいか」「動機に私心はないか」「努力をやり切ったか」を一つずつ見直してみましょう。'}
+function dialogueText(k){const no=Object.keys(answers).filter(q=>answers[q]==='no').map(Number);if(!no.length)return`お話を読む限り、いまの方向そのものを疑う必要はなさそうです。むしろ大切なのは、<strong>${QUOTES[k].label}</strong>の場面で決めたことを、日々の行動としてやり切ることではないでしょうか。`;const labels={1:'正しさ',2:'動機',3:'努力'};const focus=no.map(q=>`「${labels[q]}」`).join('と');return`お話と三つの答えを重ねると、いま一番見つめたいのは${focus}です。答えを急いで外に求めるより、まず自分の心と行動を整える。そこから次の判断が見えやすくなるはずです。`}
+function chooseStep(k){const no=Object.keys(answers).filter(q=>answers[q]==='no').map(Number);if(no.includes(1))return ACTIONS[k][0];if(no.includes(2))return ACTIONS[k][1]||ACTIONS[k][0];if(no.includes(3))return ACTIONS[k][2]||ACTIONS[k][0];return ACTIONS[k][0]}
+function getResult(){document.getElementById('step-questions').style.display='none';document.getElementById('loading').classList.add('on');setTimeout(()=>{const uk=KEYS[genre],lk=inferGenre(content);const no=Object.keys(noQuotes).map(Number);const philosophy=no.length?noQuotes[no[0]]:pick(QUOTES[uk].positive);const core=pick(CORE_WORDS[uk]);const step=chooseStep(uk);render({uk,lk,core,philosophy,step,reflection:reflection(),dialogue:dialogueText(uk)});document.getElementById('loading').classList.remove('on')},450)}
+function render(d){const rel=d.lk!==d.uk?`<div class="small">相談文には「${QUOTES[d.lk].label}」の要素も少し含まれているようです。※端末内の簡易キーワード判定です。</div>`:'';document.getElementById('result').innerHTML=`<div class="result"><div class="label">いま見えてきたこと</div><div class="context-chip">${QUOTES[d.uk].label}</div><div class="reflection">${d.reflection}</div><div class="dialogue"><strong>稲盛先生なら、まずここを見るでしょう。</strong><br><br>${d.dialogue}</div><div class="source-tag words">📖 稲盛先生の代表的な言葉・考え方</div><div class="today-word"><div class="qtext2">「${d.core}」</div><div class="nosub">※代表的な表現として登録。直接引用として使用する場合は出典確認を推奨します。</div></div><div class="source-tag philosophy">🌿 稲盛哲学から考える</div><div class="quote"><div class="qtext2">${d.philosophy}</div></div>${rel}</div><div class="result"><div class="label">今日の一歩</div><div class="one-step"><div class="anum">1</div><div class="atext">${d.step}</div></div><div class="small">全部を変えなくて大丈夫です。今日は、この一つだけ。</div></div><div class="shime">正しいことを、ひとつずつ。<br>やり切るところから。</div>`;document.getElementById('result').style.display='block';document.getElementById('reset').style.display='block';document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'})}
+function resetAll(){genre=-1;content='';answers={};noQuotes={};document.getElementById('step-content').style.display='none';document.getElementById('step-questions').style.display='none';document.getElementById('result').style.display='none';document.getElementById('reset').style.display='none';document.getElementById('q2-card').style.display='none';document.getElementById('q3-card').style.display='none';[1,2,3].forEach(q=>{const ne=document.getElementById(`q${q}-note`);ne.classList.remove('show');ne.innerHTML='';const y=document.getElementById(`q${q}-yes`),n=document.getElementById(`q${q}-no`);y.className=n.className='yn';y.disabled=n.disabled=false});document.querySelectorAll('.genre').forEach(b=>b.classList.remove('selected'));document.getElementById('content').value='';scrollTo({top:0,behavior:'smooth'})}
 
-body::before{content:'';position:fixed;inset:0;
-  background:radial-gradient(ellipse at 50% 0%,rgba(139,26,26,0.08) 0%,transparent 60%);
-  pointer-events:none;z-index:0;}
-
-header{background:linear-gradient(180deg,#111118,#1a1a1f);border-bottom:2px solid rgba(212,168,67,0.3);padding:18px 20px 14px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 30px rgba(0,0,0,0.5);}
-.logo{font-family:'Noto Serif JP',serif;font-size:10px;letter-spacing:5px;color:var(--muted2);text-transform:uppercase;margin-bottom:4px;}
-header h1{font-size:22px;font-weight:900;color:var(--text);letter-spacing:4px;}
-header h1 em{color:var(--gold);font-style:normal;}
-.vbadge{font-size:9px;letter-spacing:2px;color:var(--muted);border:1px solid var(--border);padding:2px 10px;border-radius:20px;margin-top:5px;display:inline-block;}
-.back-btn{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:11px;letter-spacing:1px;text-decoration:none;opacity:0.7;}
-
-.wrap{max-width:480px;margin:0 auto;padding:24px 16px;position:relative;z-index:1;}
-
-/* INTRO */
-.intro{text-align:center;margin-bottom:28px;padding:20px;}
-.intro-icon{font-size:48px;margin-bottom:12px;}
-.intro-name{font-size:20px;font-weight:700;color:var(--gold2);letter-spacing:4px;margin-bottom:6px;}
-.intro-desc{font-size:12px;color:var(--muted2);line-height:2;letter-spacing:1px;}
-.intro-divider{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px auto;}
-
-/* CARD */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold),var(--red));}
-.card-title{font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
-
-/* GENRE GRID */
-.genre-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
-.genre-btn{padding:12px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:'Shippori Mincho',serif;font-size:12px;cursor:pointer;text-align:center;transition:all 0.2s;line-height:1.5;}
-.genre-btn:hover{background:var(--bg4);border-color:var(--gold);color:var(--gold);}
-.genre-btn.selected{background:rgba(201,168,76,0.1);border-color:var(--gold);color:var(--gold2);}
-.genre-num{font-size:10px;color:var(--muted);display:block;margin-bottom:2px;}
-
-/* QUESTION CARD */
-.question-card{background:var(--bg2);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius);padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
-.question-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold));}
-.question-text{font-size:14px;line-height:2;color:var(--text);margin-bottom:14px;}
-.question-note{font-size:13px;color:var(--text2);line-height:1.9;margin-top:10px;padding:12px;background:var(--bg3);border-left:3px solid var(--red2);border-radius:0 6px 6px 0;display:none;}
-.question-note.show{display:block;}
-.no-quote{font-size:15px;font-weight:700;color:var(--gold2);line-height:1.8;margin-bottom:6px;}
-.no-sub{font-size:11px;color:var(--muted2);margin-top:4px;}
-.yn-row{display:flex;gap:10px;}
-.yn-btn{flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--muted2);font-family:'Shippori Mincho',serif;font-size:13px;cursor:pointer;transition:all 0.15s;text-align:center;}
-.yn-btn:hover{border-color:var(--gold);color:var(--gold);}
-.yn-btn.yes{border-color:var(--gold);background:rgba(201,168,76,0.1);color:var(--gold2);}
-.yn-btn.no{border-color:var(--red2);background:rgba(192,57,43,0.1);color:var(--red2);}
-
-/* INPUT */
-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Shippori Mincho',serif;font-size:13px;padding:12px;resize:none;line-height:2;transition:border-color 0.2s;}
-textarea:focus{outline:none;border-color:var(--gold);}
-textarea::placeholder{color:var(--muted);font-size:12px;}
-
-/* BTN */
-.btn{width:100%;padding:14px;border:none;border-radius:var(--radius);font-family:'Shippori Mincho',serif;font-weight:700;cursor:pointer;letter-spacing:2px;transition:all 0.15s;font-size:14px;margin-top:10px;}
-.btn-primary{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;}
-.btn-primary:hover{opacity:0.9;transform:translateY(-1px);}
-.btn-secondary{background:transparent;color:var(--muted2);border:1px solid var(--border);font-size:12px;}
-.btn-secondary:hover{color:var(--text);border-color:var(--muted2);}
-
-/* LOADING */
-.loading{display:none;text-align:center;padding:40px 0;}
-.loading.on{display:block;}
-.ring{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.ltxt{color:var(--gold);font-size:12px;letter-spacing:3px;animation:pulse 1.4s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-
-/* RESULT */
-.result-card{background:var(--bg2);border:1px solid rgba(201,168,76,0.25);border-radius:var(--radius);padding:20px;margin-bottom:14px;position:relative;overflow:hidden;}
-.result-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold),var(--red));}
-.result-label{font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:14px;}
-
-/* QUOTE */
-.quote{border-left:3px solid var(--gold);padding:10px 14px;margin-bottom:10px;background:rgba(201,168,76,0.04);border-radius:0 6px 6px 0;}
-.quote-text{font-size:14px;line-height:2;color:var(--text);}
-
-/* ACTION */
-.action-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
-.action-item:last-child{border-bottom:none;}
-.action-num{font-size:18px;color:var(--gold);font-weight:700;min-width:24px;}
-.action-text{font-size:13px;line-height:1.9;color:var(--text);}
-
-/* SHIME */
-.shime{text-align:center;padding:20px;font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:3px;line-height:2;}
-
-footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);letter-spacing:1px;line-height:2;position:relative;z-index:1;}
-footer em{color:var(--gold);font-style:normal;}
-</style>
-</head>
-<body>
-
-<header>
-  <a class="back-btn" href="../index.html">‹ TOP</a>
-  <div class="logo">Inamori Philosophy</div>
-  <h1>📖 <em>稲盛</em>先生</h1>
-  <div class="vbadge">稲盛和夫フィロソフィー</div>
-</header>
-
-<div class="wrap">
-
-  <!-- INTRO -->
-  <div class="intro" id="intro">
-    <div class="intro-icon">🪷</div>
-    <div class="intro-name">稲盛先生</div>
-    <div class="intro-divider"></div>
-    <div class="intro-desc">どうしました？<br>差し支えなければ、どのジャンルのご相談か<br>教えていただけますか？</div>
-  </div>
-
-  <!-- STEP 1: GENRE -->
-  <div class="card" id="step-genre">
-    <div class="card-title">ジャンルをお選びください</div>
-    <div class="genre-grid">
-      <button class="genre-btn" onclick="selectGenre(0)"><span class="genre-num">①</span>仕事</button>
-      <button class="genre-btn" onclick="selectGenre(1)"><span class="genre-num">②</span>人間関係</button>
-      <button class="genre-btn" onclick="selectGenre(2)"><span class="genre-num">③</span>お金</button>
-      <button class="genre-btn" onclick="selectGenre(3)"><span class="genre-num">④</span>リーダーシップ</button>
-      <button class="genre-btn" onclick="selectGenre(4)"><span class="genre-num">⑤</span>自己成長</button>
-      <button class="genre-btn" onclick="selectGenre(5)"><span class="genre-num">⑥</span>判断</button>
-      <button class="genre-btn" onclick="selectGenre(6)"><span class="genre-num">⑦</span>トラブル対応</button>
-      <button class="genre-btn" onclick="selectGenre(7)"><span class="genre-num">⑧</span>チーム・組織</button>
-      <button class="genre-btn" onclick="selectGenre(8)"><span class="genre-num">⑨</span>挑戦・変化</button>
-    </div>
-  </div>
-
-  <!-- STEP 2: CONTENT -->
-  <div class="card" id="step-content" style="display:none;">
-    <div class="card-title">ありがとうございます</div>
-    <div style="font-size:13px;color:var(--muted2);margin-bottom:12px;line-height:1.9;">差し支えなければ、内容を一言で教えていただけますか？</div>
-    <textarea id="content-input" rows="4" placeholder="例）部下との関係がうまくいっていません…"></textarea>
-    <button class="btn btn-primary" onclick="startQuestions()">次へ</button>
-  </div>
-
-  <!-- STEP 3: QUESTIONS -->
-  <div id="step-questions" style="display:none;">
-    <div class="question-card" id="q1-card">
-      <div class="card-title">問い ①</div>
-      <div class="question-text">今のあなたの行動は、<br>人として正しい方向に向かっていますか？</div>
-      <div class="question-note" id="q1-note">人として正しいかを外せば、すべては崩れます。<br>では、どうすればイエスにできますか？</div>
-      <div class="yn-row">
-        <button class="yn-btn" id="q1-yes" onclick="answerQ(1,'yes')">① イエス</button>
-        <button class="yn-btn" id="q1-no" onclick="answerQ(1,'no')">② ノー</button>
-      </div>
-    </div>
-    <div class="question-card" id="q2-card" style="display:none;">
-      <div class="card-title">問い ②</div>
-      <div class="question-text">その行動の動機は、<br>誰かのためになるものですか？</div>
-      <div class="question-note" id="q2-note">私心を捨て、動機を磨きなさい。<br>では、どうすればイエスにできますか？</div>
-      <div class="yn-row">
-        <button class="yn-btn" id="q2-yes" onclick="answerQ(2,'yes')">① イエス</button>
-        <button class="yn-btn" id="q2-no" onclick="answerQ(2,'no')">② ノー</button>
-      </div>
-    </div>
-    <div class="question-card" id="q3-card" style="display:none;">
-      <div class="card-title">問い ③</div>
-      <div class="question-text">今のあなたは、<br>出来ることをすべてやり切っていますか？</div>
-      <div class="question-note" id="q3-note">努力を尽くしてこそ、結果は語れます。<br>では、どうすればイエスにできますか？</div>
-      <div class="yn-row">
-        <button class="yn-btn" id="q3-yes" onclick="answerQ(3,'yes')">① イエス</button>
-        <button class="yn-btn" id="q3-no" onclick="answerQ(3,'no')">② ノー</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- LOADING -->
-  <div class="loading" id="loading">
-    <div class="ring"></div>
-    <div class="ltxt">稲盛先生 思索中…</div>
-  </div>
-
-  <!-- RESULT -->
-  <div id="result" style="display:none;"></div>
-
-  <!-- RESET -->
-  <div id="reset-wrap" style="display:none;">
-    <button class="btn btn-secondary" onclick="resetAll()">最初から相談する</button>
-  </div>
-
-</div>
-
-<footer>📖 <em>稲盛先生</em> — 稲盛和夫フィロソフィーに基づく対話システム<br>
-<a href="./quotes_v2.html" style="font-size:9px;color:var(--muted);letter-spacing:1px;text-decoration:none;opacity:0.5;margin-top:6px;display:inline-block;">語録データ確認</a>
-
-  <div style="margin-top:20px;">
-    <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:3px;margin-bottom:10px;">稲盛先生</div>
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJwAAACcCAYAAACKuMJNAAAEKklEQVR4nO3dO24bMRQFUEnIItK7zGKyoNRZUBbjUn12kRSBA2P8oehHXs7I55TWSBoIF88P/M35dIOHh29/brmOz+16fTy3rnn3AkHjI94L3qsvCBojvBa8y/YPwsYor2Xp0roAKraZurz1AozyPFsv/qXCTJfTSXVjvqeMqXBEnVU3klQ4ogSOqC+9b/j18+uM+3jT9x+/u67f3t/2/a3Xq1q/T+/9pH/vXr2/nwpHlMARJXBEdfdwW+keqHV9tUca3UNVe9Dez1/do7aocEQJHFECR1S5h9uq9iC9n7+6J5s9Tra6Bxv9/SocUQJHlMARNbyHSxs9d5oexzra3GmVCkeUwBElcEQdvocbPXe6Ve2per8vPTeapsIRJXBECRxRw3u42T3G7PVus+dmV/dkq3tAFY4ogSNK4Igq93Dpub+99Wyje769jSOOpsIRJXBECRxRhzuu62hnd8z+vtXjar1UOKIEjiiBI2r6vtTZ69Vmf37L6LNAqu+v7tmYPderwhElcEQJHFHlcbi9zU2OHoeb/Xm9Rp8Nkt63q8IRJXBECRxR5ec0rO65Vu9RqKr2fK37H72vtkqFI0rgiBI4oozDhfeJzn7uw+wzjKu/jwpHlMARJXBEdfdwq3uqexuHW73nwVwqd03giBI4orrnUlf3VKtf79U717n6rBB7GrgrAkeUwBFlPdzicbpqjzT6ebOt66tUOKIEjiiBI8p6uPCZutWeq2X12SUtKhxRAkeUwBFlHC58fl1LtWecPRdqPRyHInBECRxR1sMVe5LRc697Xw9X/X4VjiiBI0rgiDIOFz6jt7rvc3aPOXv9nwpHlMARJXBEGYcLnw/XcrT766XCESVwRAkcUc6HG/zsrdb1W6vPo2sZPS6pwhElcEQJHFHG4SbvO93bPtXez7cejkMTOKIEjijr4Tpfr65nSz8LK302SYsKR5TAESVwRBmHW7zHoTquN/pskxbr4TgUgSNK4IgyDjd5XGt1D9irug+2RYUjSuCIEjiiDvechpbV+1JXP1ehZfVzJ1Q4ogSOKIEjqjwON/v1vZ2HNvp8uNnjfrP3TPRS4YgSOKIEjqjuHm5r9rOceq/f+3MaquvZVveYVSocUQJHlMARVe7htlbPBe59bndr7+fLOVuEQxM4ogSOqOE93Gyre7bZ689a79+q9njp50CocEQJHFECR9Theri9jbO19PZEq5+1Nfv7VDiiBI4ogSNqeA83u8fY2zjbVrVHrL6+Nfq5FM6H41AEjiiBI6rcw6Wf97m1t3G42T3T6PvrVe3pVDiiBI4ogSOqfD4c9FDhiBI4oi7X6+N59U3wOVyvj2cVjqjL6fQveatvhPv2lDEVjqj/gVPlmOV5ti5vvQAjbDP14l+q0DHKa1l6N1xmIfiI94rWTdVM8LjFLf8d/wKftO2G0RTJPAAAAABJRU5ErkJggg==" alt="QR" style="width:120px;height:120px;border-radius:10px;display:block;margin:0 auto;">
-    <div style="font-size:9px;letter-spacing:4px;color:var(--muted);margin-top:8px;">SHARE</div>
-  </div>
-</footer>
-
-<script>
-// apikey.jsを動的読み込み（ない環境でもクラッシュしない）
+// UI: about / tech modal and theme
 (function(){
-  const s = document.createElement('script');
-  s.src = '../apikey.js';
-  s.onerror = () => console.warn('apikey.js not found - API機能は無効');
-  document.head.appendChild(s);
-})();
-
-// ── ジャンルキー対応表 ──
-const GENRE_KEYS = ['work','relationship','money','leadership','growth','decision','trouble','team','challenge'];
-const GENRE_LABELS = ['仕事','人間関係','お金','リーダーシップ','自己成長','判断','トラブル対応','チーム・組織','挑戦・変化'];
-
-// NO質問→JSONキー対応
-const Q_TO_NO_KEY = { 1:'no_human', 2:'no_motive', 3:'no_effort' };
-
-let quotesData = null; // JSONキャッシュ
-let selectedGenreIdx = -1;
-let userContent = '';
-let answers = {};
-
-// ── JSON読み込み ──
-async function loadQuotes() {
-  if (quotesData) return quotesData;
-  const r = await fetch('./inamori_quotes_v2.json');
-  quotesData = await r.json();
-  return quotesData;
-}
-
-// ── ジャンル選択 ──
-function selectGenre(i) {
-  selectedGenreIdx = i;
-  document.querySelectorAll('.genre-btn').forEach((b,j) => b.classList.toggle('selected', i===j));
-  document.getElementById('step-content').style.display = 'block';
-  document.getElementById('step-content').scrollIntoView({behavior:'smooth'});
-}
-
-// ── 相談内容入力→質問へ ──
-function startQuestions() {
-  userContent = document.getElementById('content-input').value.trim();
-  if (!userContent) { alert('内容を入力してください'); return; }
-  if (selectedGenreIdx < 0) { alert('ジャンルを選んでください'); return; }
-  document.getElementById('step-content').style.display = 'none';
-  document.getElementById('step-questions').style.display = 'block';
-  document.getElementById('q1-card').scrollIntoView({behavior:'smooth'});
-}
-
-// ── YES/NO回答 ──
-async function answerQ(q, ans) {
-  answers[q] = ans;
-  const yBtn = document.getElementById(`q${q}-yes`);
-  const nBtn = document.getElementById(`q${q}-no`);
-  yBtn.classList.toggle('yes', ans==='yes');
-  nBtn.classList.toggle('no', ans==='no');
-  yBtn.disabled = true; nBtn.disabled = true;
-
-  // NOの場合はJSONから該当語録を即表示
-  if (ans === 'no') {
-    const noteEl = document.getElementById(`q${q}-note`);
-    try {
-      const data = await loadQuotes();
-      const genreKey = GENRE_KEYS[selectedGenreIdx];
-      const noKey = Q_TO_NO_KEY[q];
-      const pool = data[genreKey][noKey];
-      const quote = pool[Math.floor(Math.random() * pool.length)];
-      noteEl.innerHTML = `<div class="no-quote">「${quote}」</div><div class="no-sub">では、どうすればイエスにできますか？</div>`;
-    } catch(e) {
-      // フォールバック（JSON読めない場合は元のテキスト）
-    }
-    noteEl.classList.add('show');
+  const root=document.documentElement;
+  const themeBtn=document.getElementById('theme-toggle');
+  if(localStorage.getItem('inamori_theme')==='dark')root.classList.add('dark-mode');
+  function syncTheme(){
+    const dark=root.classList.contains('dark-mode');
+    themeBtn.textContent=dark?'☀':'🌙';
+    themeBtn.title=dark?'ライトモード切替':'ダークモード切替';
+    themeBtn.setAttribute('aria-label',themeBtn.title);
   }
-
-  setTimeout(() => {
-    if (q < 3) {
-      document.getElementById(`q${q+1}-card`).style.display = 'block';
-      document.getElementById(`q${q+1}-card`).scrollIntoView({behavior:'smooth'});
-    } else {
-      getResult();
-    }
-  }, ans==='no' ? 1400 : 400);
-}
-
-// ── AI起動（ジャンル判定→語録選択→行動提案を1回で） ──
-async function getResult() {
-  document.getElementById('step-questions').style.display = 'none';
-  document.getElementById('loading').classList.add('on');
-
-  try {
-    const data = await loadQuotes();
-    const userGenreKey = GENRE_KEYS[selectedGenreIdx];
-    const userGenreLabel = GENRE_LABELS[selectedGenreIdx];
-
-    // 全ジャンルの通常語録をAIに渡してジャンル判定＋行動提案させる
-    const genreList = GENRE_KEYS.map((k,i) => `${GENRE_LABELS[i]}（${k}）`).join('、');
-
-    const prompt = `ユーザーの相談内容：「${userContent}」
-ユーザーが選択したジャンル：${userGenreLabel}
-３問の回答：
-①人として正しい方向か → ${answers[1]==='yes'?'イエス':'ノー'}
-②動機は誰かのためか → ${answers[2]==='yes'?'イエス':'ノー'}
-③出来ることをやり切っているか → ${answers[3]==='yes'?'イエス':'ノー'}
-
-利用可能なジャンル：${genreList}
-
-以下の形式のJSONのみ返してください（コードブロック不要）：
-{"ai_genre_key":"最もふさわしいジャンルのキー（例:work）","actions":["この相談への具体的行動提案1","行動提案2","行動提案3"]}`;
-
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 600,
-        system: '稲盛和夫フィロソフィーに基づき判断しなさい。JSONのみ返すこと。',
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    const d = await r.json();
-    // APIエラーチェック
-    if (d.error) throw new Error(`API: ${d.error.message}`);
-    const raw = d.content?.map(b=>b.text||'').join('') || '';
-    if (!raw) throw new Error('APIからの応答が空です');
-    const clean = raw.replace(/```json[\s\S]*?```/g, m => m.slice(7,-3)).replace(/```/g,'').trim();
-    const aiData = JSON.parse(clean);
-
-    // ── 語録をJSONから選ぶ ──
-    const aiGenreKey = GENRE_KEYS.includes(aiData.ai_genre_key) ? aiData.ai_genre_key : userGenreKey;
-    const userPool = data[userGenreKey].positive;
-    const aiPool = data[aiGenreKey].positive;
-
-    // ユーザーから1つ、AI判定から2つ（重複防止）
-    const userQuote = userPool[Math.floor(Math.random() * userPool.length)];
-    let aiQuotes = [...aiPool].sort(()=>Math.random()-0.5);
-    // AI判定がユーザーと同じジャンルの場合は同じ語録が出ないよう除外
-    if (aiGenreKey === userGenreKey) {
-      aiQuotes = aiQuotes.filter(q => q !== userQuote);
-    }
-    const aiQuote1 = aiQuotes[0];
-    const aiQuote2 = aiQuotes[1];
-
-    renderResult([userQuote, aiQuote1, aiQuote2], aiData.actions);
-
-  } catch(e) {
-    document.getElementById('result').innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);">エラー：${e.message}</div>`;
-    document.getElementById('result').style.display = 'block';
-  } finally {
-    document.getElementById('loading').classList.remove('on');
-  }
-}
-
-// ── 結果表示 ──
-function renderResult(quotes, actions) {
-  const html = `
-    <div class="result-card">
-      <div class="result-label">◆ 語録</div>
-      ${quotes.map(q=>`<div class="quote"><div class="quote-text">「${q}」</div></div>`).join('')}
-    </div>
-    <div class="result-card">
-      <div class="result-label">◆ 次に取る行動のヒントです</div>
-      ${actions.map(a=>`<div class="action-item"><div class="action-num">・</div><div class="action-text">${a}</div></div>`).join('')}
-      <div style="margin-top:12px;font-size:12px;color:var(--muted2);">この中から、まず1つ実行してみてください。</div>
-    </div>
-    <div class="shime">正しいことを、やり切るだけです。</div>`;
-
-  document.getElementById('result').innerHTML = html;
-  document.getElementById('result').style.display = 'block';
-  document.getElementById('reset-wrap').style.display = 'block';
-  document.getElementById('result').scrollIntoView({behavior:'smooth'});
-}
-
-// ── リセット ──
-function resetAll() {
-  selectedGenreIdx=-1; userContent=''; answers={};
-  document.getElementById('step-content').style.display='none';
-  document.getElementById('step-questions').style.display='none';
-  document.getElementById('result').style.display='none';
-  document.getElementById('reset-wrap').style.display='none';
-  document.getElementById('q2-card').style.display='none';
-  document.getElementById('q3-card').style.display='none';
-  ['q1','q2','q3'].forEach(q=>{
-    document.getElementById(`${q}-note`).classList.remove('show');
-    document.getElementById(`${q}-note`).innerHTML='';
-    document.getElementById(`${q}-yes`).className='yn-btn';
-    document.getElementById(`${q}-no`).className='yn-btn';
-    document.getElementById(`${q}-yes`).disabled=false;
-    document.getElementById(`${q}-no`).disabled=false;
+  syncTheme();
+  themeBtn.addEventListener('click',()=>{
+    root.classList.toggle('dark-mode');
+    localStorage.setItem('inamori_theme',root.classList.contains('dark-mode')?'dark':'light');
+    syncTheme();
   });
-  document.querySelectorAll('.genre-btn').forEach(b=>b.classList.remove('selected'));
-  document.getElementById('content-input').value='';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-// ページ読み込み時にJSONをプリフェッチ
-window.addEventListener('load', () => loadQuotes().catch(()=>{}));
-
-</script>
-</body>
-</html>
+  const openModal=id=>{const m=document.getElementById(id);m.classList.add('open');m.setAttribute('aria-hidden','false')};
+  const closeModal=id=>{const m=document.getElementById(id);m.classList.remove('open');m.setAttribute('aria-hidden','true')};
+  document.getElementById('about-btn').addEventListener('click',()=>openModal('about-modal'));
+  document.getElementById('tech-btn').addEventListener('click',()=>openModal('tech-modal'));
+  document.addEventListener('click',e=>{
+    const closer=e.target.closest('[data-close]');
+    if(closer)closeModal(closer.dataset.close);
+    if(e.target.classList.contains('modal'))closeModal(e.target.id);
+  });
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal.open').forEach(m=>closeModal(m.id))});
+})();
+</script></body></html>
