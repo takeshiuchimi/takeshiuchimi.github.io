@@ -367,7 +367,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0902-1858"
+    "buildDate": "0902-1908"
   },
   "about": {
     "paragraphs": [
@@ -395,7 +395,7 @@
       { "heading": "🍎 落下の物理演算", "body": "もいだ・落ちた果物は、単純な重力加速度シミュレーション(1tickごとに速度が加算されていく)で落下させています。特別なライブラリは使っていません。" },
       { "heading": "👆 手だけでボタン操作(ドウェル選択)", "body": "「はじめる」「もう一回」「一覧に戻る」だけでなく、ハブ画面のプログラム選択・ページ送りも同じ方式です。手を約1.2秒乗せ続けると、円形(またはカードの下からの塗りつぶし)のゲージが満ちて自動的に選ばれます。タップでも操作できます。" },
       { "heading": "📳 バイブレーション", "body": "対応端末では、フルーツを掴んだ・木を揺らした・カヌーを漕いだ等の操作、成功・失敗の判定、ゲーム終了時の評価に応じて、振動の強さやパターンを変えてフィードバックしています。" },
-      { "heading": null, "body": "<b>花火の音</b>：てにゃー花火だけ、打ち上がる瞬間に音を鳴らします。音声ファイルは一切使わず、Web Audio APIでその場で音を合成しています。リアルな「ドン」という炸裂音ではなく、鈴が駆け上がるようなキラキラした音階(チロリロリン)にして、世界観に合わせた夢のある音にしています。" },
+      { "heading": null, "body": "<b>成功音</b>：フルーツを取った・キャッチした・花火が上がった等、成功した瞬間に全てのプログラムで音を鳴らします。音声ファイルは一切使わず、Web Audio APIでその場で音を合成しています。鈴が駆け上がるようなキラキラした音階(チロリロリン)で、夢のある音にしています。" },
       { "heading": "⚠️ 動作条件", "body": "カメラ機能(getUserMedia)は、HTTPS配信かlocalhost環境でないとブラウザの制約で動作しません。ファイルをそのまま開いただけでは、カメラの許可が出ない場合があります。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
@@ -415,7 +415,7 @@
       { "key":"ski", "icon":"⛷️", "name":"すきー", "desc":"近日公開", "disabled": true }
     ]},
     { "heading": "🎆 夕方・夜のエリア", "items": [
-      { "key":"hanabi", "icon":"🎆", "name":"てにゃー花火", "desc":"夜空の星に手を合わせて花火を打ち上げ", "disabled": false, "purpose":"夜空に浮かぶ星を目で探し、その位置に向かって手を伸ばします。星は毎回違う位置に現れるので、上下左右へ手を伸ばす動きを繰り返し引き出します。失敗を気にせず、花火が上がる瞬間を楽しめる構成にしています。" }
+      { "key":"hanabi", "icon":"🎆", "name":"てにゃー花火", "desc":"夜空の星に手を合わせて花火を打ち上げ", "disabled": false, "purpose":"夜空に浮かぶ星を目で探し、その位置に向かって手を伸ばします。星は毎回違う位置に現れるので、上下左右へ手を伸ばす動きを繰り返し引き出します。" }
     ]}
   ]
 }
@@ -935,7 +935,7 @@ function getAudioCtx(){
     return sharedAudioCtx;
   }catch(e){ return null; }
 }
-function playFireworkSound(scale){
+function playSuccessSound(scale){
   const ctx = getAudioCtx();
   if(!ctx) return;
   scale = scale || 1;
@@ -983,6 +983,7 @@ function onSuccess(points, customVibrate){
   scoreDisplayEl.textContent = totalSuccess + '点';
   catReact('happy');
   if(customVibrate) customVibrate(); else feedbackSuccess();
+  playSuccessSound(points / 2);
   const msg = comboMessage();
   showCallout(msg || 'ナイス!');
 }
@@ -2066,7 +2067,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   registerProgram('hanabi', {
     title: '🎆 てにゃー花火',
     durationSec: 60,
-    introHtml: 'カメラを使って、夜空に浮かぶ星に手を合わせます。<br>しばらく手を合わせ続けると花火が上がります!<br>星の色によって、菊・牡丹・柳の3種類の花火が変わります。<br>のんびり楽しんでください。失敗はありません。<br>カメラへのアクセスを許可してください。',
+    introHtml: 'カメラを使って、夜空に浮かぶ星に手を合わせます。<br>しばらく手を合わせ続けると、菊・牡丹・柳、3種類の花火が上がります!失敗はありません、のんびり楽しんでください。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="night-sky">
         <div class="moon">🌙</div>
@@ -2167,7 +2168,6 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         if(elapsed >= STAR_HOLD_MS){
           const t = FIREWORK_TYPES[starType];
           onSuccess(t.points, ()=>feedbackFirework(t.points));
-          playFireworkSound(t.points / 2);
           statusEl.textContent = t.label + 'の花火が上がった!';
           launchFirework(starX, starY, starType);
           starEl.classList.add('hidden');
