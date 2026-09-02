@@ -362,7 +362,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0902-1121"
+    "buildDate": "0902-1132"
   },
   "about": {
     "paragraphs": [
@@ -920,10 +920,11 @@ function feedbackResult(rating){ // ゲーム終了時、評価が高いほど�
   else vibrate([60,40,80]);
 }
 
-function onSuccess(){
+function onSuccess(points){
+  points = points || 1;
   combo++;
   bestCombo = Math.max(bestCombo, combo);
-  totalSuccess++;
+  totalSuccess += points;
   comboDisplayEl.textContent = combo>=2 ? combo+'コンボ' : '';
   scoreDisplayEl.textContent = totalSuccess + '点';
   catReact('happy');
@@ -1918,26 +1919,40 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
 /* ============================================================
    プログラム: てにゃー花火
+   実際の花火の分類(割物)から、菊・牡丹・柳の3種類を再現している。
+   菊：尾を引きながら開く定番の丸い花火
+   牡丹：尾を引かず、鮮やかな光の点がパッと開く花火
+   柳：開いたあと、しだれるようにゆっくり垂れ下がる花火
    ============================================================ */
 (function(){
   const STAR_HOLD_MS = 700; // 星に手を合わせ続ける時間
   const CATCH_RADIUS = 9; // %
-  const SPARK_COLORS = ['#FFD98A','#FFB347','#FFE9B0','#FFC978','#FFF3D6'];
+
+  const FIREWORK_TYPES = {
+    kiku:   { label:'菊',  color:'#FFD98A', points:2 },
+    botan:  { label:'牡丹', color:'#FF6FA5', points:3 },
+    yanagi: { label:'柳',  color:'#8AD4FF', points:4 },
+  };
+  const FIREWORK_KEYS = Object.keys(FIREWORK_TYPES);
 
   let starEl, sparkLayerEl;
-  let starX = 50, starY = 30;
+  let starX = 50, starY = 30, starType = 'kiku';
   let holdStartAt = null;
 
   function spawnStar(){
     starX = 15 + Math.random()*70;
     starY = 10 + Math.random()*45;
+    starType = FIREWORK_KEYS[Math.floor(Math.random()*FIREWORK_KEYS.length)];
+    const glow = FIREWORK_TYPES[starType].color;
     starEl.style.left = starX+'%';
     starEl.style.top = starY+'%';
+    starEl.style.filter = `drop-shadow(0 0 7px ${glow}) drop-shadow(0 0 13px ${glow})`;
     starEl.classList.remove('hidden');
     holdStartAt = null;
   }
 
-  function spawnBurst(x, y, count, minDist, maxDist, sizeRange, delay){
+  function spawnBurst(x, y, type, count, minDist, maxDist, sizeRange, delay){
+    const color = FIREWORK_TYPES[type].color;
     for(let i=0;i<count;i++){
       const angle = (Math.PI*2 * i / count) + (Math.random()*0.4);
       const dist = minDist + Math.random()*(maxDist-minDist);
@@ -1947,36 +1962,56 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       el.style.width = size+'px'; el.style.height = size+'px';
       el.style.left = x+'%';
       el.style.top = y+'%';
-      const color = SPARK_COLORS[Math.floor(Math.random()*SPARK_COLORS.length)];
       el.style.background = color;
       el.style.boxShadow = `0 0 6px 1px ${color}`;
       sparkLayerEl.appendChild(el);
       const dx = Math.cos(angle)*dist;
       const dy = Math.sin(angle)*dist;
-      if(el.animate){
-        const anim = el.animate([
+
+      let keyframes, duration;
+      if(type === 'yanagi'){
+        // 柳: 開いたあと、重力に引かれるようにしだれ落ちる
+        duration = 1900 + Math.random()*500;
+        keyframes = [
           { transform:'translate(-50%,-50%) translate(0px,0px) scale(1)', opacity:1 },
-          { transform:`translate(-50%,-50%) translate(${dx*0.7}px,${dy*0.7}px) scale(1)`, opacity:1, offset:0.5 },
-          { transform:`translate(-50%,-50%) translate(${dx}px,${dy}px) scale(.4)`, opacity:0 }
-        ], { duration: 1100 + Math.random()*400, delay, easing:'cubic-bezier(0.1,0.6,0.3,1)' });
+          { transform:`translate(-50%,-50%) translate(${dx*0.8}px,${dy*0.8}px) scale(1)`, opacity:1, offset:0.3 },
+          { transform:`translate(-50%,-50%) translate(${dx}px,${dy+80}px) scale(.5)`, opacity:0 }
+        ];
+      }else if(type === 'botan'){
+        // 牡丹: 尾を引かず、鮮やかにパッと開いてすぐ消える
+        duration = 650 + Math.random()*200;
+        keyframes = [
+          { transform:'translate(-50%,-50%) translate(0px,0px) scale(1.3)', opacity:1 },
+          { transform:`translate(-50%,-50%) translate(${dx}px,${dy}px) scale(.6)`, opacity:0 }
+        ];
+      }else{
+        // 菊: 尾を引くように、ゆっくりフェードしながら広がる
+        duration = 1300 + Math.random()*400;
+        keyframes = [
+          { transform:'translate(-50%,-50%) translate(0px,0px) scale(1)', opacity:1 },
+          { transform:`translate(-50%,-50%) translate(${dx*0.7}px,${dy*0.7}px) scale(1)`, opacity:.9, offset:0.5 },
+          { transform:`translate(-50%,-50%) translate(${dx}px,${dy}px) scale(.3)`, opacity:0 }
+        ];
+      }
+
+      if(el.animate){
+        const anim = el.animate(keyframes, { duration, delay, easing:'cubic-bezier(0.1,0.6,0.3,1)' });
         anim.onfinish = ()=> el.remove();
       }else{
-        setTimeout(()=> el.remove(), 1600+delay); // Web Animations API非対応環境向けフォールバック
+        setTimeout(()=> el.remove(), duration+delay+200); // Web Animations API非対応環境向けフォールバック
       }
     }
   }
 
-  function launchFirework(x, y){
-    // 1段目: 大きく豪華に広がるメインの爆発
-    spawnBurst(x, y, 46, 90, 150, [4,8], 0);
-    // 2段目: 少し遅れて、範囲を変えた追い花火(本物の花火のような二段階の華やかさ)
-    spawnBurst(x, y, 22, 40, 90, [3,6], 220);
+  function launchFirework(x, y, type){
+    spawnBurst(x, y, type, 46, 90, 150, [4,8], 0);
+    spawnBurst(x, y, type, 22, 40, 90, [3,6], 220);
   }
 
   registerProgram('hanabi', {
     title: '🎆 てにゃー花火',
     durationSec: 80,
-    introHtml: 'カメラを使って、夜空に浮かぶ星に手を合わせます。<br>しばらく手を合わせ続けると花火が上がります!<br>のんびり楽しんでください。失敗はありません。<br>カメラへのアクセスを許可してください。',
+    introHtml: 'カメラを使って、夜空に浮かぶ星に手を合わせます。<br>しばらく手を合わせ続けると花火が上がります!<br>星の色によって、菊・牡丹・柳の3種類の花火が変わります。<br>のんびり楽しんでください。失敗はありません。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="night-sky">
         <div class="moon">🌙</div>
@@ -2028,8 +2063,10 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         if(holdStartAt === null) holdStartAt = Date.now();
         const elapsed = Date.now() - holdStartAt;
         if(elapsed >= STAR_HOLD_MS){
-          onSuccess();
-          launchFirework(starX, starY);
+          const t = FIREWORK_TYPES[starType];
+          onSuccess(t.points);
+          statusEl.textContent = t.label + 'の花火が上がった!';
+          launchFirework(starX, starY, starType);
           starEl.classList.add('hidden');
           holdStartAt = null;
           setTimeout(spawnStar, 500);
