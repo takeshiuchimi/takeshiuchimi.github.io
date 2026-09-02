@@ -227,6 +227,29 @@
     pointer-events:none;
   }
 
+  /* ---- てにゃー花火用 ---- */
+  .night-sky{
+    position:absolute; inset:0; pointer-events:none; overflow:hidden;
+    background:linear-gradient(180deg, #0B1030 0%, #1A1F4D 45%, #2E2A5C 75%, #3D3468 100%);
+  }
+  .night-sky .moon{ position:absolute; top:6%; right:10%; font-size:30px; opacity:.9; }
+  .night-sky .ferris{ position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:64px; opacity:.35; }
+  .night-sky .twinkle{ position:absolute; color:#fff; opacity:.5; font-size:8px; }
+  .hanabi-star{
+    position:absolute; width:44px; height:44px; transform:translate(-50%,-50%);
+    font-size:28px; text-align:center; line-height:44px; pointer-events:none;
+    filter:drop-shadow(0 0 6px rgba(255,230,150,.9));
+    animation:hanabiStarPulse 1.1s ease-in-out infinite;
+  }
+  @keyframes hanabiStarPulse{
+    0%,100%{ transform:translate(-50%,-50%) scale(1); opacity:.85; }
+    50%{ transform:translate(-50%,-50%) scale(1.2); opacity:1; }
+  }
+  .hanabi-spark{
+    position:absolute; width:5px; height:5px; border-radius:50%;
+    pointer-events:none; will-change:transform,opacity;
+  }
+
   /* ---- もぎ・ゆらし共通: カメラを隠す森の背景(手だけ見えればいい) ---- */
   .forest-bg{
     position:absolute; inset:0; pointer-events:none; overflow:hidden;
@@ -335,7 +358,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0831-2340"
+    "buildDate": "0902-1104"
   },
   "about": {
     "paragraphs": [
@@ -380,6 +403,9 @@
     { "heading": "⛰️ 山のエリア", "items": [
       { "key":"tozan", "icon":"🧗", "name":"やまのぼり", "desc":"近日公開", "disabled": true },
       { "key":"ski", "icon":"⛷️", "name":"すきー", "desc":"近日公開", "disabled": true }
+    ]},
+    { "heading": "🎆 夕方・夜のエリア", "items": [
+      { "key":"hanabi", "icon":"🎆", "name":"てにゃー花火", "desc":"夜空の星に手を合わせて花火を打ち上げ", "disabled": false, "purpose":"夜空に浮かぶ星を目で探し、その位置に向かって手を伸ばします。星は毎回違う位置に現れるので、上下左右へ手を伸ばす動きを繰り返し引き出します。失敗を気にせず、花火が上がる瞬間を楽しめる構成にしています。" }
     ]}
   ]
 }
@@ -1883,6 +1909,93 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       updateCanoeFromHands();
     },
     onTick(){ updateRiver(); },
+  });
+})();
+
+/* ============================================================
+   プログラム: てにゃー花火
+   ============================================================ */
+(function(){
+  const STAR_HOLD_MS = 700; // 星に手を合わせ続ける時間
+  const CATCH_RADIUS = 9; // %
+  const SPARK_COLORS = ['#FFD98A','#FFB347','#FFE9B0','#FFC978','#FFF3D6'];
+
+  let starEl, sparkLayerEl;
+  let starX = 50, starY = 30;
+  let holdStartAt = null;
+
+  function spawnStar(){
+    starX = 15 + Math.random()*70;
+    starY = 10 + Math.random()*45;
+    starEl.style.left = starX+'%';
+    starEl.style.top = starY+'%';
+    starEl.classList.remove('hidden');
+    holdStartAt = null;
+  }
+
+  function launchFirework(x, y){
+    const sparkCount = 28;
+    for(let i=0;i<sparkCount;i++){
+      const angle = (Math.PI*2 * i / sparkCount) + (Math.random()*0.3);
+      const dist = 60 + Math.random()*40;
+      const el = document.createElement('div');
+      el.className = 'hanabi-spark';
+      el.style.left = x+'%';
+      el.style.top = y+'%';
+      el.style.background = SPARK_COLORS[Math.floor(Math.random()*SPARK_COLORS.length)];
+      sparkLayerEl.appendChild(el);
+      const dx = Math.cos(angle)*dist;
+      const dy = Math.sin(angle)*dist;
+      if(el.animate){
+        const anim = el.animate([
+          { transform:'translate(-50%,-50%) translate(0px,0px)', opacity:1 },
+          { transform:`translate(-50%,-50%) translate(${dx}px,${dy}px)`, opacity:0 }
+        ], { duration: 900 + Math.random()*300, easing:'cubic-bezier(0.15,0.7,0.3,1)' });
+        anim.onfinish = ()=> el.remove();
+      }else{
+        setTimeout(()=> el.remove(), 1000); // Web Animations API非対応環境向けフォールバック
+      }
+    }
+  }
+
+  registerProgram('hanabi', {
+    title: '🎆 てにゃー花火',
+    durationSec: 80,
+    introHtml: 'カメラを使って、夜空に浮かぶ星に手を合わせます。<br>しばらく手を合わせ続けると花火が上がります!<br>のんびり楽しんでください。失敗はありません。<br>カメラへのアクセスを許可してください。',
+    layerHtml: `
+      <div class="night-sky">
+        <div class="moon">🌙</div>
+        <div class="ferris">🎡</div>
+      </div>
+      <div id="hanabiSparkLayer"></div>
+      <div class="hanabi-star" id="hanabiStar">⭐</div>
+    `,
+    setup(){
+      starEl = document.getElementById('hanabiStar');
+      sparkLayerEl = document.getElementById('hanabiSparkLayer');
+    },
+    start(){
+      spawnStar();
+    },
+    reset(){ this.start(); },
+    onHand(){
+      const hands = handsList.length > 0 ? handsList : [{x:handX,y:handY}];
+      const near = hands.some(h => distPct(h.x, h.y, starX, starY) < CATCH_RADIUS);
+      if(near){
+        if(holdStartAt === null) holdStartAt = Date.now();
+        const elapsed = Date.now() - holdStartAt;
+        if(elapsed >= STAR_HOLD_MS){
+          onSuccess();
+          launchFirework(starX, starY);
+          starEl.classList.add('hidden');
+          holdStartAt = null;
+          setTimeout(spawnStar, 500);
+        }
+      }else{
+        holdStartAt = null;
+      }
+    },
+    onTick(){},
   });
 })();
 
