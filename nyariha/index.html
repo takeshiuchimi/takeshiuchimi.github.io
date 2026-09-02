@@ -233,7 +233,16 @@
     background:linear-gradient(180deg, #0B1030 0%, #1A1F4D 45%, #2E2A5C 75%, #3D3468 100%);
   }
   .night-sky .moon{ position:absolute; top:6%; right:10%; font-size:30px; opacity:.9; }
-  .night-sky .ferris{ position:absolute; bottom:0; left:50%; transform:translateX(-50%); font-size:64px; opacity:.35; }
+  .night-sky .ferris{
+    position:absolute; bottom:-6%; left:50%; font-size:110px; opacity:.55;
+    transform-origin:50% 50%;
+    animation:ferrisSpin 14s linear infinite;
+    filter:drop-shadow(0 0 10px #ff6ec7) drop-shadow(0 0 18px #4dd9ff);
+  }
+  @keyframes ferrisSpin{
+    from{ transform:translateX(-50%) rotate(0deg); }
+    to{ transform:translateX(-50%) rotate(360deg); }
+  }
   .night-sky .twinkle{ position:absolute; color:#fff; opacity:.5; font-size:8px; }
   .hanabi-star{
     position:absolute; width:44px; height:44px; transform:translate(-50%,-50%);
@@ -358,7 +367,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0902-1104"
+    "buildDate": "0902-1112"
   },
   "about": {
     "paragraphs": [
@@ -1933,29 +1942,40 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     holdStartAt = null;
   }
 
-  function launchFirework(x, y){
-    const sparkCount = 28;
-    for(let i=0;i<sparkCount;i++){
-      const angle = (Math.PI*2 * i / sparkCount) + (Math.random()*0.3);
-      const dist = 60 + Math.random()*40;
+  function spawnBurst(x, y, count, minDist, maxDist, sizeRange, delay){
+    for(let i=0;i<count;i++){
+      const angle = (Math.PI*2 * i / count) + (Math.random()*0.4);
+      const dist = minDist + Math.random()*(maxDist-minDist);
       const el = document.createElement('div');
       el.className = 'hanabi-spark';
+      const size = sizeRange[0] + Math.random()*(sizeRange[1]-sizeRange[0]);
+      el.style.width = size+'px'; el.style.height = size+'px';
       el.style.left = x+'%';
       el.style.top = y+'%';
-      el.style.background = SPARK_COLORS[Math.floor(Math.random()*SPARK_COLORS.length)];
+      const color = SPARK_COLORS[Math.floor(Math.random()*SPARK_COLORS.length)];
+      el.style.background = color;
+      el.style.boxShadow = `0 0 6px 1px ${color}`;
       sparkLayerEl.appendChild(el);
       const dx = Math.cos(angle)*dist;
       const dy = Math.sin(angle)*dist;
       if(el.animate){
         const anim = el.animate([
-          { transform:'translate(-50%,-50%) translate(0px,0px)', opacity:1 },
-          { transform:`translate(-50%,-50%) translate(${dx}px,${dy}px)`, opacity:0 }
-        ], { duration: 900 + Math.random()*300, easing:'cubic-bezier(0.15,0.7,0.3,1)' });
+          { transform:'translate(-50%,-50%) translate(0px,0px) scale(1)', opacity:1 },
+          { transform:`translate(-50%,-50%) translate(${dx*0.7}px,${dy*0.7}px) scale(1)`, opacity:1, offset:0.5 },
+          { transform:`translate(-50%,-50%) translate(${dx}px,${dy}px) scale(.4)`, opacity:0 }
+        ], { duration: 1100 + Math.random()*400, delay, easing:'cubic-bezier(0.1,0.6,0.3,1)' });
         anim.onfinish = ()=> el.remove();
       }else{
-        setTimeout(()=> el.remove(), 1000); // Web Animations API非対応環境向けフォールバック
+        setTimeout(()=> el.remove(), 1600+delay); // Web Animations API非対応環境向けフォールバック
       }
     }
+  }
+
+  function launchFirework(x, y){
+    // 1段目: 大きく豪華に広がるメインの爆発
+    spawnBurst(x, y, 46, 90, 150, [4,8], 0);
+    // 2段目: 少し遅れて、範囲を変えた追い花火(本物の花火のような二段階の華やかさ)
+    spawnBurst(x, y, 22, 40, 90, [3,6], 220);
   }
 
   registerProgram('hanabi', {
