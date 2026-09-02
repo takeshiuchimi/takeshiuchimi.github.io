@@ -258,6 +258,22 @@
     pointer-events:none; will-change:transform,opacity;
   }
 
+  /* ---- てにゃー手拍子用 ---- */
+  .clap-track{
+    position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(180deg, #FFF6E5 0%, #FBEBCB 60%, #F3D9A8 100%);
+  }
+  .clap-note{
+    position:absolute; left:50%; width:44px; height:44px; transform:translate(-50%,-50%);
+    font-size:32px; text-align:center; line-height:44px; pointer-events:none;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));
+  }
+  .clap-judge-line{
+    position:absolute; left:8%; right:8%; top:78%; height:4px;
+    background:var(--gold); border-radius:2px; opacity:.8;
+    box-shadow:0 0 8px 2px rgba(212,175,55,.6);
+  }
+
   /* ---- もぎ・ゆらし共通: カメラを隠す森の背景(手だけ見えればいい) ---- */
   .forest-bg{
     position:absolute; inset:0; pointer-events:none; overflow:hidden;
@@ -366,7 +382,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0902-2111"
+    "buildDate": "0902-2132"
   },
   "about": {
     "paragraphs": [
@@ -396,6 +412,7 @@
       { "heading": "👆 手だけでボタン操作(ドウェル選択)", "body": "「はじめる」「もう一回」「一覧に戻る」だけでなく、ハブ画面のプログラム選択・ページ送りも同じ方式です。手を約1.2秒乗せ続けると、円形(またはカードの下からの塗りつぶし)のゲージが満ちて自動的に選ばれます。タップでも操作できます。" },
       { "heading": "📳 バイブレーション", "body": "対応端末では、フルーツを掴んだ・木を揺らした・カヌーを漕いだ等の操作、成功・失敗の判定、ゲーム終了時の評価に応じて、振動の強さやパターンを変えてフィードバックしています。" },
       { "heading": null, "body": "<b>成功音</b>：フルーツを取った・キャッチした・花火が上がった等、成功した瞬間に全てのプログラムで音を鳴らします。音声ファイルは一切使わず、Web Audio APIでその場で音を合成しています。鈴が駆け上がるようなキラキラした音階(チロリロリン)で、夢のある音にしています。" },
+      { "heading": "👏 マイクでの拍手検知(てにゃー手拍子)", "body": "このプログラムだけ、カメラの代わりにマイクを使います。音量の変化をリアルタイムに解析し、直前の平均音量より急に大きくなった瞬間を「手拍子」とみなしています。特別な音声認識は使っていない、シンプルな仕組みです。マイクの音声データも、カメラの映像と同じく端末の中だけで処理され、どこにも送信されません。" },
       { "heading": "⚠️ 動作条件", "body": "カメラ機能(getUserMedia)は、HTTPS配信かlocalhost環境でないとブラウザの制約で動作しません。ファイルをそのまま開いただけでは、カメラの許可が出ない場合があります。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
@@ -407,6 +424,7 @@
     { "key":"canoe", "icon":"🛶", "name":"てにゃーカヌー", "desc":"手を左右に動かして操縦、上下に振って漕ごう", "disabled": false, "purpose":"手でパドルを握り、腕を上下に動かしてカヌーを漕ぎます。また、手を左右に動かすことで進む方向を調整します。カヌーを進めながら魚を取り、岩を避けることで、上肢の反復運動と方向に合わせた手の動きを自然に引き出します。" },
     { "key":"tsuri", "icon":"🎣", "name":"つり", "desc":"近日公開", "disabled": true },
     { "key":"hanabi", "icon":"🎆", "name":"てにゃー花火", "desc":"夜空の星に手を合わせて花火を打ち上げ", "disabled": false, "purpose":"夜空に浮かぶ星を目で探し、その位置に向かって手を伸ばします。星は毎回違う位置に現れるので、上下左右へ手を伸ばす動きを繰り返し引き出します。" },
+    { "key":"tehyoushi", "icon":"👏", "name":"てにゃー手拍子", "desc":"リズムに合わせて手拍子しよう(マイク使用)", "disabled": false, "purpose":"降りてくる合図に合わせて、一定のリズムで手を叩きます。カメラではなくマイクを使うプログラムで、タイミングを合わせて両手を合わせる動きを引き出します。" },
     { "key":"tozan", "icon":"🧗", "name":"やまのぼり", "desc":"近日公開", "disabled": true },
     { "key":"ski", "icon":"⛷️", "name":"すきー", "desc":"近日公開", "disabled": true }
   ]
@@ -961,6 +979,65 @@ function feedbackFirework(points){
   else vibrate([25,60,25]);
 }
 
+// ---- マイク・拍手検知(カメラを使わないプログラム用) ----
+let micStream = null;
+let micActive = false;
+let micAnalyser = null;
+let micDataArray = null;
+let lastClapAt = 0;
+let micVolHistory = [];
+const CLAP_COOLDOWN_MS = 220;
+const CLAP_THRESHOLD = 0.12; // 音量の絶対的な下限(これ未満は無視)
+const CLAP_SPIKE_RATIO = 1.9; // 直前の平均よりこれ倍以上急に大きくなったら拍手とみなす
+
+async function startMicOnly(){
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const ctx = getAudioCtx();
+    if(!ctx) throw new Error('AudioContext unavailable');
+    const source = ctx.createMediaStreamSource(micStream);
+    micAnalyser = ctx.createAnalyser();
+    micAnalyser.fftSize = 512;
+    micDataArray = new Uint8Array(micAnalyser.frequencyBinCount);
+    source.connect(micAnalyser);
+    micActive = true;
+    micVolHistory = [];
+    return true;
+  }catch(e){
+    micActive = false;
+    return false;
+  }
+}
+function stopMicOnly(){
+  if(micStream){ micStream.getAudioTracks().forEach(t=>t.stop()); }
+  micStream = null; micAnalyser = null; micActive = false;
+}
+function getMicVolume(){
+  if(!micAnalyser) return 0;
+  micAnalyser.getByteTimeDomainData(micDataArray);
+  let sumSquares = 0;
+  for(let i=0;i<micDataArray.length;i++){
+    const v = (micDataArray[i]-128)/128;
+    sumSquares += v*v;
+  }
+  return Math.sqrt(sumSquares / micDataArray.length); // RMS音量(0前後〜1程度)
+}
+function checkClap(){
+  if(!micActive) return false;
+  const vol = getMicVolume();
+  const now = Date.now();
+  const prevAvg = micVolHistory.length
+    ? micVolHistory.reduce((a,b)=>a+b,0) / micVolHistory.length
+    : 0;
+  micVolHistory.push(vol);
+  if(micVolHistory.length > 6) micVolHistory.shift();
+  if(vol > CLAP_THRESHOLD && vol > prevAvg*CLAP_SPIKE_RATIO && (now-lastClapAt) > CLAP_COOLDOWN_MS){
+    lastClapAt = now;
+    return true;
+  }
+  return false;
+}
+
 function onSuccess(points, customVibrate){
   points = points || 1;
   combo++;
@@ -1421,17 +1498,12 @@ async function startCameraOnly(){
       requestAnimationFrame(frameLoop);
     }
     frameLoop();
-    if(!tickIntervalStarted){
-      tickIntervalStarted = true;
-      setInterval(()=>{ const def = PROGRAMS[currentProgramKey]; if(running && def && def.onTick) def.onTick(); }, 30);
-    }
   }catch(e){
     hubCameraMsg.classList.remove('hidden');
     hubCameraMsg.textContent = 'カメラを開始できませんでした: ' + e.message;
     hubCameraBtn.disabled = false;
   }
 }
-let tickIntervalStarted = false;
 
 // ---- カメラが切断された時の検知・案内・再接続 ----
 const cameraDisconnectedOverlay = document.getElementById('cameraDisconnectedOverlay');
@@ -1470,6 +1542,10 @@ hubCameraBtn.addEventListener('click', startCameraOnly);
 // 「ボタンを押す」という1手順は省ける。拒否された場合はボタンで再試行できる)
 startCameraOnly();
 
+// 各プログラムのonTick(タイマー・当たり判定等)は、カメラの成否に関わらず必ず動かす
+// (マイクだけを使うプログラム等、カメラを使わないものにも対応するため)
+setInterval(()=>{ const def = PROGRAMS[currentProgramKey]; if(running && def && def.onTick) def.onTick(); }, 30);
+
 // プログラム画面で「はじめる」を押した時: カメラは起動済み前提で、プログラムだけ開始する
 function startProgram(){
   startOverlay.classList.add('hidden');
@@ -1485,12 +1561,12 @@ document.getElementById('startDwellBtn').addEventListener('click', startProgram)
 
 // ---- 画面遷移 ----
 function openProgram(key){
-  if(!cameraActive){
+  const def = PROGRAMS[key];
+  if(!(def && def.requiresMic) && !cameraActive){
     alert('先にハブ画面で「カメラをオンにする」を押してください');
     return;
   }
   currentProgramKey = key;
-  const def = PROGRAMS[key];
   onHubScreen = false;
   document.getElementById('screen-hub').classList.add('hidden');
   document.getElementById('screen-game').classList.remove('hidden');
@@ -1500,7 +1576,8 @@ function openProgram(key){
   const purposeHtml = itemData && itemData.purpose
     ? `<div class="purpose-box">🎯 ${itemData.purpose}</div>`
     : '';
-  startOverlayText.innerHTML = def.introHtml + purposeHtml + '<br><small>(カメラは起動済みです)</small>';
+  const readyNote = def.requiresMic ? '' : '<br><small>(カメラは起動済みです)</small>';
+  startOverlayText.innerHTML = def.introHtml + purposeHtml + readyNote;
   programLayer.innerHTML = def.layerHtml || '';
   running = false; gameEnded = false;
   clearInterval(timerInterval);
@@ -1513,6 +1590,12 @@ function openProgram(key){
   resetDwell();
   resetHubDwell();
   def.setup();
+  if(def.requiresMic && !micActive){
+    statusEl.textContent = 'マイクを準備しています…';
+    startMicOnly().then(ok=>{
+      statusEl.textContent = ok ? '手拍子を待っています' : 'マイクの許可が必要です。ブラウザの設定を確認してください。';
+    });
+  }
 }
 
 function backToHub(){
@@ -2166,6 +2249,100 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       }
     },
     onTick(){},
+  });
+})();
+
+/* ============================================================
+   プログラム: てにゃー手拍子
+   カメラは使わず、マイクの音量変化(拍手)だけで遊ぶ。
+   一定のリズムで肉球が降りてきて、判定ラインに届いた瞬間に手拍子する。
+   ============================================================ */
+(function(){
+  const BPM = 88;
+  const BEAT_MS = 60000 / BPM; // 1拍あたりのms(約682ms)
+  const TRAVEL_MS = 1800; // 肉球が出現してから判定ラインに届くまでの時間
+  const JUDGE_Y = 78; // 判定ラインのy位置(%)
+  const START_Y = -8;
+  const PERFECT_WINDOW_MS = 150;
+  const GOOD_WINDOW_MS = 350;
+
+  let noteLayerEl;
+  let notes = []; // {targetTime, el, judged}
+  let nextSpawnAt = 0;
+
+  function spawnNote(){
+    const targetTime = Date.now() + TRAVEL_MS;
+    const el = document.createElement('div');
+    el.className = 'clap-note';
+    el.textContent = '🐾';
+    el.style.top = START_Y + '%';
+    noteLayerEl.appendChild(el);
+    notes.push({ targetTime, el, judged:false });
+  }
+
+  function updateNotes(){
+    const now = Date.now();
+    if(now >= nextSpawnAt){
+      spawnNote();
+      nextSpawnAt = now + BEAT_MS;
+    }
+    for(let i=notes.length-1;i>=0;i--){
+      const n = notes[i];
+      const remaining = n.targetTime - now;
+      const progress = 1 - (remaining / TRAVEL_MS); // 0(出現)→1(判定ライン到達)
+      n.el.style.top = (START_Y + progress * (JUDGE_Y - START_Y)) + '%';
+      if(remaining < -GOOD_WINDOW_MS && !n.judged){
+        // 判定ウィンドウを過ぎても叩かれなかった場合、ペナルティなしでそっと消す
+        n.el.remove();
+        notes.splice(i,1);
+      }
+    }
+  }
+
+  function tryJudgeClap(){
+    const now = Date.now();
+    let best = null, bestDiff = Infinity;
+    notes.forEach(n=>{
+      if(n.judged) return;
+      const diff = Math.abs(n.targetTime - now);
+      if(diff < GOOD_WINDOW_MS && diff < bestDiff){ best = n; bestDiff = diff; }
+    });
+    if(!best) return; // タイミングの合う肉球が無ければ何もしない(ペナルティなし)
+    best.judged = true;
+    const isPerfect = bestDiff <= PERFECT_WINDOW_MS;
+    onSuccess(isPerfect ? 2 : 1);
+    statusEl.textContent = isPerfect ? 'ぴったり!' : 'おしい!';
+    best.el.style.transition = 'opacity .2s ease, transform .2s ease';
+    best.el.style.opacity = '0';
+    best.el.style.transform = 'translate(-50%,-50%) scale(1.4)';
+    setTimeout(()=>{ best.el.remove(); }, 200);
+    notes = notes.filter(n=>n!==best);
+  }
+
+  registerProgram('tehyoushi', {
+    title: '👏 てにゃー手拍子',
+    durationSec: 60,
+    requiresMic: true,
+    introHtml: 'マイクを使って、手拍子のタイミングを合わせます。<br>降りてくる肉球が線に届いた瞬間に手を叩いてください!<br>マイクへのアクセスを許可してください。',
+    layerHtml: `
+      <div class="clap-track"></div>
+      <div id="clapNoteLayer"></div>
+      <div class="clap-judge-line"></div>
+    `,
+    setup(){
+      noteLayerEl = document.getElementById('clapNoteLayer');
+    },
+    start(){
+      notes.forEach(n=>n.el.remove());
+      notes = [];
+      nextSpawnAt = Date.now() + 500;
+    },
+    reset(){ this.start(); },
+    onHand(){},
+    onTick(){
+      updateNotes();
+      if(checkClap()) tryJudgeClap();
+    },
   });
 })();
 
