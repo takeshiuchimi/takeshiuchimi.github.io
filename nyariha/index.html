@@ -382,7 +382,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0902-2132"
+    "buildDate": "0903-2142"
   },
   "about": {
     "paragraphs": [
@@ -413,6 +413,7 @@
       { "heading": "📳 バイブレーション", "body": "対応端末では、フルーツを掴んだ・木を揺らした・カヌーを漕いだ等の操作、成功・失敗の判定、ゲーム終了時の評価に応じて、振動の強さやパターンを変えてフィードバックしています。" },
       { "heading": null, "body": "<b>成功音</b>：フルーツを取った・キャッチした・花火が上がった等、成功した瞬間に全てのプログラムで音を鳴らします。音声ファイルは一切使わず、Web Audio APIでその場で音を合成しています。鈴が駆け上がるようなキラキラした音階(チロリロリン)で、夢のある音にしています。" },
       { "heading": "👏 マイクでの拍手検知(てにゃー手拍子)", "body": "このプログラムだけ、カメラの代わりにマイクを使います。音量の変化をリアルタイムに解析し、直前の平均音量より急に大きくなった瞬間を「手拍子」とみなしています。特別な音声認識は使っていない、シンプルな仕組みです。マイクの音声データも、カメラの映像と同じく端末の中だけで処理され、どこにも送信されません。" },
+      { "heading": null, "body": "<b>リズムの変化</b>：序盤(0〜20秒)は一定のリズム、中盤(20〜40秒)は2回連続で叩くペアのリズム、終盤(40〜60秒)はテンポアップしたフィナーレ、と3段階で変化します。単調にならないよう工夫しています。" },
       { "heading": "⚠️ 動作条件", "body": "カメラ機能(getUserMedia)は、HTTPS配信かlocalhost環境でないとブラウザの制約で動作しません。ファイルをそのまま開いただけでは、カメラの許可が出ない場合があります。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
@@ -2255,11 +2256,19 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 /* ============================================================
    プログラム: てにゃー手拍子
    カメラは使わず、マイクの音量変化(拍手)だけで遊ぶ。
-   一定のリズムで肉球が降りてきて、判定ラインに届いた瞬間に手拍子する。
+   序盤は一定のリズム、中盤はペアで叩くリズム、終盤はテンポアップしたフィナーレ、
+   と3段階でリズムが変わっていく。
    ============================================================ */
 (function(){
-  const BPM = 88;
-  const BEAT_MS = 60000 / BPM; // 1拍あたりのms(約682ms)
+  const PHASE1_MS = 20000; // 序盤: 0〜20秒
+  const PHASE2_MS = 40000; // 中盤: 20〜40秒
+  // 終盤: 40秒〜(durationSec=60まで)
+
+  const BEAT_MS_STEADY = 60000 / 88;  // 序盤・中盤の基本テンポ(約682ms)
+  const BEAT_MS_FAST   = 60000 / 115; // 終盤のテンポ(約522ms)
+  const PAIR_GAP_MS = 220; // 中盤、ペアの1つ目と2つ目の間隔
+  const PAIR_REST_MS = 780; // 中盤、ペアを叩いた後の休み
+
   const TRAVEL_MS = 1800; // 肉球が出現してから判定ラインに届くまでの時間
   const JUDGE_Y = 78; // 判定ラインのy位置(%)
   const START_Y = -8;
@@ -2269,6 +2278,15 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   let noteLayerEl;
   let notes = []; // {targetTime, el, judged}
   let nextSpawnAt = 0;
+  let spawnQueue = []; // 中盤のペアの2つ目など、少し先に追加スポーンする予約時刻
+  let gameStartAt = 0;
+
+  function currentPhase(){
+    const elapsed = Date.now() - gameStartAt;
+    if(elapsed < PHASE1_MS) return 1;
+    if(elapsed < PHASE2_MS) return 2;
+    return 3;
+  }
 
   function spawnNote(){
     const targetTime = Date.now() + TRAVEL_MS;
@@ -2280,11 +2298,30 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     notes.push({ targetTime, el, judged:false });
   }
 
+  function scheduleNext(now){
+    const phase = currentPhase();
+    if(phase === 1){
+      spawnNote();
+      nextSpawnAt = now + BEAT_MS_STEADY;
+    }else if(phase === 2){
+      // ペアリズム: 1つ目を出し、少し間を空けて2つ目、そのあと少し長めに休む
+      spawnNote();
+      spawnQueue.push(now + PAIR_GAP_MS);
+      nextSpawnAt = now + PAIR_GAP_MS + PAIR_REST_MS;
+    }else{
+      spawnNote();
+      nextSpawnAt = now + BEAT_MS_FAST;
+    }
+  }
+
   function updateNotes(){
     const now = Date.now();
-    if(now >= nextSpawnAt){
-      spawnNote();
-      nextSpawnAt = now + BEAT_MS;
+    if(now >= nextSpawnAt) scheduleNext(now);
+    for(let i=spawnQueue.length-1;i>=0;i--){
+      if(now >= spawnQueue[i]){
+        spawnNote();
+        spawnQueue.splice(i,1);
+      }
     }
     for(let i=notes.length-1;i>=0;i--){
       const n = notes[i];
@@ -2323,7 +2360,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     title: '👏 てにゃー手拍子',
     durationSec: 60,
     requiresMic: true,
-    introHtml: 'マイクを使って、手拍子のタイミングを合わせます。<br>降りてくる肉球が線に届いた瞬間に手を叩いてください!<br>マイクへのアクセスを許可してください。',
+    introHtml: 'マイクを使って、手拍子のタイミングを合わせます。<br>降りてくる肉球が線に届いた瞬間に手を叩いてください!リズムは途中で変わっていきます。<br>マイクへのアクセスを許可してください。',
     layerHtml: `
       <div class="clap-track"></div>
       <div id="clapNoteLayer"></div>
@@ -2335,6 +2372,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     start(){
       notes.forEach(n=>n.el.remove());
       notes = [];
+      spawnQueue = [];
+      gameStartAt = Date.now();
       nextSpawnAt = Date.now() + 500;
     },
     reset(){ this.start(); },
