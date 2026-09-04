@@ -404,7 +404,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0904-0338"
+    "buildDate": "0904-2110"
   },
   "about": {
     "paragraphs": [
@@ -1415,8 +1415,17 @@ function ensurePoseModel(){
   }catch(e){ poseInstance = null; }
   return poseInstance;
 }
+let lastPoseSeen = 0;
 function onPoseResults(results){
   poseLandmarks = (results.poseLandmarks && results.poseLandmarks.length > 0) ? results.poseLandmarks : null;
+  if(poseLandmarks){
+    lastPoseSeen = Date.now();
+    if(!onHubScreen && statusEl.textContent === '体が見つかりません。全身が映るように離れてください'){
+      statusEl.textContent = '体を検出中';
+    }
+  }else if(Date.now() - lastPoseSeen > 800 && !onHubScreen){
+    statusEl.textContent = '体が見つかりません。全身が映るように離れてください';
+  }
   if(!onHubScreen){
     const def = PROGRAMS[currentProgramKey];
     if(def && def.onPose && running && !gameEnded) def.onPose(poseLandmarks);
@@ -1605,7 +1614,13 @@ function startProgram(){
   const def = PROGRAMS[currentProgramKey];
   def.start();
   startTimer();
-  statusEl.textContent = '手を検出中';
+  if(def.requiresPose){
+    activeModelType = 'pose';
+    ensurePoseModel();
+    statusEl.textContent = '体を検出中';
+  }else{
+    statusEl.textContent = '手を検出中';
+  }
 }
 
 document.getElementById('startDwellBtn').addEventListener('click', startProgram);
@@ -1647,12 +1662,7 @@ function openProgram(key){
       statusEl.textContent = ok ? '手拍子を待っています' : 'マイクの許可が必要です。ブラウザの設定を確認してください。';
     });
   }
-  if(def.requiresPose){
-    activeModelType = 'pose';
-    ensurePoseModel();
-  }else{
-    activeModelType = 'hands';
-  }
+  activeModelType = 'hands'; // 「はじめる」を押すまでは、ドウェル選択のため手の検出のままにする
 }
 
 function backToHub(){
@@ -2543,7 +2553,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     title: '🐾 てにゃー体操',
     durationSec: 60,
     requiresPose: true,
-    introHtml: 'カメラを使って、体の動きを見ます(手ではなく体全体)。<br>画面の猫と同じポーズを、しばらくキープしてください!<br>カメラへのアクセスを許可してください。',
+    introHtml: 'カメラを使って、体の動きを見ます(手ではなく体全体)。<br>上半身が画面に入るよう、少しカメラから離れてください。<br>画面の猫と同じポーズを、しばらくキープしてください!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="taisou-bg"></div>
       <div class="taisou-cat" id="taisouCat"></div>
