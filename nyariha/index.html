@@ -404,7 +404,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0904-2120"
+    "buildDate": "0904-2149"
   },
   "about": {
     "paragraphs": [
@@ -1104,6 +1104,7 @@ function endGame(){
   running = false;
   clearInterval(timerInterval);
   gameHudEl.classList.add('hidden');
+  activeModelType = 'hands'; // リザルト画面の「もう一度」「一覧に戻る」は手のドウェル選択のため
   const r = ratingFor();
   document.getElementById('ratingStar').textContent = r.star;
   document.getElementById('ratingLabel').textContent = r.label;
@@ -1397,7 +1398,13 @@ function doRetry(){
   def.reset();
   running = true;
   startTimer();
-  statusEl.textContent = '手を検出中';
+  if(def.requiresPose){
+    activeModelType = 'pose';
+    ensurePoseModel();
+    statusEl.textContent = '体を検出中';
+  }else{
+    statusEl.textContent = '手を検出中';
+  }
 }
 document.getElementById('retryDwellBtn').addEventListener('click', doRetry);
 document.getElementById('backDwellBtn').addEventListener('click', backToHub);
