@@ -274,6 +274,28 @@
     box-shadow:0 0 8px 2px rgba(212,175,55,.6);
   }
 
+  /* ---- てにゃー体操用 ---- */
+  .taisou-bg{
+    position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(180deg, #E8F5E0 0%, #D4EBC8 100%);
+  }
+  .taisou-cat{
+    position:absolute; left:50%; top:8%; width:150px; height:190px;
+    transform:translateX(-50%); pointer-events:none;
+  }
+  .taisou-cat svg{ width:100%; height:100%; }
+  .taisou-hold-gauge{
+    position:absolute; left:50%; bottom:6%; width:120px; height:10px;
+    transform:translateX(-50%); background:rgba(255,255,255,.5);
+    border-radius:5px; overflow:hidden; border:2px solid var(--gold);
+  }
+  .taisou-hold-gauge-fill{ height:100%; width:0%; background:var(--gold); transition:width .08s linear; }
+  .taisou-label{
+    position:absolute; left:50%; bottom:12%; transform:translateX(-50%);
+    font-size:14px; font-weight:bold; color:var(--brown-deep);
+    background:rgba(255,255,255,.85); padding:4px 14px; border-radius:12px;
+  }
+
   /* ---- もぎ・ゆらし共通: カメラを隠す森の背景(手だけ見えればいい) ---- */
   .forest-bg{
     position:absolute; inset:0; pointer-events:none; overflow:hidden;
@@ -382,7 +404,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0903-2142"
+    "buildDate": "0904-0338"
   },
   "about": {
     "paragraphs": [
@@ -402,7 +424,8 @@
     "sections": [
       { "heading": "🖐️ 手の検出の仕組み", "body": "Google製のMediaPipe Hands(CDN経由、ブラウザ内で完結)を使い、手の21箇所のランドマーク(関節位置)をリアルタイムに検出しています。最大2本まで検出できます。" },
       { "heading": null, "body": "<b>MediaPipeとは</b>：Googleが無料公開している、カメラ映像から人の手・顔・体の動きを読み取るための技術です。カメラのコマを渡すと座標が返ってくるだけで、AIモデル自体はGoogleが用意したものをそのまま使わせてもらっています。処理は全て端末の中(オンデバイス)で行われ、映像そのものがGoogleのサーバーに送信されることはありません。" },
-      { "heading": null, "body": "<b>今後の展開候補</b>：MediaPipeには手の検出以外にも、全身33箇所を追跡する「Pose(姿勢推定)」、表情や瞬きを検出する「Face」、人物だけを背景から切り抜く「Selfie Segmentation」といった機能があります。特にPoseは、腕全体や体幹を使う運動に応用できそうで、今後の候補として検討しています。" },
+      { "heading": null, "body": "<b>体全体の検出(てにゃー体操)</b>：このプログラムだけ、手ではなくMediaPipe Poseという別のモデルを使い、体全体33箇所(肩・肘・手首・腰など)を検出しています。プログラムに入る時だけこのモデルに切り替え、他のプログラムでは今まで通り手だけを見るモデル(Hands)に戻ります。判定は「肩と手首の位置関係」のような大まかな見方をしていて、ピッタリ合わせなくても成功するよう寛容にしています。" },
+      { "heading": null, "body": "<b>今後の展開候補</b>：MediaPipeには手・体全体の検出以外にも、表情や瞬きを検出する「Face」、人物だけを背景から切り抜く「Selfie Segmentation」といった機能があります。今後の候補として検討しています。" },
       { "heading": null, "body": "<b>グーチョキパー判定</b>：4本の指(人差し指・中指・薬指・小指)それぞれの指先と、その一つ手前の関節(PIP)の、手首からの距離を比較し、伸びているか曲がっているかを判定します。人差し指・中指だけが伸びていれば「チョキ」、3本以上伸びていれば「パー」、それ以外は「グー」としています。" },
       { "heading": null, "body": "<b>左右の判定</b>：MediaPipeが手ごとに「左手か右手か」を判定する機能(handedness)を使い、位置ではなく手そのものを追跡しています。これにより、両手を交差させても、それぞれの手が持っている物が入れ替わったりしません。なお、MediaPipeは入力画像が鏡映し済みであることを前提に左右判定するため、実際には鏡映しでない映像を渡している当アプリでは、判定結果をアプリ内で反転させて補正しています。" },
       { "heading": null, "body": "<b>片手の方への配慮</b>：全てのプログラムは、検出できた手の本数に自動で合わせる設計にしています。片手しか映っていない・使えない場合は、その1本で全ての操作を兼用します。もぎは両手それぞれで別々のフルーツを持てますが、片手だけでも問題なく遊べます。カヌーは片手の場合、利き手側に応じて位置を少しずらし、自然な持ち方に近づけています。" },
@@ -426,6 +449,7 @@
     { "key":"tsuri", "icon":"🎣", "name":"つり", "desc":"近日公開", "disabled": true },
     { "key":"hanabi", "icon":"🎆", "name":"てにゃー花火", "desc":"夜空の星に手を合わせて花火を打ち上げ", "disabled": false, "purpose":"夜空に浮かぶ星を目で探し、その位置に向かって手を伸ばします。星は毎回違う位置に現れるので、上下左右へ手を伸ばす動きを繰り返し引き出します。" },
     { "key":"tehyoushi", "icon":"👏", "name":"てにゃー手拍子", "desc":"リズムに合わせて手拍子しよう(マイク使用)", "disabled": false, "purpose":"降りてくる合図に合わせて、一定のリズムで手を叩きます。カメラではなくマイクを使うプログラムで、タイミングを合わせて両手を合わせる動きを引き出します。" },
+    { "key":"taisou", "icon":"🐾", "name":"てにゃー体操", "desc":"画面の猫と同じポーズをキープしよう", "disabled": false, "purpose":"画面に出る猫のポーズを見て、腕を伸ばしたり体を左右に曲げたりして真似します。手だけでなく体全体を使うプログラムで、腕の伸展や体幹のストレッチを引き出します。" },
     { "key":"tozan", "icon":"🧗", "name":"やまのぼり", "desc":"近日公開", "disabled": true },
     { "key":"ski", "icon":"⛷️", "name":"すきー", "desc":"近日公開", "disabled": true }
   ]
@@ -563,6 +587,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 <script>
 /* ============================================================
    共通エンジン: ダークモード・画面遷移・カメラ/手検出・
@@ -862,6 +887,8 @@ let fallingFruits = []; // {type,x,y,vy,el}
 const GRAVITY = 0.55;
 
 let hands, stream;
+let poseInstance = null;
+let activeModelType = 'hands'; // 'hands'|'pose'。今どちらのモデルにカメラ映像を渡すか
 let handXHistoryByHand = [[], []], shakeReversals = 0, lastShakeAt = 0;
 const SHAKE_REQUIRED = 4, SHAKE_WINDOW_MS = 900, SHAKE_COOLDOWN_MS = 900, SHAKE_NOISE_THRESHOLD = 2.5;
 
@@ -1377,6 +1404,25 @@ document.getElementById('backDwellBtn').addEventListener('click', backToHub);
 // ---- 手の検出結果を、現在のプログラムに配る ----
 let onHubScreen = true;
 
+// ---- 体全体の姿勢(MediaPipe Pose)。手ではなく体操のようなプログラム用 ----
+let poseLandmarks = null; // 33点、各{x,y,z,visibility}。検出できていなければnull
+function ensurePoseModel(){
+  if(poseInstance) return poseInstance;
+  try{
+    poseInstance = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
+    poseInstance.setOptions({ modelComplexity:0, smoothLandmarks:true, minDetectionConfidence:0.6, minTrackingConfidence:0.5 });
+    poseInstance.onResults(onPoseResults);
+  }catch(e){ poseInstance = null; }
+  return poseInstance;
+}
+function onPoseResults(results){
+  poseLandmarks = (results.poseLandmarks && results.poseLandmarks.length > 0) ? results.poseLandmarks : null;
+  if(!onHubScreen){
+    const def = PROGRAMS[currentProgramKey];
+    if(def && def.onPose && running && !gameEnded) def.onPose(poseLandmarks);
+  }
+}
+
 function onResults(results){
   // どちらの画面が表示中かで、描画先・処理内容を切り替える
   const activeCanvas = onHubScreen ? hubCanvasEl : canvasEl;
@@ -1495,7 +1541,11 @@ async function startCameraOnly(){
     async function frameLoop(){
       if(!cameraActive) return;
       const sourceVideo = onHubScreen ? hubVideoEl : videoEl;
-      await hands.send({image: sourceVideo});
+      if(activeModelType === 'pose' && poseInstance){
+        await poseInstance.send({image: sourceVideo});
+      }else{
+        await hands.send({image: sourceVideo});
+      }
       requestAnimationFrame(frameLoop);
     }
     frameLoop();
@@ -1597,11 +1647,18 @@ function openProgram(key){
       statusEl.textContent = ok ? '手拍子を待っています' : 'マイクの許可が必要です。ブラウザの設定を確認してください。';
     });
   }
+  if(def.requiresPose){
+    activeModelType = 'pose';
+    ensurePoseModel();
+  }else{
+    activeModelType = 'hands';
+  }
 }
 
 function backToHub(){
   running = false;
   clearInterval(timerInterval);
+  activeModelType = 'hands'; // ハブ画面はいつも手の検出に戻す
   onHubScreen = true;
   document.getElementById('screen-game').classList.add('hidden');
   document.getElementById('screen-hub').classList.remove('hidden');
@@ -2382,6 +2439,148 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       updateNotes();
       if(checkClap()) tryJudgeClap();
     },
+  });
+})();
+
+/* ============================================================
+   プログラム: てにゃー体操
+   カメラの映像から、MediaPipe Poseで体全体の姿勢を検出する。
+   (今までのプログラムは全てMediaPipe Hands=手だけを見ていたが、これだけ体全体を見る)
+   画面の猫と同じポーズを取ると成功。
+   ============================================================ */
+(function(){
+  const HOLD_MS = 700;
+  const VIS_THRESHOLD = 0.5;
+
+  function vis(p){ return p && (p.visibility===undefined || p.visibility > VIS_THRESHOLD); }
+  // MediaPipeの生のx座標は鏡映しされていないため、画面表示(鏡映し)に合わせて1-xに変換する
+  function mx(p){ return 1 - p.x; }
+
+  // 各判定は「解剖学的な左右のラベル」には依存せず、肩・肘・手首の位置関係だけで見る
+  // (Handsのhandedness補正と同じ理由で、Poseのlandmark[11]/[12]等のleft/rightラベルは using しない)
+  function checkArmsUp(lm){
+    const ls=lm[11], rs=lm[12], lw=lm[15], rw=lm[16];
+    if(![ls,rs,lw,rw].every(vis)) return false;
+    const shoulderY = (ls.y+rs.y)/2;
+    return (shoulderY-lw.y) > 0.10 && (shoulderY-rw.y) > 0.10;
+  }
+  function checkArmsOut(lm){
+    const ls=lm[11], rs=lm[12], lw=lm[15], rw=lm[16];
+    if(![ls,rs,lw,rw].every(vis)) return false;
+    const shoulderY = (ls.y+rs.y)/2;
+    const shoulderWidth = Math.abs(ls.x-rs.x) || 0.15;
+    const yOk = Math.abs(lw.y-shoulderY) < 0.13 && Math.abs(rw.y-shoulderY) < 0.13;
+    const xOk = Math.abs(lw.x-ls.x) > shoulderWidth*0.45 && Math.abs(rw.x-rs.x) > shoulderWidth*0.45;
+    return yOk && xOk;
+  }
+  function checkOneArmUp(lm){
+    const ls=lm[11], rs=lm[12], lw=lm[15], rw=lm[16];
+    if(![ls,rs,lw,rw].every(vis)) return false;
+    const shoulderY = (ls.y+rs.y)/2;
+    const leftUp = (shoulderY-lw.y) > 0.10;
+    const rightUp = (shoulderY-rw.y) > 0.10;
+    return leftUp !== rightUp; // どちらか片方だけ(両方ならバンザイ扱いにしたいので除外)
+  }
+  function checkBend(lm, dir){
+    const ls=lm[11], rs=lm[12], lh=lm[23], rh=lm[24];
+    if(![ls,rs,lh,rh].every(vis)) return false;
+    const shoulderMidX = (mx(ls)+mx(rs))/2;
+    const hipMidX = (mx(lh)+mx(rh))/2;
+    const offset = shoulderMidX - hipMidX; // 画面上で正=右寄り、負=左寄り
+    return dir === 'left' ? offset < -0.05 : offset > 0.05;
+  }
+
+  const POSES = [
+    { id:'armsUp',    label:'両手をバンザイ!',   check:checkArmsUp },
+    { id:'bendLeft',  label:'体を左に曲げよう',  check: lm=>checkBend(lm,'left') },
+    { id:'bendRight', label:'体を右に曲げよう',  check: lm=>checkBend(lm,'right') },
+    { id:'armsOut',   label:'両手を横に広げよう', check:checkArmsOut },
+    { id:'oneArmUp',  label:'片手をあげよう',    check:checkOneArmUp },
+  ];
+
+  function catPoseSvg(poseId){
+    // 腕の矩形は下向き(肩から下に垂れる)が基準の0度。180度で真上、90度/-90度で水平。
+    let leftArmAngle=0, rightArmAngle=0, bodyRotate=0;
+    if(poseId === 'armsUp'){ leftArmAngle=175; rightArmAngle=175; }
+    else if(poseId === 'armsOut'){ leftArmAngle=95; rightArmAngle=-95; }
+    else if(poseId === 'oneArmUp'){ leftArmAngle=175; rightArmAngle=0; }
+    else if(poseId === 'bendLeft'){ bodyRotate=-16; }
+    else if(poseId === 'bendRight'){ bodyRotate=16; }
+    return `<svg viewBox="0 0 150 190" xmlns="http://www.w3.org/2000/svg">
+      <g transform="rotate(${bodyRotate} 75 120)">
+        <ellipse cx="75" cy="128" rx="30" ry="42" fill="#F0A868" stroke="#D9622B" stroke-width="1.5"/>
+        <circle cx="75" cy="58" r="25" fill="#F0A868" stroke="#D9622B" stroke-width="1.5"/>
+        <path d="M52 45 L48 26 L65 42 Z" fill="#F0A868" stroke="#D9622B" stroke-width="1.5"/>
+        <path d="M98 45 L102 26 L85 42 Z" fill="#F0A868" stroke="#D9622B" stroke-width="1.5"/>
+        <path d="M53 43 L50 31 L61 41 Z" fill="#D9622B"/>
+        <path d="M97 43 L100 31 L89 41 Z" fill="#D9622B"/>
+        <circle cx="66" cy="56" r="2.5" fill="#3A2E20"/>
+        <circle cx="84" cy="56" r="2.5" fill="#3A2E20"/>
+        <path d="M70 66 Q75 69 80 66" stroke="#3A2E20" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <g transform="rotate(${leftArmAngle} 46 100)">
+          <rect x="37" y="100" width="18" height="58" rx="9" fill="#F0A868" stroke="#D9622B" stroke-width="1.5"/>
+        </g>
+        <g transform="rotate(${rightArmAngle} 104 100)">
+          <rect x="95" y="100" width="18" height="58" rx="9" fill="#F0A868" stroke="#D9622B" stroke-width="1.5"/>
+        </g>
+      </g>
+    </svg>`;
+  }
+
+  let catEl, labelEl, gaugeFillEl;
+  let poseIndex = 0;
+  let holdStartAt = null;
+
+  function showCurrentPose(){
+    const p = POSES[poseIndex];
+    catEl.innerHTML = catPoseSvg(p.id);
+    labelEl.textContent = p.label;
+    holdStartAt = null;
+    if(gaugeFillEl) gaugeFillEl.style.width = '0%';
+  }
+
+  registerProgram('taisou', {
+    title: '🐾 てにゃー体操',
+    durationSec: 60,
+    requiresPose: true,
+    introHtml: 'カメラを使って、体の動きを見ます(手ではなく体全体)。<br>画面の猫と同じポーズを、しばらくキープしてください!<br>カメラへのアクセスを許可してください。',
+    layerHtml: `
+      <div class="taisou-bg"></div>
+      <div class="taisou-cat" id="taisouCat"></div>
+      <div class="taisou-label" id="taisouLabel"></div>
+      <div class="taisou-hold-gauge"><div class="taisou-hold-gauge-fill" id="taisouGaugeFill"></div></div>
+    `,
+    setup(){
+      catEl = document.getElementById('taisouCat');
+      labelEl = document.getElementById('taisouLabel');
+      gaugeFillEl = document.getElementById('taisouGaugeFill');
+    },
+    start(){
+      poseIndex = 0;
+      showCurrentPose();
+    },
+    reset(){ this.start(); },
+    onHand(){},
+    onPose(landmarks){
+      if(!landmarks){ holdStartAt = null; if(gaugeFillEl) gaugeFillEl.style.width = '0%'; return; }
+      const p = POSES[poseIndex];
+      const matched = p.check(landmarks);
+      if(matched){
+        if(holdStartAt === null) holdStartAt = Date.now();
+        const elapsed = Date.now() - holdStartAt;
+        if(gaugeFillEl) gaugeFillEl.style.width = Math.min(100, elapsed/HOLD_MS*100) + '%';
+        if(elapsed >= HOLD_MS){
+          onSuccess();
+          statusEl.textContent = p.label + ' できた!';
+          poseIndex = (poseIndex+1) % POSES.length;
+          showCurrentPose();
+        }
+      }else{
+        holdStartAt = null;
+        if(gaugeFillEl) gaugeFillEl.style.width = '0%';
+      }
+    },
+    onTick(){},
   });
 })();
 
