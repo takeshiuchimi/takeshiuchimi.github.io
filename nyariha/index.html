@@ -404,7 +404,7 @@
 {
   "meta": {
     "version": "ver0.1",
-    "buildDate": "0904-2149"
+    "buildDate": "0905-0946"
   },
   "about": {
     "paragraphs": [
@@ -1656,6 +1656,8 @@ function openProgram(key){
   running = false; gameEnded = false;
   clearInterval(timerInterval);
   totalSuccess = 0; totalMiss = 0; combo = 0; bestCombo = 0;
+  fallingFruits.forEach(ff=>ff.el && ff.el.remove());
+  fallingFruits = [];
   scoreDisplayEl.textContent = '0点';
   comboDisplayEl.textContent = '';
   resultOverlay.classList.add('hidden');
