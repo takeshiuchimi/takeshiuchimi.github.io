@@ -450,7 +450,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0909-1006"
+    "buildDate": "0909-2038"
   },
   "about": {
     "paragraphs": [
@@ -1065,6 +1065,7 @@ function feedbackFirework(points){
 let bgmEnabled = false; // デフォルトはオフ(ブラウザの自動再生制限もあるため、ユーザーの操作で有効にしてもらう)
 let bgmMaster = null;
 let bgmSchedulerTimer = null;
+let bgmResumeOnVisible = false; // タブが非表示になって止めた時、表示に戻ったら再開すべきか
 let bgmStep = 0;
 let bgmNextTime = 0;
 const BGM_BPM = 103.36;
@@ -1836,7 +1837,20 @@ document.getElementById('reconnectCameraBtn')?.addEventListener('click', ()=>{
 // (端末スリープ・他アプリ切り替え等で、気づかないうちに切断されているケースに対応)
 if(typeof document.addEventListener === 'function'){
   document.addEventListener('visibilitychange', ()=>{
-    if(document.visibilityState !== 'visible') return;
+    if(document.visibilityState !== 'visible'){
+      // タブが非表示(バックグラウンド)になったらBGMを止める。
+      // Web Audio APIは自動では止まらないため、これをしないとブラウザを閉じた/裏に回した
+      // つもりでも、実際には音だけスピーカーで鳴り続けてしまうことがある。
+      if(bgmSchedulerTimer !== null){
+        stopBgm();
+        bgmResumeOnVisible = true;
+      }
+      return;
+    }
+    if(bgmEnabled && bgmResumeOnVisible){
+      startBgm();
+      bgmResumeOnVisible = false;
+    }
     if(!stream) return;
     const stillLive = stream.getVideoTracks().some(t => t.readyState === 'live');
     if(!stillLive && cameraActive){
@@ -1850,12 +1864,13 @@ hubCameraBtn.addEventListener('click', startCameraOnly);
 // 「ボタンを押す」という1手順は省ける。拒否された場合はボタンで再試行できる)
 try{ startCameraOnly(); }catch(e){ console.error('カメラの自動起動に失敗:', e); }
 
-// ページを閉じる・再読み込みする時、カメラを確実に解放する
+// ページを閉じる・再読み込みする時、カメラ・マイク・BGMを確実に止める
 // (これを怠ると、タブを閉じただけではOSレベルでカメラが掴まれたままになる端末がある)
 try{
   window.addEventListener('beforeunload', ()=>{
     if(stream){ stream.getTracks().forEach(t=>t.stop()); }
     if(micStream){ micStream.getTracks().forEach(t=>t.stop()); }
+    stopBgm();
   });
 }catch(e){}
 
