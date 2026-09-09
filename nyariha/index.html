@@ -450,7 +450,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0907-2337"
+    "buildDate": "0909-1006"
   },
   "about": {
     "paragraphs": [
@@ -483,6 +483,7 @@
       { "heading": "👆 手だけでボタン操作(ドウェル選択)", "body": "「はじめる」「もう一回」「一覧に戻る」だけでなく、ハブ画面のプログラム選択・ページ送りも同じ方式です。手を約1.2秒乗せ続けると、円形(またはカードの下からの塗りつぶし)のゲージが満ちて自動的に選ばれます。タップでも操作できます。" },
       { "heading": "📳 バイブレーション", "body": "対応端末では、フルーツを掴んだ・木を揺らした・カヌーを漕いだ等の操作、成功・失敗の判定、ゲーム終了時の評価に応じて、振動の強さやパターンを変えてフィードバックしています。" },
       { "heading": null, "body": "<b>成功音</b>：フルーツを取った・キャッチした・花火が上がった等、成功した瞬間に全てのプログラムで音を鳴らします。音声ファイルは一切使わず、Web Audio APIでその場で音を合成しています。鈴が駆け上がるようなキラキラした音階(チロリロリン)で、夢のある音にしています。" },
+      { "heading": null, "body": "<b>BGM</b>：右上の🎵ボタンでオン・オフできます。これも音声ファイルは一切使わず、Web Audio APIでその場でループ生成しています。約103BPM、木琴風のメロディに、やわらかいコード・軽いベース・リズムを重ねた作りです。タイトル画面からゲーム中まで、途切れずに同じループが流れ続けます。デフォルトはオフです。手拍子だけは、マイクがBGMの音自体を拍手と誤検知してしまうため、プレイ中は自動的に止まり、一覧に戻ると(オンなら)再開します。" },
       { "heading": "👏 マイクでの拍手検知(にゃー手拍子)", "body": "このプログラムだけ、カメラの代わりにマイクを使います。音量の変化をリアルタイムに解析し、直前の平均音量より急に大きくなった瞬間を「手拍子」とみなしています。特別な音声認識は使っていない、シンプルな仕組みです。マイクの音声データも、カメラの映像と同じく端末の中だけで処理され、どこにも送信されません。" },
       { "heading": null, "body": "<b>リズムの変化</b>：序盤(0〜20秒)は一定のリズム、中盤(20〜40秒)は2回連続で叩くペアのリズム、終盤(40〜60秒)はテンポアップしたフィナーレ、と3段階で変化します。単調にならないよう工夫しています。" },
       { "heading": "⚠️ 動作条件", "body": "カメラ機能(getUserMedia)は、HTTPS配信かlocalhost環境でないとブラウザの制約で動作しません。ファイルをそのまま開いただけでは、カメラの許可が出ない場合があります。" },
@@ -543,6 +544,7 @@
       <div class="util-row" style="margin-top:10px;">
         <button class="util-btn" id="aboutToggleFooter">🐾 ニャーリハとは</button>
         <button class="util-btn" id="techInfoToggleFooter">🔧 技術情報</button>
+        <button class="util-btn util-btn-icon" id="bgmToggleFooter">🔇</button>
         <button class="util-btn util-btn-icon" id="darkModeToggleFooter">🌙</button>
       </div>
     </div>
@@ -577,6 +579,7 @@
     <div class="game-header">
       <button class="btn back" id="backToHubBtn">← 一覧</button>
       <span class="title" id="gameTitle"></span>
+      <button class="util-btn" id="bgmToggleGame">🔇</button>
       <button class="util-btn" id="darkModeToggleGame">🌙</button>
     </div>
     <div class="stage" id="stage">
@@ -646,8 +649,10 @@ const SITE_DATA = JSON.parse(document.getElementById('siteContentData').textCont
 
 // ---- ダークモード ----
 function toggleDarkMode(){ document.documentElement.classList.toggle('dark-mode'); }
-document.getElementById('darkModeToggleFooter').addEventListener('click', toggleDarkMode);
-document.getElementById('darkModeToggleGame').addEventListener('click', toggleDarkMode);
+document.getElementById('darkModeToggleFooter')?.addEventListener('click', toggleDarkMode);
+document.getElementById('darkModeToggleGame')?.addEventListener('click', toggleDarkMode);
+document.getElementById('bgmToggleFooter')?.addEventListener('click', toggleBgm);
+document.getElementById('bgmToggleGame')?.addEventListener('click', toggleBgm);
 
 // ---- プログラム登録の仕組み(ニャーズと同じ発想) ----
 const PROGRAMS = {};
@@ -778,8 +783,8 @@ function setupPageSwipe(){
     if(dx > 40) cardCarousel.step(-1);
     else if(dx < -40) cardCarousel.step(1);
   });
-  document.getElementById('cardEdgeLeft').addEventListener('click', ()=> cardCarousel.step(-1));
-  document.getElementById('cardEdgeRight').addEventListener('click', ()=> cardCarousel.step(1));
+  document.getElementById('cardEdgeLeft')?.addEventListener('click', ()=> cardCarousel.step(-1));
+  document.getElementById('cardEdgeRight')?.addEventListener('click', ()=> cardCarousel.step(1));
 }
 
 // ---- 共通DOM参照 ----
@@ -832,9 +837,9 @@ const MASCOT_CAT_SVG = `<svg class="mascot-cat" viewBox="0 0 100 120" xmlns="htt
   <ellipse cx="76" cy="72" rx="9" ry="14" fill="#F7C99B" stroke="#D9622B" stroke-width="1.5"/>
   <circle cx="76" cy="60" r="4.5" fill="#D4AF37"/>
 </svg>`;
-document.getElementById('mascotSlot').innerHTML = MASCOT_CAT_SVG;
-document.getElementById('versionBadge').textContent = SITE_DATA.meta.version;
-document.getElementById('devBuildBadge').textContent = SITE_DATA.meta.buildDate;
+document.getElementById('mascotSlot') && (document.getElementById('mascotSlot').innerHTML = MASCOT_CAT_SVG);
+document.getElementById('versionBadge') && (document.getElementById('versionBadge').textContent = SITE_DATA.meta.version);
+document.getElementById('devBuildBadge') && (document.getElementById('devBuildBadge').textContent = SITE_DATA.meta.buildDate);
 
 const PAW_PAA_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="62" r="24" fill="var(--player-body)"/>
@@ -981,8 +986,8 @@ function buildTechInfoHtml(d){
   html += `<h3 class="tech-group-heading">📦 容量</h3><p id="capacityText">${d.capacityNote}</p>`;
   return html;
 }
-document.getElementById('aboutBody').innerHTML = buildAboutHtml(SITE_DATA.about);
-document.getElementById('techInfoBody').innerHTML = buildTechInfoHtml(SITE_DATA.techInfo);
+document.getElementById('aboutBody') && (document.getElementById('aboutBody').innerHTML = buildAboutHtml(SITE_DATA.about));
+document.getElementById('techInfoBody') && (document.getElementById('techInfoBody').innerHTML = buildTechInfoHtml(SITE_DATA.techInfo));
 
 function comboMessage(){
   if(combo===3) return 'ニャイス!';
@@ -1052,6 +1057,174 @@ function feedbackFirework(points){
   if(points >= 4) vibrate([20,60,20,60,20,80]);
   else if(points >= 3) vibrate([20,50,30,60]);
   else vibrate([25,60,25]);
+}
+
+// ---- BGM(外部の音声ファイルは使わず、Web Audio APIでその場でループ生成する)
+// 約103BPM、木琴風メロディ+やわらかいコード+軽いベースとリズム。
+// 手拍子(マイクで拍手を検知するプログラム)とは相性が悪いので、そちらでは自動的に止める。
+let bgmEnabled = false; // デフォルトはオフ(ブラウザの自動再生制限もあるため、ユーザーの操作で有効にしてもらう)
+let bgmMaster = null;
+let bgmSchedulerTimer = null;
+let bgmStep = 0;
+let bgmNextTime = 0;
+const BGM_BPM = 103.36;
+const BGM_BEAT = 60/BGM_BPM;
+const BGM_STEP_DUR = BGM_BEAT/2; // 8分音符
+const BGM_LOOP_STEPS = 64; // 32拍(約18.6秒)でループ
+
+const bgmHz = n => 440 * Math.pow(2, (n-69)/12); // MIDIノート番号→Hz
+
+// 8分音符単位のメロディ(nullは休符)。E long/C#minor寄り
+const BGM_MELODY = [
+  76,null,78,80, 83,null,80,78,
+  76,null,73,71, 73,null,76,null,
+  78,null,80,83, 85,null,83,80,
+  78,null,76,73, 71,null,73,null,
+  76,null,78,80, 83,null,85,83,
+  80,null,78,76, 73,null,71,null,
+  73,null,76,78, 80,null,78,76,
+  73,null,71,68, 71,null,73,null
+];
+// 4拍ごとのコード(E, C#m, A, B)
+const BGM_CHORDS = [
+  [64,68,71], [61,64,68], [57,61,64], [59,63,66],
+  [64,68,71], [61,64,68], [57,61,64], [59,63,66]
+];
+const BGM_BASS_ROOTS = [40,37,45,47,40,37,45,47];
+
+function bgmEnvGain(time, attack, peak, decay){
+  const ctx = getAudioCtx();
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, time);
+  g.gain.exponentialRampToValueAtTime(peak, time+attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, time+attack+decay);
+  g.connect(bgmMaster);
+  return g;
+}
+function bgmPluck(freq, time, vol){
+  vol = vol || 0.035;
+  const ctx = getAudioCtx();
+  const o = ctx.createOscillator();
+  const g = bgmEnvGain(time, 0.008, vol, 0.28);
+  o.type = 'sine';
+  o.frequency.setValueAtTime(freq, time);
+  o.connect(g);
+  o.start(time); o.stop(time+0.34);
+  // 木琴っぽい倍音
+  const o2 = ctx.createOscillator();
+  const g2 = bgmEnvGain(time, 0.004, vol*0.28, 0.12);
+  o2.type = 'triangle';
+  o2.frequency.setValueAtTime(freq*2.01, time);
+  o2.connect(g2);
+  o2.start(time); o2.stop(time+0.16);
+}
+function bgmPad(notes, time){
+  const ctx = getAudioCtx();
+  notes.forEach((n,i)=>{
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    const f = bgmHz(n);
+    o.type = i===0 ? 'sine' : 'triangle';
+    o.frequency.setValueAtTime(f, time);
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.linearRampToValueAtTime(0.010, time+0.08);
+    g.gain.setValueAtTime(0.010, time+BGM_BEAT*1.5);
+    g.gain.exponentialRampToValueAtTime(0.0001, time+BGM_BEAT*2);
+    o.connect(g); g.connect(bgmMaster);
+    o.start(time); o.stop(time+BGM_BEAT*2+0.05);
+  });
+}
+function bgmBass(n, time){
+  const ctx = getAudioCtx();
+  const o = ctx.createOscillator();
+  const g = bgmEnvGain(time, 0.01, 0.025, 0.35);
+  o.type = 'sine';
+  o.frequency.setValueAtTime(bgmHz(n), time);
+  o.connect(g);
+  o.start(time); o.stop(time+0.42);
+}
+function bgmTick(time, strong){
+  const ctx = getAudioCtx();
+  const len = Math.floor(ctx.sampleRate*0.04);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for(let i=0;i<len;i++){ data[i] = (Math.random()*2-1)*(1-i/len); }
+  const src = ctx.createBufferSource();
+  const hp = ctx.createBiquadFilter();
+  const g = ctx.createGain();
+  hp.type = 'highpass'; hp.frequency.value = strong ? 1200 : 2500;
+  g.gain.setValueAtTime(strong ? 0.014 : 0.006, time);
+  g.gain.exponentialRampToValueAtTime(0.0001, time+0.045);
+  src.buffer = buf; src.connect(hp); hp.connect(g); g.connect(bgmMaster);
+  src.start(time); src.stop(time+0.05);
+}
+function bgmScheduleStep(s, t){
+  const note = BGM_MELODY[s];
+  if(note !== null) bgmPluck(bgmHz(note), t);
+  if(s%8 === 0){
+    const c = Math.floor(s/8) % BGM_CHORDS.length;
+    bgmPad(BGM_CHORDS[c], t);
+    bgmBass(BGM_BASS_ROOTS[c], t);
+  }
+  if(s%8 === 4){
+    const c = Math.floor(s/8) % BGM_BASS_ROOTS.length;
+    bgmBass(BGM_BASS_ROOTS[c]+7, t);
+  }
+  if(s%2 === 0) bgmTick(t, s%8===0);
+}
+function bgmScheduler(){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  while(bgmNextTime < ctx.currentTime + 0.12){
+    bgmScheduleStep(bgmStep, bgmNextTime);
+    bgmNextTime += BGM_STEP_DUR;
+    bgmStep = (bgmStep+1) % BGM_LOOP_STEPS;
+  }
+}
+function startBgm(){
+  if(bgmSchedulerTimer !== null) return; // 既に鳴っている(タイトルからゲーム中まで途切れさせない)
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  if(!bgmMaster){
+    bgmMaster = ctx.createGain();
+    bgmMaster.gain.value = 1.3;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 6500; // ほんの少し丸くする
+    bgmMaster.connect(lp);
+    lp.connect(ctx.destination);
+  }
+  bgmStep = 0;
+  bgmNextTime = ctx.currentTime + 0.05;
+  bgmSchedulerTimer = setInterval(bgmScheduler, 25);
+}
+function stopBgm(){
+  if(bgmSchedulerTimer !== null){ clearInterval(bgmSchedulerTimer); bgmSchedulerTimer = null; }
+  if(bgmMaster){
+    const ctx = getAudioCtx();
+    if(ctx){
+      bgmMaster.gain.cancelScheduledValues(ctx.currentTime);
+      bgmMaster.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.03);
+      setTimeout(()=>{ if(bgmMaster) bgmMaster.gain.value = 1.3; }, 180);
+    }
+  }
+}
+function toggleBgm(){
+  bgmEnabled = !bgmEnabled;
+  updateBgmButtons();
+  if(bgmEnabled){
+    // マイク専用プログラムをプレイ中は、切り替えても鳴らさない
+    const def = PROGRAMS[currentProgramKey];
+    if(!(def && def.requiresMic && running)) startBgm();
+  }else{
+    stopBgm();
+  }
+}
+function updateBgmButtons(){
+  const label = bgmEnabled ? '🎵' : '🔇';
+  ['bgmToggleFooter','bgmToggleGame'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.textContent = label;
+  });
 }
 
 // ---- マイク・拍手検知(カメラを使わないプログラム用) ----
@@ -1452,8 +1625,8 @@ function doRetry(){
     statusEl.textContent = '手を検出中';
   }
 }
-document.getElementById('retryDwellBtn').addEventListener('click', doRetry);
-document.getElementById('backDwellBtn').addEventListener('click', backToHub);
+document.getElementById('retryDwellBtn')?.addEventListener('click', doRetry);
+document.getElementById('backDwellBtn')?.addEventListener('click', backToHub);
 
 // ---- 手の検出結果を、現在のプログラムに配る ----
 let onHubScreen = true;
@@ -1654,7 +1827,7 @@ function onCameraDisconnected(){
     cameraDisconnectedOverlay.classList.remove('hidden');
   }
 }
-document.getElementById('reconnectCameraBtn').addEventListener('click', ()=>{
+document.getElementById('reconnectCameraBtn')?.addEventListener('click', ()=>{
   cameraDisconnectedOverlay.classList.add('hidden');
   startCameraOnly();
 });
@@ -1675,7 +1848,7 @@ if(typeof document.addEventListener === 'function'){
 hubCameraBtn.addEventListener('click', startCameraOnly);
 // ページを開いたら自動でカメラ起動を試みる(ブラウザの許可ダイアログ自体は省略できないが、
 // 「ボタンを押す」という1手順は省ける。拒否された場合はボタンで再試行できる)
-startCameraOnly();
+try{ startCameraOnly(); }catch(e){ console.error('カメラの自動起動に失敗:', e); }
 
 // ページを閉じる・再読み込みする時、カメラを確実に解放する
 // (これを怠ると、タブを閉じただけではOSレベルでカメラが掴まれたままになる端末がある)
@@ -1704,6 +1877,9 @@ function startProgram(){
     statusEl.textContent = '体を検出中';
   }else{
     statusEl.textContent = '手を検出中';
+  }
+  if(def.requiresMic){
+    stopBgm(); // マイクで音を検知するので、BGMがあると誤検知の原因になる
   }
 }
 
@@ -1756,6 +1932,7 @@ function backToHub(){
   clearInterval(timerInterval);
   activeModelType = 'hands'; // ハブ画面はいつも手の検出に戻す
   if(micActive){ stopMicOnly(); } // マイクを使うプログラムから戻る時は、マイクも解放する
+  if(bgmEnabled) startBgm(); // 手拍子等で止めていたBGMを、有効なら再開する
   onHubScreen = true;
   document.getElementById('screen-game').classList.add('hidden');
   document.getElementById('screen-hub').classList.remove('hidden');
