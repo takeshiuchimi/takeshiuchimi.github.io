@@ -439,6 +439,12 @@
   .modal-box .rules-text p{ margin:0 0 8px; }
   .modal-box .rules-text p:last-child{ margin-bottom:0; }
   .tech-group-heading{ font-size:14px; color:var(--brown-deep); margin:12px 0 4px; border-bottom:2px dashed var(--gold); padding-bottom:3px; }
+  .capacity-table{ width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
+  .capacity-table th, .capacity-table td{ padding:4px 6px; text-align:left; border-bottom:1px solid var(--cream-deep); }
+  .capacity-table th{ color:var(--brown-deep); font-weight:bold; }
+  .capacity-table td.num{ text-align:right; white-space:nowrap; }
+  .capacity-table tr.total td{ font-weight:bold; border-top:2px solid var(--gold); border-bottom:none; }
+  .capacity-bar{ display:inline-block; height:8px; background:var(--gold); border-radius:4px; vertical-align:middle; margin-right:4px; }
   .tech-group-heading:first-child{ margin-top:0; }
   .intent-box{
     background:var(--cream-deep); border-radius:10px; padding:8px 10px; margin:6px 0; font-size:12px; line-height:1.6;
@@ -484,7 +490,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0910-1942"
+    "buildDate": "0910-2000"
   },
   "about": {
     "paragraphs": [
@@ -527,7 +533,17 @@
       { "heading": null, "body": "<b>カメラ・マイクの解放</b>：カメラを再接続する時や、ページを閉じる時は、それまで使っていたカメラの映像を必ず止めてから次の処理に進むようにしています。これを怠ると、特にWindows端末で、ブラウザを閉じてもカメラデバイスが掴まれたままになり、他のアプリでカメラが使えなくなったりOSの再起動が必要になったりすることがあるための対策です。マイクも同様に、手拍子プログラムから一覧に戻る時に確実に解放しています。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
-    "capacityNote": "このファイル1本で約176KB(共通エンジン+全7プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。"
+    "capacityNote": "このファイル1本で約174KB(共通エンジン+全7プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+    "capacityBreakdown": [
+      { "name":"共通エンジン(カメラ・マイク・音・UI等)", "kb":104.2, "pct":60.6 },
+      { "name":"にゃー花火", "kb":19.5, "pct":11.3 },
+      { "name":"にゃー楽器", "kb":18.5, "pct":10.8 },
+      { "name":"にゃーカヌー", "kb":8.2, "pct":4.8 },
+      { "name":"にゃー体操", "kb":8.1, "pct":4.7 },
+      { "name":"にゃーもぎ", "kb":6.1, "pct":3.5 },
+      { "name":"にゃー手拍子", "kb":4.6, "pct":2.7 },
+      { "name":"にゃーゆらし", "kb":2.8, "pct":1.6 }
+    ]
   },
   "programs": [
     { "key":"mogi", "icon":"🍎", "name":"にゃーもぎ", "desc":"グーパーで実をもいで、かごに仕分け", "disabled": false, "purpose":"フルーツに手を伸ばし、手を握ってフルーツを取り、かごまで運んで手を開いて離します。遊びながら「握る・開く」という手指の動きに加え、手を上げる・下げる・左右に動かすといった上肢の動きを自然に引き出します。" },
@@ -1015,12 +1031,32 @@ function buildAboutHtml(d){
   }
   return html;
 }
+function getApproxFileSizeKB(){
+  // 実測のファイルサイズに近い値を、実行時にその場で測る(コードを直すたびに手で書き換えなくて済むように)
+  try{
+    const bytes = new Blob([document.documentElement.outerHTML]).size;
+    return Math.round(bytes/1024);
+  }catch(e){ return null; }
+}
+function buildCapacityBreakdownHtml(breakdown){
+  if(!breakdown || !breakdown.length) return '';
+  const maxPct = Math.max(...breakdown.map(b=>b.pct));
+  const rows = breakdown.map(b=>{
+    const barWidth = Math.max(4, Math.round(b.pct/maxPct*60));
+    return `<tr><td><span class="capacity-bar" style="width:${barWidth}px;"></span>${b.name}</td><td class="num">${b.kb}KB</td><td class="num">${b.pct}%</td></tr>`;
+  }).join('');
+  return `<table class="capacity-table"><thead><tr><th>内訳</th><th>容量</th><th>割合</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
 function buildTechInfoHtml(d){
   let html = d.sections.map(s=>{
     const heading = s.heading ? `<h3 class="tech-group-heading">${s.heading}</h3>` : '';
     return `${heading}<p>${s.body}</p>`;
   }).join('\n');
-  html += `<h3 class="tech-group-heading">📦 容量</h3><p id="capacityText">${d.capacityNote}</p>`;
+  const measuredKB = getApproxFileSizeKB();
+  const sizeLine = measuredKB
+    ? `<p>このページを今開いている状態で測ると、約${measuredKB}KBです(下の内訳はおおよその目安です)。</p>`
+    : '';
+  html += `<h3 class="tech-group-heading">📦 容量</h3><p id="capacityText">${d.capacityNote}</p>${sizeLine}${buildCapacityBreakdownHtml(d.capacityBreakdown)}`;
   return html;
 }
 document.getElementById('aboutBody') && (document.getElementById('aboutBody').innerHTML = buildAboutHtml(SITE_DATA.about));
