@@ -300,6 +300,13 @@
     background:linear-gradient(90deg, #FFD98A, #fff, #FFD98A);
     box-shadow:0 0 12px 4px rgba(255,217,138,.85);
   }
+  .instrument-crash{
+    position:absolute; left:50%; top:50%; width:0; height:0;
+    transform:translate(-50%,-50%); border-radius:50%; pointer-events:none;
+    background:radial-gradient(circle, rgba(255,255,255,.95), rgba(255,217,138,.6) 40%, transparent 70%);
+    opacity:0; transition:width .4s ease-out, height .4s ease-out, opacity .5s ease-out;
+  }
+  .instrument-crash.burst{ width:340px; height:340px; opacity:1; transition:width .35s ease-out, height .35s ease-out, opacity .1s linear; }
   .night-sky .ferris{
     position:absolute; bottom:-4%; left:54%; transform:translateX(-50%);
     width:195px; height:218px; opacity:.6;
@@ -476,7 +483,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0910-1351"
+    "buildDate": "0910-1920"
   },
   "about": {
     "paragraphs": [
@@ -497,7 +504,7 @@
       { "heading": "🖐️ 手の検出の仕組み", "body": "Google製のMediaPipe Hands(CDN経由、ブラウザ内で完結)を使い、手の21箇所のランドマーク(関節位置)をリアルタイムに検出しています。最大2本まで検出できます。" },
       { "heading": null, "body": "<b>MediaPipeとは</b>：Googleが無料公開している、カメラ映像から人の手・顔・体の動きを読み取るための技術です。カメラのコマを渡すと座標が返ってくるだけで、AIモデル自体はGoogleが用意したものをそのまま使わせてもらっています。処理は全て端末の中(オンデバイス)で行われ、映像そのものがGoogleのサーバーに送信されることはありません。" },
       { "heading": null, "body": "<b>体全体の検出(にゃー体操)</b>：このプログラムだけ、手ではなくMediaPipe Poseという別のモデルを使い、体全体33箇所(肩・肘・手首・腰など)を検出しています。プログラムに入る時だけこのモデルに切り替え、他のプログラムでは今まで通り手だけを見るモデル(Hands)に戻ります。判定は「肩と手首の位置関係」のような大まかな見方をしていて、ピッタリ合わせなくても成功するよう寛容にしています。" },
-      { "heading": null, "body": "<b>にゃー楽器(テルミン風+ドラム)</b>：両手それぞれの位置を、独立した音の高さ・左右の定位(パン)に変換する、採点のないプログラムです。左右の手をそれぞれhandedness(Handsのleft/right判定)で追跡し、パー(開いた手)の間は別々のオシレーターで連続音を鳴らし続けます。両手とも開いている時だけ、2つの手を結ぶ線を表示し、2つの音がオクターブ・完全5度のような綺麗な周波数比になった瞬間だけ、その線を光らせています。加えて、開いた手が握られた瞬間、および握ったまま一定以上位置が動いた時に、その時のこぶしの位置に応じた高さ・左右位置でドラム音(左手=低いキック、右手=ノイズ系のスネア)を鳴らします。速さは問わず、少し動かすだけで鳴り、静止したままなら連打はされません。この「動いたか」の判定だけは、カメラの生の位置を見ています(なめらかにした位置だと反応が鈍くなるため)。音の高さ・左右位置自体は、なめらかにした位置から計算しています。オシレーターは一度作ると止め直せないWeb Audioの特性上、連続音用のオシレーターはプログラムに入る時に手ごとに1つずつ作って鳴らし続け、一覧に戻る時に確実に停止・破棄しています(ドラム音は一発ごとに鳴らして消える別の仕組みです)。" },
+      { "heading": null, "body": "<b>にゃー楽器(テルミン風+ドラム)</b>：両手それぞれの位置を、独立した音の高さ・左右の定位(パン)に変換する、採点のないプログラムです。左右の手をそれぞれhandedness(Handsのleft/right判定)で追跡し、パー(開いた手)の間は別々のオシレーターで連続音を鳴らし続けます。両手とも開いている時だけ、2つの手を結ぶ線を表示し、2つの音がオクターブ・完全5度のような綺麗な周波数比になった瞬間だけ、その線を光らせています。加えて、手がグーになった瞬間、および保持したまま一定以上位置が動いた時に、その時のこぶしの位置に応じた高さ・左右位置でドラム音(左手=低いキック、右手=ノイズ系のスネア)を鳴らします。手がチョキになった瞬間も、同様にハイハットのような軽い音を鳴らします。速さは問わず、少し動かすだけで鳴り、保持したまま静止していれば連打はされません。この「動いたか」の判定だけは、カメラの生の位置を見ています(なめらかにした位置だと反応が鈍くなるため)。音の高さ・左右位置自体は、なめらかにした位置から計算しています。さらに、グー⇔チョキ、またはグー⇔パーを一定回数交互に繰り返すと(ドラムのロール奏法のイメージ)、シンバルのようなクラッシュ音と、画面に広がる光の演出が発火します。両手それぞれ別々に判定していて、隠しごほうびのような位置づけです。オシレーターは一度作ると止め直せないWeb Audioの特性上、連続音用のオシレーターはプログラムに入る時に手ごとに1つずつ作って鳴らし続け、一覧に戻る時に確実に停止・破棄しています(ドラム音は一発ごとに鳴らして消える別の仕組みです)。" },
       { "heading": null, "body": "<b>骨格ガイド</b>：カメラ映像そのものは表示しませんが(もぎの手カーソルと同じ考え方)、検出できた肩・肘・手首・腰の位置を、線と丸でつないだ骨格として画面に重ねて表示しています。カメラとの距離や角度によって認識のされ方が変わるため、実際にどう見えているかを確認しながら立ち位置を調整できます。" },
       { "heading": null, "body": "<b>今後の展開候補</b>：MediaPipeには手・体全体の検出以外にも、表情や瞬きを検出する「Face」、人物だけを背景から切り抜く「Selfie Segmentation」といった機能があります。今後の候補として検討しています。" },
       { "heading": null, "body": "<b>グーチョキパー判定</b>：4本の指(人差し指・中指・薬指・小指)それぞれの指先と、その一つ手前の関節(PIP)の、手首からの距離を比較し、伸びているか曲がっているかを判定します。人差し指・中指だけが伸びていれば「チョキ」、3本以上伸びていれば「パー」、それ以外は「グー」としています。" },
@@ -528,7 +535,7 @@
     { "key":"hanabi", "icon":"🎆", "name":"にゃー花火", "desc":"夜空の星に手を合わせて花火を打ち上げ", "disabled": false, "purpose":"夜空に浮かぶ星を目で探し、その位置に向かって手を伸ばします。星は毎回違う位置に現れるので、上下左右へ手を伸ばす動きを繰り返し引き出します。" },
     { "key":"tehyoushi", "icon":"👏", "name":"にゃー手拍子", "desc":"リズムに合わせて手拍子しよう(マイク使用)", "disabled": false, "purpose":"降りてくる合図に合わせて、一定のリズムで手を叩きます。カメラではなくマイクを使うプログラムで、タイミングを合わせて両手を合わせる動きを引き出します。" },
     { "key":"taisou", "icon":"🐾", "name":"にゃー体操", "desc":"画面の猫と同じポーズをキープしよう", "disabled": false, "purpose":"画面に出る猫のポーズを見て、腕を伸ばしたり体を左右に曲げたりして真似します。手だけでなく体全体を使うプログラムで、腕の伸展や体幹のストレッチを引き出します。" },
-    { "key":"instrument", "icon":"🎹", "name":"にゃー楽器", "desc":"両手の位置で音を鳴らして、好きな音を探そう", "disabled": false, "purpose":"両手それぞれを開くと音が鳴り、上下に動かすと音の高さ、左右に動かすと音の左右の位置が変わります。握るとドラムの音も鳴り、握ったまま少し動かすとそこでも鳴ります。採点や失敗はなく、自由に音を探して遊ぶプログラムで、両手を協調させる動き・独立して動かす動き・握ったまま動かす動きを引き出します。" }
+    { "key":"instrument", "icon":"🎹", "name":"にゃー楽器", "desc":"両手の位置で音を鳴らして、好きな音を探そう", "disabled": false, "purpose":"両手それぞれを開くと音が鳴り、上下に動かすと音の高さ、左右に動かすと音の左右の位置が変わります。握る・チョキにするとドラムの音も鳴り、グーとチョキ(またはグーとパー)を交互に繰り返すと華やかなシンバル音が鳴ります。採点や失敗はなく、自由に音を探して遊ぶプログラムで、両手を協調させる動き・独立して動かす動き・グーチョキパーを切り替える動きを引き出します。" }
   ]
 }
 </script>
@@ -3092,40 +3099,65 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   let instChains = { Left:null, Right:null }; // パー用、各手ごとに{osc,gain,filter,panner}
   let lastFreq = { Left:null, Right:null };
-  let ringLeftEl, ringRightEl, lineEl, labelEl;
+  let ringLeftEl, ringRightEl, lineEl, labelEl, crashEl;
   // 手の位置を平滑化(カメラのジッターが直接音の揺れ=ぶつぶつ音にならないよう、なめらかにする)
   const SMOOTH_FACTOR = 0.3;
   let smoothY = { Left:null, Right:null };
   let smoothX = { Left:null, Right:null };
 
-  // ---- ドラム(パー→グーに握った瞬間、および握ったまま動かした時に検知) ----
+  // ---- ドラム(グー/チョキに変わった瞬間、および保持したまま動かした時に検知) ----
   const HIT_COOLDOWN_MS = 260;
-  const MOVE_HIT_DISTANCE = 8; // 握ったまま、これ以上位置が動いたら追加で鳴らす(画面の%単位)
-  let hitArmed = { Left:true, Right:true }; // 一度叩いたら、手を開くまで連打を防ぐ
-  let lastHitAt = { Left:0, Right:0 };
-  let lastHitPos = { Left:null, Right:null }; // 直近で鳴らした時の位置(握ったまま動いたか判定するため)
+  const MOVE_HIT_DISTANCE = 8; // 保持したまま、これ以上位置が動いたら追加で鳴らす(画面の%単位)
+  function newHandState(){ return { armed:true, lastAt:0, lastPos:null }; }
+  let guuState = { Left:newHandState(), Right:newHandState() };
+  let chokiState = { Left:newHandState(), Right:newHandState() };
 
-  function checkHit(handedness, h, now, x, y){
-    // 「開いた手が握られた瞬間」に加えて、「握ったまま一定以上動いた瞬間」も見る(速さは問わない)
-    if(h.shape !== 'guu'){
-      hitArmed[handedness] = true;
-      lastHitPos[handedness] = null;
+  function checkHit(targetShape, h, now, x, y, state){
+    // 「対象の形になった瞬間」に加えて、「保持したまま一定以上動いた瞬間」も見る(速さは問わない)
+    if(h.shape !== targetShape){
+      state.armed = true;
+      state.lastPos = null;
       return false;
     }
-    if((now - lastHitAt[handedness]) <= HIT_COOLDOWN_MS) return false; // クールダウン中は何もしない
-    if(hitArmed[handedness]){
-      // 開いた手が今まさに握られた最初の一撃
-      lastHitAt[handedness] = now;
-      hitArmed[handedness] = false;
-      lastHitPos[handedness] = { x, y };
+    if((now - state.lastAt) <= HIT_COOLDOWN_MS) return false; // クールダウン中は何もしない
+    if(state.armed){
+      state.lastAt = now;
+      state.armed = false;
+      state.lastPos = { x, y };
       return true;
     }
-    if(lastHitPos[handedness]){
-      const dx = x - lastHitPos[handedness].x, dy = y - lastHitPos[handedness].y;
+    if(state.lastPos){
+      const dx = x - state.lastPos.x, dy = y - state.lastPos.y;
       if(Math.sqrt(dx*dx + dy*dy) > MOVE_HIT_DISTANCE){
-        lastHitAt[handedness] = now;
-        lastHitPos[handedness] = { x, y };
+        state.lastAt = now;
+        state.lastPos = { x, y };
         return true;
+      }
+    }
+    return false;
+  }
+
+  // ---- 連打(ロール)検知: グー⇔チョキ、またはグー⇔パーを交互に繰り返すとクラッシュ演出 ----
+  const ROLL_WINDOW_MS = 1600;
+  const ROLL_MIN_COUNT = 4; // 直近この回数、形が交互に変わっていたら発火
+  let shapeHistory = { Left:[], Right:[] };
+  function recordShapeAndCheckRoll(hd, shape, now){
+    const hist = shapeHistory[hd];
+    if(hist.length && hist[hist.length-1].shape === shape) return false; // 同じ形が続く間は記録しない
+    hist.push({ shape, t: now });
+    while(hist.length && now - hist[0].t > ROLL_WINDOW_MS) hist.shift();
+    if(hist.length >= ROLL_MIN_COUNT){
+      const recent = hist.slice(-ROLL_MIN_COUNT);
+      const uniqueShapes = new Set(recent.map(r=>r.shape));
+      if(uniqueShapes.size === 2){
+        let alternating = true;
+        for(let i=1;i<recent.length;i++){
+          if(recent[i].shape === recent[i-1].shape){ alternating = false; break; }
+        }
+        if(alternating){
+          shapeHistory[hd] = []; // 発火したら履歴をリセット(連続で何度もクラッシュしないように)
+          return true;
+        }
       }
     }
     return false;
@@ -3169,6 +3201,45 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     else{ src.buffer=buf; src.connect(bp); bp.connect(gain); gain.connect(ctx.destination); }
     src.start(now); src.stop(now+0.16);
   }
+  function playHiHat(pan){ // チョキ用、軽く高い「チッ」という音
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const len = Math.floor(ctx.sampleRate*0.08);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<len;i++) data[i] = (Math.random()*2-1)*(1-i/len);
+    const src = ctx.createBufferSource();
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 6000;
+    const gain = ctx.createGain();
+    const panner = makePanner();
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now+0.08);
+    if(panner){ panner.pan.value = pan; src.buffer=buf; src.connect(hp); hp.connect(gain); gain.connect(panner); panner.connect(ctx.destination); }
+    else{ src.buffer=buf; src.connect(hp); hp.connect(gain); gain.connect(ctx.destination); }
+    src.start(now); src.stop(now+0.1);
+  }
+  function playCrash(pan){ // ロール(連打)検知時の華やかなシンバル音
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const len = Math.floor(ctx.sampleRate*0.7);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<len;i++) data[i] = (Math.random()*2-1)*Math.pow(1-i/len, 0.6);
+    const src = ctx.createBufferSource();
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 3500;
+    const gain = ctx.createGain();
+    const panner = makePanner();
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now+0.7);
+    if(panner){ panner.pan.value = pan; src.buffer=buf; src.connect(hp); hp.connect(gain); gain.connect(panner); panner.connect(ctx.destination); }
+    else{ src.buffer=buf; src.connect(hp); hp.connect(gain); gain.connect(ctx.destination); }
+    src.start(now); src.stop(now+0.72);
+  }
+
   function flashRing(ringEl, freq, minHz, maxHz){
     if(!ringEl) return;
     const t = Math.log(freq/minHz) / Math.log(maxHz/minHz);
@@ -3243,9 +3314,10 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   registerProgram('instrument', {
     title: '🎹 にゃー楽器',
     durationSec: 90,
-    introHtml: 'カメラを使って、両手の位置で音を鳴らします。<br>手を開くと音が鳴り、上下で音の高さ、左右で音の位置(左右のスピーカー)が変わります。<br>手を握るとドラムが鳴ります(左手=ドン、右手=パチッ)。握ったまま少し動かすと、そこでも鳴ります。<br>両手で音を重ねて、いい響きを探してみてください!<br>カメラへのアクセスを許可してください。',
+    introHtml: 'カメラを使って、両手の位置で音を鳴らします。<br>手を開くと音が鳴り、上下で音の高さ、左右で音の位置(左右のスピーカー)が変わります。<br>手を握るとドラムが鳴ります(左手=ドン、右手=パチッ)。<br>グーとチョキ(またはグーとパー)を交互に繰り返すと、シンバルが鳴ります!<br>両手で音を重ねて、いい響きを探してみてください!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="instrument-bg"></div>
+      <div class="instrument-crash" id="instrumentCrash"></div>
       <div class="instrument-line" id="instrumentLine"></div>
       <div class="instrument-ring" id="instrumentRingLeft"></div>
       <div class="instrument-ring" id="instrumentRingRight"></div>
@@ -3256,14 +3328,16 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       ringRightEl = document.getElementById('instrumentRingRight');
       lineEl = document.getElementById('instrumentLine');
       labelEl = document.getElementById('instrumentLabel');
+      crashEl = document.getElementById('instrumentCrash');
     },
     start(){
       ensureChain('Left'); ensureChain('Right');
       [ringLeftEl, ringRightEl].forEach(el=>{ if(el) el.style.opacity = '0'; });
       if(lineEl) lineEl.style.opacity = '0';
-      hitArmed = { Left:true, Right:true };
-      lastHitAt = { Left:0, Right:0 };
-      lastHitPos = { Left:null, Right:null };
+      if(crashEl) crashEl.classList.remove('burst');
+      guuState = { Left:newHandState(), Right:newHandState() };
+      chokiState = { Left:newHandState(), Right:newHandState() };
+      shapeHistory = { Left:[], Right:[] };
       smoothY = { Left:null, Right:null };
       smoothX = { Left:null, Right:null };
     },
@@ -3312,11 +3386,27 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         }
 
         // グー: 握った瞬間、その時のこぶしの位置に応じた音の高さ・左右位置でドラムを鳴らす
-        if(checkHit(hd, h, nowMs, h.x, h.y)){
+        if(checkHit('guu', h, nowMs, h.x, h.y, guuState[hd])){
           const drumFreq = yToDrumFreq(smoothY[hd]);
           if(hd === 'Left') playHitLeft(drumFreq, pan); else playHitRight(drumFreq, pan);
           flashRing(ringEl, drumFreq, DRUM_PITCH_MIN_HZ, DRUM_PITCH_MAX_HZ);
           if(labelEl) labelEl.textContent = hd === 'Left' ? '🥁 ドン!' : '🥁 パチッ!';
+        }
+        // チョキ: ハイハットのような軽い音
+        if(checkHit('choki', h, nowMs, h.x, h.y, chokiState[hd])){
+          playHiHat(pan);
+          flashRing(ringEl, DRUM_PITCH_MAX_HZ, DRUM_PITCH_MIN_HZ, DRUM_PITCH_MAX_HZ);
+          if(labelEl) labelEl.textContent = '✋ チッ!';
+        }
+        // グー⇔チョキ、またはグー⇔パーを交互に繰り返すと、ロール判定でシンバルクラッシュ
+        if(recordShapeAndCheckRoll(hd, h.shape, nowMs)){
+          playCrash(pan);
+          if(crashEl){
+            crashEl.classList.remove('burst');
+            void crashEl.offsetWidth; // アニメーションを再トリガーするための強制リフロー
+            crashEl.classList.add('burst');
+          }
+          if(labelEl) labelEl.textContent = '✨ ジャーン!!';
         }
       });
 
