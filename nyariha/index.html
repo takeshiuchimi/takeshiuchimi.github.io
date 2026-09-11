@@ -286,7 +286,7 @@
   }
   .instrument-label{
     position:absolute; left:50%; top:6%; transform:translateX(-50%);
-    font-size:13px; color:#fff; text-align:center; line-height:1.6;
+    font-size:14px; font-weight:bold; color:#fff; text-align:center; line-height:1.6;
     background:rgba(0,0,0,.3); padding:6px 14px; border-radius:12px;
   }
   .instrument-line{
@@ -381,6 +381,24 @@
     background:linear-gradient(180deg, #FFFDF6 0%, #FFFDF6 74%, #A8D68A 74%, #8FC470 100%);
   }
   html.dark-mode .forest-bg{ background:linear-gradient(180deg, #241E18 0%, #241E18 74%, #2E4A22 74%, #24391A 100%); }
+
+  /* ---- 自然背景の共通パーツ(森・川・今後の新しい背景でも使い回せるように) ---- */
+  .nature-hills{ position:absolute; left:0; right:0; width:100%; height:22%; pointer-events:none; }
+  .nature-hills.top{ top:0; transform:scaleY(-1); }
+  .nature-hills.bottom{ bottom:0; }
+  html.dark-mode .nature-hills path.far{ fill:#1E3018; }
+  html.dark-mode .nature-hills path.near{ fill:#152410; }
+  .nature-sun-glow{
+    position:absolute; top:2%; right:5%; width:70px; height:70px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,230,150,.55), rgba(255,230,150,0) 70%);
+    pointer-events:none;
+  }
+  html.dark-mode .nature-sun-glow{ display:none; }
+  .river-sparkle{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .river-sparkle span{
+    position:absolute; width:26px; height:3px; border-radius:2px;
+    background:rgba(255,255,255,.55); transform:rotate(-18deg);
+  }
   .forest-bg .sun{ position:absolute; top:5%; right:8%; font-size:34px; opacity:.9; }
   .forest-bg .cloud{ position:absolute; font-size:26px; opacity:.85; }
   .forest-bg .cloud.c1{ top:8%; left:6%; }
@@ -490,7 +508,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0910-2000"
+    "buildDate": "0911-0233"
   },
   "about": {
     "paragraphs": [
@@ -510,8 +528,8 @@
     "sections": [
       { "heading": "🖐️ 手の検出の仕組み", "body": "Google製のMediaPipe Hands(CDN経由、ブラウザ内で完結)を使い、手の21箇所のランドマーク(関節位置)をリアルタイムに検出しています。最大2本まで検出できます。" },
       { "heading": null, "body": "<b>MediaPipeとは</b>：Googleが無料公開している、カメラ映像から人の手・顔・体の動きを読み取るための技術です。カメラのコマを渡すと座標が返ってくるだけで、AIモデル自体はGoogleが用意したものをそのまま使わせてもらっています。処理は全て端末の中(オンデバイス)で行われ、映像そのものがGoogleのサーバーに送信されることはありません。" },
-      { "heading": null, "body": "<b>体全体の検出(にゃー体操)</b>：このプログラムだけ、手ではなくMediaPipe Poseという別のモデルを使い、体全体33箇所(肩・肘・手首・腰など)を検出しています。プログラムに入る時だけこのモデルに切り替え、他のプログラムでは今まで通り手だけを見るモデル(Hands)に戻ります。判定は「肩と手首の位置関係」のような大まかな見方をしていて、ピッタリ合わせなくても成功するよう寛容にしています。" },
-      { "heading": null, "body": "<b>にゃー楽器(テルミン風+ドラム)</b>：両手それぞれの位置を、独立した音の高さ・左右の定位(パン)に変換する、採点のないプログラムです。左右の手をそれぞれhandedness(Handsのleft/right判定)で追跡し、パー(開いた手)の間は別々のオシレーターで連続音を鳴らし続けます。両手とも開いている時だけ、2つの手を結ぶ線を表示し、2つの音がオクターブ・完全5度のような綺麗な周波数比になった瞬間だけ、その線を光らせています。加えて、手がグーになった瞬間、および保持したまま一定以上位置が動いた時に、その時のこぶしの位置に応じた高さ・左右位置でドラム音(左手=低いキック、右手=ノイズ系のスネア)を鳴らします。手がチョキになった瞬間も、同様にハイハットのような軽い音を鳴らします。速さは問わず、少し動かすだけで鳴り、保持したまま静止していれば連打はされません。この「動いたか」の判定だけは、カメラの生の位置を見ています(なめらかにした位置だと反応が鈍くなるため)。音の高さ・左右位置自体は、なめらかにした位置から計算しています。さらに、グー⇔チョキ、またはグー⇔パーを一定回数交互に繰り返すと(ドラムのロール奏法のイメージ)、シンバルのようなクラッシュ音と、画面に広がる光の演出が発火します。両手それぞれ別々に判定していて、隠しごほうびのような位置づけです。背景はSVGでステージの照明(スポットライト)を描いていて、ピンク・ゴールド・シアンの光の帯と、足元の床のライン、小さな光の粒を配置し、演奏している雰囲気を出しています。オシレーターは一度作ると止め直せないWeb Audioの特性上、連続音用のオシレーターはプログラムに入る時に手ごとに1つずつ作って鳴らし続け、一覧に戻る時に確実に停止・破棄しています(ドラム音は一発ごとに鳴らして消える別の仕組みです)。" },
+      { "heading": null, "body": "<b>体全体の検出(にゃー体操)</b>：このプログラムだけ、手ではなくMediaPipe Poseという別のモデルを使い、体全体33箇所(肩・肘・手首・腰など)を検出しています。プログラムに入る時だけこのモデルに切り替え、他のプログラムでは今まで通り手だけを見るモデル(Hands)に戻ります。判定は「肩と手首の位置関係」のような大まかな見方をしていて、ピッタリ合わせなくても成功するよう寛容にしています。Poseを読み込むCDNスクリプト自体も、体操を一度も開かない人には読み込まれないよう、実際に体操を開いた瞬間に初めて読み込む(遅延読み込み)ようにしています。" },
+      { "heading": null, "body": "<b>にゃー楽器(テルミン風+ドラム)</b>：両手それぞれの位置を、独立した音の高さ・左右の定位(パン)に変換する、採点のないプログラムです。左右の手をそれぞれhandedness(Handsのleft/right判定)で追跡し、パー(開いた手)の間は別々のオシレーターで連続音を鳴らし続けます。両手とも開いている時だけ、2つの手を結ぶ線を表示し、2つの音がオクターブ・完全5度のような綺麗な周波数比になった瞬間だけ、その線を光らせています。加えて、手がグーになった瞬間、および保持したまま一定以上位置が動いた時に、その時のこぶしの位置に応じた高さ・左右位置でドラム音(左手=低いキック、右手=ノイズ系のスネア)を鳴らします。手がチョキになった瞬間も、同様にハイハットのような軽い音を鳴らします。速さは問わず、少し動かすだけで鳴り、保持したまま静止していれば連打はされません。この「動いたか」の判定だけは、カメラの生の位置を見ています(なめらかにした位置だと反応が鈍くなるため)。音の高さ・左右位置自体は、なめらかにした位置から計算しています。さらに、グー⇔チョキ、またはグー⇔パーを一定回数交互に繰り返すと(ドラムのロール奏法のイメージ)、シンバルのようなクラッシュ音と、画面に広がる光の演出が発火します。両手それぞれ別々に判定していて、隠しごほうびのような位置づけです。背景はSVGでステージの照明(スポットライト)を描いていて、ピンク・ゴールド・シアンの光の帯と、足元の床のライン、小さな光の粒を配置し、演奏している雰囲気を出しています。オシレーターは一度作ると止め直せないWeb Audioの特性上、連続音用のオシレーターはプログラムに入る時に手ごとに1つずつ作って鳴らし続け、一覧に戻る時に確実に停止・破棄しています(ドラム音は一発ごとに鳴らして消える別の仕組みです)。採点や失敗の概念が無いプログラムなので、終了時も星の評価ではなく「お疲れ様でした」という専用のメッセージを表示しています。" },
       { "heading": null, "body": "<b>骨格ガイド</b>：カメラ映像そのものは表示しませんが(もぎの手カーソルと同じ考え方)、検出できた肩・肘・手首・腰の位置を、線と丸でつないだ骨格として画面に重ねて表示しています。カメラとの距離や角度によって認識のされ方が変わるため、実際にどう見えているかを確認しながら立ち位置を調整できます。" },
       { "heading": null, "body": "<b>今後の展開候補</b>：MediaPipeには手・体全体の検出以外にも、表情や瞬きを検出する「Face」、人物だけを背景から切り抜く「Selfie Segmentation」といった機能があります。今後の候補として検討しています。" },
       { "heading": null, "body": "<b>グーチョキパー判定</b>：4本の指(人差し指・中指・薬指・小指)それぞれの指先と、その一つ手前の関節(PIP)の、手首からの距離を比較し、伸びているか曲がっているかを判定します。人差し指・中指だけが伸びていれば「チョキ」、3本以上伸びていれば「パー」、それ以外は「グー」としています。" },
@@ -531,9 +549,10 @@
       { "heading": "⚠️ 動作条件", "body": "カメラ機能(getUserMedia)は、HTTPS配信かlocalhost環境でないとブラウザの制約で動作しません。また、MediaPipe(Hands/Pose)を読み込むCDNスクリプト自体も、ファイルをダブルクリックしてfile://として直接開いた場合はCORSの制約でブロックされ、「カメラを開始できませんでした: Hands is not defined」のように表示されます。GitHub Pagesなど、HTTPS配信された状態で開いてください。なお、ページを開いた直後に実行される初期化処理(バージョン表示・説明文の挿入・カメラの自動起動など)は、どれか1つの画面部品が万が一見つからなくても、それだけが静かにスキップされ、後続のカメラ起動が止まらないよう保護しています。" },
       { "heading": null, "body": "<b>ダークモード</b>：色はCSS変数で管理していて、切り替えボタンひとつで全体の配色が変わります。各プログラム固有の背景(森・川・夜空・体操の背景等)も、ダークモード用の暗い配色を別途用意しています。" },
       { "heading": null, "body": "<b>カメラ・マイクの解放</b>：カメラを再接続する時や、ページを閉じる時は、それまで使っていたカメラの映像を必ず止めてから次の処理に進むようにしています。これを怠ると、特にWindows端末で、ブラウザを閉じてもカメラデバイスが掴まれたままになり、他のアプリでカメラが使えなくなったりOSの再起動が必要になったりすることがあるための対策です。マイクも同様に、手拍子プログラムから一覧に戻る時に確実に解放しています。" },
+      { "heading": null, "body": "<b>共通の自然背景パーツ</b>：森(もぎ・ゆらし)と川(カヌー)は、同じ丘の稜線のSVG(数行の曲線パスだけの軽量なもの)を、森では手前の地面に、川では対岸の遠景として使い回しています。同じ形が形を変えて両方に現れることで、「ひと続きの世界の、別の場所」という繋がりを感じられるようにしています。太陽のやわらかい光暈や、水面のきらめきも、絵文字やCSSのグラデーションだけで表現していて、画像ファイルは一切使っていません。今後の新しい背景でも、この丘・光暈のパーツをそのまま使い回せます。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
-    "capacityNote": "このファイル1本で約174KB(共通エンジン+全7プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+    "capacityNote": "このファイル1本で約177KB(共通エンジン+全7プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
     "capacityBreakdown": [
       { "name":"共通エンジン(カメラ・マイク・音・UI等)", "kb":104.2, "pct":60.6 },
       { "name":"にゃー花火", "kb":19.5, "pct":11.3 },
@@ -690,7 +709,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 <script>
 /* ============================================================
    共通エンジン: ダークモード・画面遷移・カメラ/手検出・
@@ -931,11 +949,19 @@ function basketSvg(){
 }
 
 // ---- もぎ・ゆらし共通: カメラを隠す森の背景 ----
+// ---- 自然背景の共通パーツ(森・川・今後の新しい背景でも使い回せる、軽量なSVG) ----
+const NATURE_HILLS_SVG = `<svg viewBox="0 0 300 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <path class="far" d="M0,55 Q75,20 150,50 T300,40 L300,100 L0,100 Z" fill="#C3E8A8" opacity=".75"/>
+  <path class="near" d="M0,72 Q80,42 160,68 T300,60 L300,100 L0,100 Z" fill="#5C9A4E"/>
+</svg>`;
+
 const FOREST_BG_HTML = `
   <div class="forest-bg">
+    <div class="nature-sun-glow"></div>
     <div class="sun">☀️</div>
     <div class="cloud c1">☁️</div>
     <div class="cloud c2">☁️</div>
+    <div class="nature-hills bottom">${NATURE_HILLS_SVG}</div>
     <div class="flower f1">🌼</div>
     <div class="flower f2">🌸</div>
     <div class="flower f3">🌼</div>
@@ -1109,7 +1135,7 @@ function playSuccessSound(scale){
     osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, t);
     gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.22*scale, t+0.015);
+    gain.gain.linearRampToValueAtTime(0.19*scale, t+0.015);
     gain.gain.exponentialRampToValueAtTime(0.001, t + (isLast ? 0.65 : 0.32));
     osc.connect(gain); gain.connect(ctx.destination);
     osc.start(t); osc.stop(t + (isLast ? 0.68 : 0.35));
@@ -1261,7 +1287,7 @@ function startBgm(){
   if(!ctx) return;
   if(!bgmMaster){
     bgmMaster = ctx.createGain();
-    bgmMaster.gain.value = 1.3;
+    bgmMaster.gain.value = 1.8;
     const lp = ctx.createBiquadFilter();
     lp.type = 'lowpass'; lp.frequency.value = 6500; // ほんの少し丸くする
     bgmMaster.connect(lp);
@@ -1278,7 +1304,7 @@ function stopBgm(){
     if(ctx){
       bgmMaster.gain.cancelScheduledValues(ctx.currentTime);
       bgmMaster.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.03);
-      setTimeout(()=>{ if(bgmMaster) bgmMaster.gain.value = 1.3; }, 180);
+      setTimeout(()=>{ if(bgmMaster) bgmMaster.gain.value = 1.8; }, 180);
     }
   }
 }
@@ -1398,6 +1424,16 @@ function endGame(){
   clearInterval(timerInterval);
   gameHudEl.classList.add('hidden');
   activeModelType = 'hands'; // リザルト画面の「もう一度」「一覧に戻る」は手のドウェル選択のため
+  const def = PROGRAMS[currentProgramKey];
+  if(def && def.noScoring){
+    // 採点や失敗の概念が無いプログラムは、星評価ではなく専用のメッセージを表示する
+    document.getElementById('ratingStar').textContent = '🎶';
+    document.getElementById('ratingLabel').textContent = 'お疲れ様でした';
+    document.getElementById('ratingDetail').textContent = '自由に音を探して楽しめましたか?';
+    resultOverlay.classList.remove('hidden');
+    feedbackResult(3);
+    return;
+  }
   const r = ratingFor();
   document.getElementById('ratingStar').textContent = r.star;
   document.getElementById('ratingLabel').textContent = r.label;
@@ -1707,14 +1743,34 @@ let onHubScreen = true;
 
 // ---- 体全体の姿勢(MediaPipe Pose)。手ではなく体操のようなプログラム用 ----
 let poseLandmarks = null; // 33点、各{x,y,z,visibility}。検出できていなければnull
+let poseScriptLoading = null;
+function loadPoseScript(){
+  // 体操プログラムを開いた時に初めてMediaPipe Poseを読み込む(使わない人には初期読み込みの負担をかけないため)
+  if(typeof Pose !== 'undefined') return Promise.resolve();
+  if(poseScriptLoading) return poseScriptLoading;
+  poseScriptLoading = new Promise((resolve, reject)=>{
+    try{
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js';
+      script.crossOrigin = 'anonymous';
+      script.onload = ()=> resolve();
+      script.onerror = ()=> reject(new Error('Poseスクリプトの読み込みに失敗しました'));
+      document.head.appendChild(script);
+    }catch(e){ reject(e); }
+  });
+  return poseScriptLoading;
+}
 function ensurePoseModel(){
-  if(poseInstance) return poseInstance;
-  try{
-    poseInstance = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
-    poseInstance.setOptions({ modelComplexity:0, smoothLandmarks:true, minDetectionConfidence:0.6, minTrackingConfidence:0.5 });
-    poseInstance.onResults(onPoseResults);
-  }catch(e){ poseInstance = null; }
-  return poseInstance;
+  loadPoseScript().then(()=>{
+    if(poseInstance) return;
+    try{
+      poseInstance = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
+      poseInstance.setOptions({ modelComplexity:0, smoothLandmarks:true, minDetectionConfidence:0.6, minTrackingConfidence:0.5 });
+      poseInstance.onResults(onPoseResults);
+    }catch(e){ poseInstance = null; }
+  }).catch(e=>{
+    statusEl.textContent = '体を検出できませんでした: ' + e.message;
+  });
 }
 let lastPoseSeen = 0;
 function onPoseResults(results){
@@ -2432,7 +2488,15 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     durationSec: 60,
     introHtml: 'カメラを使って、手の位置でカヌーを操縦します。<br>グーで握るとパドルが出ます。そのまま上下に振って漕ぎながら、岩を避けて魚をゲット!<br>両手でも片手でも遊べます。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
-      <div class="river-area"></div>
+      <div class="river-area">
+        <div class="nature-hills top">${NATURE_HILLS_SVG}</div>
+        <div class="river-sparkle">
+          <span style="left:15%; top:30%;"></span>
+          <span style="left:60%; top:48%;"></span>
+          <span style="left:35%; top:65%;"></span>
+          <span style="left:78%; top:20%;"></span>
+        </div>
+      </div>
       <div id="canoeRiverLayer"></div>
       <div class="canoe-el" id="canoeEl"></div>
       <div class="paddle-el" id="paddleEl"></div>
@@ -3196,8 +3260,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   function flashRing(ringEl, freq, minHz, maxHz){
     if(!ringEl) return;
-    const t = Math.log(freq/minHz) / Math.log(maxHz/minHz);
-    const hue = 260 + t*160;
+    const hue = freqToHue(freq, minHz, maxHz);
     ringEl.style.background = `radial-gradient(circle, hsla(${hue},85%,75%,.95), hsla(${hue},85%,55%,.3))`;
     ringEl.style.opacity = '0.9';
     ringEl.style.width = '90px'; ringEl.style.height = '90px';
@@ -3255,8 +3318,9 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   function xToPan(x){
     return (Math.max(0, Math.min(100, x))/100) * 2 - 1; // 左(-1)〜右(1)
   }
-  function freqToHue(freq){
-    const t = Math.log(freq/PITCH_MIN_HZ) / Math.log(PITCH_MAX_HZ/PITCH_MIN_HZ);
+  function freqToHue(freq, minHz, maxHz){
+    minHz = minHz || PITCH_MIN_HZ; maxHz = maxHz || PITCH_MAX_HZ;
+    const t = Math.log(freq/minHz) / Math.log(maxHz/minHz);
     return 260 + t*160; // 紫〜赤系のグラデーション
   }
   function isHarmonious(f1, f2){
@@ -3268,7 +3332,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   registerProgram('instrument', {
     title: '🎹 にゃー楽器',
     durationSec: 90,
-    introHtml: 'カメラを使って、両手の位置で音を鳴らします。<br>手を開くと音が鳴り、上下で音の高さ、左右で音の位置(左右のスピーカー)が変わります。<br>手を握るとドラムが鳴ります(左手=ドン、右手=パチッ)。<br>グーとチョキ(またはグーとパー)を交互に繰り返すと、シンバルが鳴ります!<br>両手で音を重ねて、いい響きを探してみてください!<br>カメラへのアクセスを許可してください。',
+    noScoring: true,
+    introHtml: 'カメラを使って、両手の位置で音を鳴らします。<br>手を開くと音の高さ・左右の位置が変わり、握るとドラムが鳴ります(左手=ドン、右手=パチッ)。<br>両手で音を重ねて、好きな音を探してみてください!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="instrument-bg">
         <svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;">
