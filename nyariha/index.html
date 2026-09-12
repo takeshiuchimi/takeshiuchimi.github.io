@@ -477,6 +477,8 @@
   .util-row{ display:flex; gap:6px; margin:8px 0; }
   .util-row .util-btn{ flex:1; margin:0; font-size:12px; padding:6px 4px; }
   .util-row .util-btn-icon{ flex:none; width:34px; padding:6px 0; }
+  #bgmToggleFooter{ width:46px; font-size:22px; padding:8px 0; }
+  #bgmToggleGame{ font-size:20px; padding:8px 14px; }
 
   /* ---- ハブ画面: カメラを背景に、コンテンツを半透明で重ねる ---- */
   .hub-with-camera{
@@ -508,7 +510,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0911-0233"
+    "buildDate": "0912-0131"
   },
   "about": {
     "paragraphs": [
@@ -526,6 +528,7 @@
   },
   "techInfo": {
     "sections": [
+      { "heading": null, "body": "<b>タイトル画面のスワイプ切り替え</b>：各プログラムの「はじめる」画面では、一覧に戻らなくても、左右にスワイプ(または端の矢印をタップ)するだけで隣のプログラムのタイトル画面に直接移動できます。ニャーズゲームセンターの無限ループカルーセルと同じ仕組みで、最後のプログラムから右に進むと最初のプログラムに、最初のプログラムから左に進むと最後のプログラムに、循環してつながっています。プレイ中はこの切り替えはできないようにしています。" },
       { "heading": "🖐️ 手の検出の仕組み", "body": "Google製のMediaPipe Hands(CDN経由、ブラウザ内で完結)を使い、手の21箇所のランドマーク(関節位置)をリアルタイムに検出しています。最大2本まで検出できます。" },
       { "heading": null, "body": "<b>MediaPipeとは</b>：Googleが無料公開している、カメラ映像から人の手・顔・体の動きを読み取るための技術です。カメラのコマを渡すと座標が返ってくるだけで、AIモデル自体はGoogleが用意したものをそのまま使わせてもらっています。処理は全て端末の中(オンデバイス)で行われ、映像そのものがGoogleのサーバーに送信されることはありません。" },
       { "heading": null, "body": "<b>体全体の検出(にゃー体操)</b>：このプログラムだけ、手ではなくMediaPipe Poseという別のモデルを使い、体全体33箇所(肩・肘・手首・腰など)を検出しています。プログラムに入る時だけこのモデルに切り替え、他のプログラムでは今まで通り手だけを見るモデル(Hands)に戻ります。判定は「肩と手首の位置関係」のような大まかな見方をしていて、ピッタリ合わせなくても成功するよう寛容にしています。Poseを読み込むCDNスクリプト自体も、体操を一度も開かない人には読み込まれないよう、実際に体操を開いた瞬間に初めて読み込む(遅延読み込み)ようにしています。" },
@@ -552,7 +555,7 @@
       { "heading": null, "body": "<b>共通の自然背景パーツ</b>：森(もぎ・ゆらし)と川(カヌー)は、同じ丘の稜線のSVG(数行の曲線パスだけの軽量なもの)を、森では手前の地面に、川では対岸の遠景として使い回しています。同じ形が形を変えて両方に現れることで、「ひと続きの世界の、別の場所」という繋がりを感じられるようにしています。太陽のやわらかい光暈や、水面のきらめきも、絵文字やCSSのグラデーションだけで表現していて、画像ファイルは一切使っていません。今後の新しい背景でも、この丘・光暈のパーツをそのまま使い回せます。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
-    "capacityNote": "このファイル1本で約177KB(共通エンジン+全7プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+    "capacityNote": "このファイル1本で約180KB(共通エンジン+全7プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
     "capacityBreakdown": [
       { "name":"共通エンジン(カメラ・マイク・音・UI等)", "kb":104.2, "pct":60.6 },
       { "name":"にゃー花火", "kb":19.5, "pct":11.3 },
@@ -571,7 +574,7 @@
     { "key":"hanabi", "icon":"🎆", "name":"にゃー花火", "desc":"夜空の星に手を合わせて花火を打ち上げ", "disabled": false, "purpose":"夜空に浮かぶ星を目で探し、その位置に向かって手を伸ばします。星は毎回違う位置に現れるので、上下左右へ手を伸ばす動きを繰り返し引き出します。" },
     { "key":"tehyoushi", "icon":"👏", "name":"にゃー手拍子", "desc":"リズムに合わせて手拍子しよう(マイク使用)", "disabled": false, "purpose":"降りてくる合図に合わせて、一定のリズムで手を叩きます。カメラではなくマイクを使うプログラムで、タイミングを合わせて両手を合わせる動きを引き出します。" },
     { "key":"taisou", "icon":"🐾", "name":"にゃー体操", "desc":"画面の猫と同じポーズをキープしよう", "disabled": false, "purpose":"画面に出る猫のポーズを見て、腕を伸ばしたり体を左右に曲げたりして真似します。手だけでなく体全体を使うプログラムで、腕の伸展や体幹のストレッチを引き出します。" },
-    { "key":"instrument", "icon":"🎹", "name":"にゃー楽器", "desc":"両手の位置で音を鳴らして、好きな音を探そう", "disabled": false, "purpose":"両手それぞれを開くと音が鳴り、上下に動かすと音の高さ、左右に動かすと音の左右の位置が変わります。握る・チョキにするとドラムの音も鳴り、グーとチョキ(またはグーとパー)を交互に繰り返すと華やかなシンバル音が鳴ります。採点や失敗はなく、自由に音を探して遊ぶプログラムで、両手を協調させる動き・独立して動かす動き・グーチョキパーを切り替える動きを引き出します。" }
+    { "key":"instrument", "icon":"🎹", "name":"にゃー楽器", "desc":"両手の位置で音を鳴らして、好きな音を探そう", "disabled": false, "purpose":"両手を開く・握るだけで音の高さや左右の位置が変わる、採点のない自由演奏プログラムです。両手を協調させる動き・独立して動かす動きを引き出します。" }
   ]
 }
 </script>
@@ -668,6 +671,8 @@
       </div>
       <div class="callout" id="callout"></div>
       <div class="overlay-msg" id="startOverlay">
+        <div class="edge-nav-btn left" id="titleEdgeLeft"><div class="edge-nav-gauge">◀</div></div>
+        <div class="edge-nav-btn right" id="titleEdgeRight"><div class="edge-nav-gauge">▶</div></div>
         <div id="startOverlayText"></div>
         <div class="dwell-btn" id="startDwellBtn">
           <svg class="dwell-ring" viewBox="0 0 100 100">
@@ -856,6 +861,20 @@ function setupPageSwipe(){
   });
   document.getElementById('cardEdgeLeft')?.addEventListener('click', ()=> cardCarousel.step(-1));
   document.getElementById('cardEdgeRight')?.addEventListener('click', ()=> cardCarousel.step(1));
+
+  // タイトル(はじめる)画面でも、一覧に戻らず直接隣のプログラムへスワイプ・矢印タップで移動できる
+  let titleStartX = null;
+  const startOverlayEl = document.getElementById('startOverlay');
+  startOverlayEl?.addEventListener('pointerdown', (e)=>{ if(!running) titleStartX = e.clientX; });
+  startOverlayEl?.addEventListener('pointerup', (e)=>{
+    if(titleStartX===null) return;
+    const dx = e.clientX - titleStartX;
+    titleStartX = null;
+    if(dx > 40) switchToAdjacentProgram(-1);
+    else if(dx < -40) switchToAdjacentProgram(1);
+  });
+  document.getElementById('titleEdgeLeft')?.addEventListener('click', ()=> switchToAdjacentProgram(-1));
+  document.getElementById('titleEdgeRight')?.addEventListener('click', ()=> switchToAdjacentProgram(1));
 }
 
 // ---- 共通DOM参照 ----
@@ -2036,6 +2055,11 @@ function openProgram(key){
     alert('先にハブ画面で「カメラをオンにする」を押してください');
     return;
   }
+  // タイトル画面同士を直接スワイプで移動した時など、前のプログラムが開いたままなら後片付けする
+  if(currentProgramKey && currentProgramKey !== key){
+    const prevDef = PROGRAMS[currentProgramKey];
+    if(prevDef && prevDef.onLeave) prevDef.onLeave();
+  }
   currentProgramKey = key;
   onHubScreen = false;
   document.getElementById('screen-hub').classList.add('hidden');
@@ -2069,6 +2093,17 @@ function openProgram(key){
     });
   }
   activeModelType = 'hands'; // 「はじめる」を押すまでは、ドウェル選択のため手の検出のままにする
+}
+
+// タイトル(はじめる)画面のまま、隣のプログラムに直接切り替える(ニャーズと同じ、一覧に戻らず横移動できる操作感)
+function switchToAdjacentProgram(delta){
+  if(running || onHubScreen) return; // プレイ中・ハブ画面では何もしない
+  const enabledItems = FLAT_ITEMS.filter(it=>!it.disabled);
+  if(enabledItems.length <= 1) return;
+  const idx = enabledItems.findIndex(it=>it.key === currentProgramKey);
+  if(idx === -1) return;
+  const nextIdx = ((idx+delta) % enabledItems.length + enabledItems.length) % enabledItems.length;
+  openProgram(enabledItems[nextIdx].key);
 }
 
 function backToHub(){
@@ -3333,7 +3368,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     title: '🎹 にゃー楽器',
     durationSec: 90,
     noScoring: true,
-    introHtml: 'カメラを使って、両手の位置で音を鳴らします。<br>手を開くと音の高さ・左右の位置が変わり、握るとドラムが鳴ります(左手=ドン、右手=パチッ)。<br>両手で音を重ねて、好きな音を探してみてください!<br>カメラへのアクセスを許可してください。',
+    introHtml: 'カメラを使って、両手で音を鳴らします。<br>手を開くと音の高さ・左右が変わり、握るとドラムが鳴ります。<br>好きな音を探してみてください!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="instrument-bg">
         <svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;">
