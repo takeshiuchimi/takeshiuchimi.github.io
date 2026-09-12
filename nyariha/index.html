@@ -337,7 +337,12 @@
   .piano-hand-marker{
     position:absolute; width:34px; height:34px; border-radius:50%; transform:translate(-50%,-50%);
     pointer-events:none; opacity:0; transition:opacity .15s ease, left .08s linear, top .08s linear;
-    box-shadow:0 0 0 3px #fff, 0 2px 6px rgba(0,0,0,.3);
+    box-shadow:0 0 0 3px #fff, 0 2px 6px rgba(0,0,0,.3); z-index:5;
+  }
+  .piano-target-line{
+    position:absolute; top:0; left:0; height:3px; width:0;
+    transform-origin:0 50%; border-radius:2px; opacity:0;
+    pointer-events:none; transition:opacity .12s ease; z-index:5;
   }
   .night-sky .ferris{
     position:absolute; bottom:-4%; left:54%; transform:translateX(-50%);
@@ -542,7 +547,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0912-2107"
+    "buildDate": "0912-2124"
   },
   "about": {
     "paragraphs": [
@@ -585,10 +590,10 @@
       { "heading": null, "body": "<b>ダークモード</b>：色はCSS変数で管理していて、切り替えボタンひとつで全体の配色が変わります。各プログラム固有の背景(森・川・夜空・体操の背景等)も、ダークモード用の暗い配色を別途用意しています。" },
       { "heading": null, "body": "<b>カメラ・マイクの解放</b>：カメラを再接続する時や、ページを閉じる時は、それまで使っていたカメラの映像を必ず止めてから次の処理に進むようにしています。これを怠ると、特にWindows端末で、ブラウザを閉じてもカメラデバイスが掴まれたままになり、他のアプリでカメラが使えなくなったりOSの再起動が必要になったりすることがあるための対策です。マイクも同様に、手拍子プログラムから一覧に戻る時に確実に解放しています。" },
       { "heading": null, "body": "<b>共通の自然背景パーツ</b>：森(もぎ・ゆらし)と川(カヌー)は、同じ丘の稜線のSVG(数行の曲線パスだけの軽量なもの)を、森では手前の地面に、川では対岸の遠景として使い回しています。同じ形が形を変えて両方に現れることで、「ひと続きの世界の、別の場所」という繋がりを感じられるようにしています。太陽のやわらかい光暈や、水面のきらめきも、絵文字やCSSのグラデーションだけで表現していて、画像ファイルは一切使っていません。今後の新しい背景でも、この丘・光暈のパーツをそのまま使い回せます。" },
-      { "heading": null, "body": "<b>にゃーピアノ</b>：にゃーテルミン(連続的に音程が変わる)とは対照的に、画面を鍵盤ゾーンに分け、手の位置でどの音か選び、握った瞬間にその音を鳴らす、はっきりした音階で弾ける楽器です。白鍵8つ(ドレミファソラシド、1オクターブ)に加えて、本物のピアノと同じ配置(ミとファ・シとドの間には無い)で黒鍵5つ(半音)も弾けます。左右の手をそれぞれ追跡していて、両手同時に握れば和音にもなります。カメラでの手の操作に加えて、画面上の鍵盤を直接タップ/クリックしても弾けます(狙った音を正確に鳴らしたい時に使えます)。音色は、三角波にオクターブ上のサイン波を重ね、鳴り始めが強く、時間とともに減衰していくピアノらしい音の変化(ADSR風のエンベロープ)を、Web Audio APIでその場で合成しています。採点や失敗の概念はありません。" },
+      { "heading": null, "body": "<b>にゃーピアノ</b>：にゃーテルミン(連続的に音程が変わる)とは対照的に、画面を鍵盤ゾーンに分け、手の位置でどの音か選び、握った瞬間にその音を鳴らす、はっきりした音階で弾ける楽器です。白鍵8つ(ドレミファソラシド、1オクターブ)に加えて、本物のピアノと同じ配置(ミとファ・シとドの間には無い)で黒鍵5つ(半音)も弾けます。左右の手をそれぞれ追跡していて、両手同時に握れば和音にもなります。カメラでの手の操作に加えて、画面上の鍵盤を直接タップ/クリックしても弾けます(狙った音を正確に鳴らしたい時に使えます)。カメラで操作している時は、手の位置から、今その位置で握った時に鳴る鍵盤まで、細い線を引いて示しています。手と鍵盤が離れていても、どの音を狙っているか一目で分かるようにするための工夫です。音色は、三角波にオクターブ上のサイン波を重ね、鳴り始めが強く、時間とともに減衰していくピアノらしい音の変化(ADSR風のエンベロープ)を、Web Audio APIでその場で合成しています。採点や失敗の概念はありません。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
-    "capacityNote": "このファイル1本で約194KB(共通エンジン+全8プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+    "capacityNote": "このファイル1本で約196KB(共通エンジン+全8プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
     "capacityBreakdown": [
       { "name":"共通エンジン(カメラ・マイク・音・UI等)", "kb":104.2, "pct":60.6 },
       { "name":"にゃー花火", "kb":19.5, "pct":11.3 },
@@ -3640,7 +3645,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   });
 
   let whiteKeyEls = [], blackKeyEls = [];
-  let markerLeftEl, markerRightEl;
+  let markerLeftEl, markerRightEl, lineLeftEl, lineRightEl;
   const HIT_COOLDOWN_MS = 200;
   let hitArmed = { Left:true, Right:true };
   let lastHitAt = { Left:0, Right:0 };
@@ -3703,6 +3708,26 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     el.classList.add('pressed');
     setTimeout(()=>{ if(el) el.classList.remove('pressed'); }, 180);
   }
+  function noteCenterPct(note){
+    // 対象の鍵盤の、画面上の左右中心位置(%)を求める(線を引く先として使う)
+    if(note.type === 'black') return blackKeyRanges[note.idx].centerPct;
+    return (note.idx + 0.5) * WHITE_KEY_WIDTH_PCT;
+  }
+  const KEYBOARD_TOP_PCT = 62; // .piano-keysのbottom:6%+height:32%から逆算した、鍵盤の上端の位置
+  function updateTargetLine(lineEl, handX, handY, note){
+    if(!lineEl) return;
+    const stageRect = stageEl.getBoundingClientRect();
+    const targetXPct = noteCenterPct(note);
+    const x1 = handX/100*stageRect.width, y1 = handY/100*stageRect.height;
+    const x2 = targetXPct/100*stageRect.width, y2 = KEYBOARD_TOP_PCT/100*stageRect.height;
+    const dx = x2-x1, dy = y2-y1;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    const angle = Math.atan2(dy,dx)*180/Math.PI;
+    lineEl.style.left = x1+'px'; lineEl.style.top = y1+'px';
+    lineEl.style.width = dist+'px';
+    lineEl.style.transform = `rotate(${angle}deg)`;
+    lineEl.style.opacity = '0.7';
+  }
   function playNoteAt(note){
     const pan = (note.idx/(WHITE_NOTES.length-1))*2-1;
     playPianoNote(note.freq, pan);
@@ -3718,6 +3743,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     introHtml: 'カメラを使って、ピアノを弾きます。<br>手の位置で鍵盤を選び、握ると音が鳴ります。鍵盤は直接タップしても弾けます。<br>両手で同時に弾くと、和音にもなります!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="piano-bg"></div>
+      <div class="piano-target-line" id="pianoLineLeft" style="background:#FF8FC7;"></div>
+      <div class="piano-target-line" id="pianoLineRight" style="background:#7FE0E8;"></div>
       <div class="piano-hand-marker" id="pianoMarkerLeft" style="background:#FF8FC7;"></div>
       <div class="piano-hand-marker" id="pianoMarkerRight" style="background:#7FE0E8;"></div>
       <div class="piano-keys" id="pianoKeys"></div>
@@ -3745,11 +3772,13 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       });
       markerLeftEl = document.getElementById('pianoMarkerLeft');
       markerRightEl = document.getElementById('pianoMarkerRight');
+      lineLeftEl = document.getElementById('pianoLineLeft');
+      lineRightEl = document.getElementById('pianoLineRight');
     },
     start(){
       hitArmed = { Left:true, Right:true };
       lastHitAt = { Left:0, Right:0 };
-      [markerLeftEl, markerRightEl].forEach(el=>{ if(el) el.style.opacity = '0'; });
+      [markerLeftEl, markerRightEl, lineLeftEl, lineRightEl].forEach(el=>{ if(el) el.style.opacity = '0'; });
     },
     reset(){ this.start(); },
     onHand(){
@@ -3764,13 +3793,19 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       ['Left','Right'].forEach(hd=>{
         const h = states[hd];
         const markerEl = hd === 'Left' ? markerLeftEl : markerRightEl;
-        if(!h){ if(markerEl) markerEl.style.opacity = '0'; return; }
+        const lineEl = hd === 'Left' ? lineLeftEl : lineRightEl;
+        if(!h){
+          if(markerEl) markerEl.style.opacity = '0';
+          if(lineEl) lineEl.style.opacity = '0';
+          return;
+        }
         const note = xToNote(h.x);
         if(markerEl){
           markerEl.style.left = h.x+'%';
           markerEl.style.top = '78%';
           markerEl.style.opacity = '0.9';
         }
+        updateTargetLine(lineEl, h.x, 78, note);
         if(checkHit(hd, h, nowMs)){
           playNoteAt(note);
           anyHit = true;
