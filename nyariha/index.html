@@ -158,7 +158,11 @@
     font-size:11px; line-height:1.6; text-align:left; opacity:.9;
     background:rgba(255,255,255,.12); border-radius:8px; padding:8px 10px; margin-top:4px;
   }
-  #startOverlayText{ text-align:left; width:100%; }
+  #startOverlayText{ text-align:left; width:100%; transition:transform .22s ease, opacity .22s ease; }
+  #startOverlayText.slide-out-left{ transform:translateX(-30px); opacity:0; }
+  #startOverlayText.slide-out-right{ transform:translateX(30px); opacity:0; }
+  #startOverlayText.slide-in-left{ transition:none; transform:translateX(-30px); opacity:0; }
+  #startOverlayText.slide-in-right{ transition:none; transform:translateX(30px); opacity:0; }
   .dwell-btn{
     position:relative; width:120px; height:120px; margin-top:6px;
     display:flex; align-items:center; justify-content:center; cursor:pointer;
@@ -561,7 +565,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0912-2215"
+    "buildDate": "0912-2220"
   },
   "about": {
     "paragraphs": [
@@ -579,7 +583,7 @@
   },
   "techInfo": {
     "sections": [
-      { "heading": null, "body": "<b>タイトル画面のスワイプ切り替え</b>：各プログラムの「はじめる」画面では、一覧に戻らなくても、左右にスワイプ(または端の矢印をタップ)するだけで隣のプログラムのタイトル画面に直接移動できます。ニャーズゲームセンターの無限ループカルーセルと同じ仕組みで、最後のプログラムから右に進むと最初のプログラムに、最初のプログラムから左に進むと最後のプログラムに、循環してつながっています。プレイ中はこの切り替えはできないようにしています。カメラを使うプログラムへ切り替わった時、まだカメラが起動していなければ、その場で起動を試みます(以前は案内文で止めていましたが、スワイプでの移動が途切れないよう、その場で試みる形にしています)。矢印部分は、ハブ画面のカード送りと同じく、手をかざして少し待つ(ドウェル)だけでも選べます。実機のタッチ操作では、スワイプの途中でブラウザが画面スクロールと誤解釈してしまわないよう、この画面ではタッチの動きをブラウザに渡さない指定(touch-action)もしています。" },
+      { "heading": null, "body": "<b>タイトル画面のスワイプ切り替え</b>：各プログラムの「はじめる」画面では、一覧に戻らなくても、左右にスワイプ(または端の矢印をタップ)するだけで隣のプログラムのタイトル画面に直接移動できます。ニャーズゲームセンターの無限ループカルーセルと同じ仕組みで、最後のプログラムから右に進むと最初のプログラムに、最初のプログラムから左に進むと最後のプログラムに、循環してつながっています。プレイ中はこの切り替えはできないようにしています。カメラを使うプログラムへ切り替わった時、まだカメラが起動していなければ、その場で起動を試みます(以前は案内文で止めていましたが、スワイプでの移動が途切れないよう、その場で試みる形にしています)。矢印部分は、ハブ画面のカード送りと同じく、手をかざして少し待つ(ドウェル)だけでも選べます。実機のタッチ操作では、スワイプの途中でブラウザが画面スクロールと誤解釈してしまわないよう、この画面ではタッチの動きをブラウザに渡さない指定(touch-action)もしています。切り替え時は、説明文がふっと横にスライドアウトしてから、次のプログラムの説明文が反対側からスライドインしてくる、という一瞬のアニメーションを挟んでいます(ハブ画面のカードめくりと同じ「隣の画面に移動している」感覚を出すため)。" },
       { "heading": "🖐️ 手の検出の仕組み", "body": "Google製のMediaPipe Hands(CDN経由、ブラウザ内で完結)を使い、手の21箇所のランドマーク(関節位置)をリアルタイムに検出しています。最大2本まで検出できます。" },
       { "heading": null, "body": "<b>MediaPipeとは</b>：Googleが無料公開している、カメラ映像から人の手・顔・体の動きを読み取るための技術です。カメラのコマを渡すと座標が返ってくるだけで、AIモデル自体はGoogleが用意したものをそのまま使わせてもらっています。処理は全て端末の中(オンデバイス)で行われ、映像そのものがGoogleのサーバーに送信されることはありません。" },
       { "heading": null, "body": "<b>体全体の検出(にゃー体操)</b>：このプログラムだけ、手ではなくMediaPipe Poseという別のモデルを使い、体全体33箇所(肩・肘・手首・腰など)を検出しています。プログラムに入る時だけこのモデルに切り替え、他のプログラムでは今まで通り手だけを見るモデル(Hands)に戻ります。判定は「肩と手首の位置関係」のような大まかな見方をしていて、ピッタリ合わせなくても成功するよう寛容にしています。Poseを読み込むCDNスクリプト自体も、体操を一度も開かない人には読み込まれないよう、実際に体操を開いた瞬間に初めて読み込む(遅延読み込み)ようにしています。" },
@@ -2207,14 +2211,29 @@ function openProgram(key){
 }
 
 // タイトル(はじめる)画面のまま、隣のプログラムに直接切り替える(ニャーズと同じ、一覧に戻らず横移動できる操作感)
+let titleSwitching = false;
 function switchToAdjacentProgram(delta){
-  if(running || onHubScreen) return; // プレイ中・ハブ画面では何もしない
+  if(running || onHubScreen || titleSwitching) return; // プレイ中・ハブ画面・アニメーション中は何もしない
   const enabledItems = FLAT_ITEMS.filter(it=>!it.disabled);
   if(enabledItems.length <= 1) return;
   const idx = enabledItems.findIndex(it=>it.key === currentProgramKey);
   if(idx === -1) return;
   const nextIdx = ((idx+delta) % enabledItems.length + enabledItems.length) % enabledItems.length;
-  openProgram(enabledItems[nextIdx].key);
+  const nextKey = enabledItems[nextIdx].key;
+
+  titleSwitching = true;
+  const outClass = delta > 0 ? 'slide-out-left' : 'slide-out-right';
+  const inClass = delta > 0 ? 'slide-in-right' : 'slide-in-left';
+  startOverlayText.classList.add(outClass);
+
+  setTimeout(()=>{
+    openProgram(nextKey);
+    startOverlayText.classList.remove(outClass);
+    startOverlayText.classList.add(inClass);
+    void startOverlayText.offsetWidth; // 強制リフロー、この後のクラス除去を正しくアニメーションさせるため
+    startOverlayText.classList.remove(inClass);
+    setTimeout(()=>{ titleSwitching = false; }, 220);
+  }, 220);
 }
 
 function backToHub(){
