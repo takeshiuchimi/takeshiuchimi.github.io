@@ -159,11 +159,15 @@
     background:rgba(255,255,255,.12); border-radius:8px; padding:8px 10px; margin-top:4px;
   }
   #startOverlayText{ text-align:left; width:100%; transition:transform .22s ease, opacity .22s ease; }
-  #startOverlayText.slide-out-left, #programLayer.slide-out-left{ transform:translateX(-30px); opacity:0; }
-  #startOverlayText.slide-out-right, #programLayer.slide-out-right{ transform:translateX(30px); opacity:0; }
-  #startOverlayText.slide-in-left, #programLayer.slide-in-left{ transition:none; transform:translateX(-30px); opacity:0; }
-  #startOverlayText.slide-in-right, #programLayer.slide-in-right{ transition:none; transform:translateX(30px); opacity:0; }
-  #programLayer{ transition:transform .22s ease, opacity .22s ease; }
+  #startOverlayText.slide-out-left{ transform:translateX(-30px); opacity:0; }
+  #startOverlayText.slide-out-right{ transform:translateX(30px); opacity:0; }
+  #startOverlayText.slide-in-left{ transition:none; transform:translateX(-30px); opacity:0; }
+  #startOverlayText.slide-in-right{ transition:none; transform:translateX(30px); opacity:0; }
+  #programLayer{ position:absolute; inset:0; transition:transform .22s ease; }
+  #programLayer.slide-out-left{ transform:translateX(-100%); }
+  #programLayer.slide-out-right{ transform:translateX(100%); }
+  #programLayer.slide-in-left{ transition:none; transform:translateX(-100%); }
+  #programLayer.slide-in-right{ transition:none; transform:translateX(100%); }
   .dwell-btn{
     position:relative; width:120px; height:120px; margin-top:6px;
     display:flex; align-items:center; justify-content:center; cursor:pointer;
@@ -566,7 +570,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0912-2226"
+    "buildDate": "0912-2246"
   },
   "about": {
     "paragraphs": [
@@ -584,7 +588,7 @@
   },
   "techInfo": {
     "sections": [
-      { "heading": null, "body": "<b>タイトル画面のスワイプ切り替え</b>：各プログラムの「はじめる」画面では、一覧に戻らなくても、左右にスワイプ(または端の矢印をタップ)するだけで隣のプログラムのタイトル画面に直接移動できます。ニャーズゲームセンターの無限ループカルーセルと同じ仕組みで、最後のプログラムから右に進むと最初のプログラムに、最初のプログラムから左に進むと最後のプログラムに、循環してつながっています。プレイ中はこの切り替えはできないようにしています。カメラを使うプログラムへ切り替わった時、まだカメラが起動していなければ、その場で起動を試みます(以前は案内文で止めていましたが、スワイプでの移動が途切れないよう、その場で試みる形にしています)。矢印部分は、ハブ画面のカード送りと同じく、手をかざして少し待つ(ドウェル)だけでも選べます。実機のタッチ操作では、スワイプの途中でブラウザが画面スクロールと誤解釈してしまわないよう、この画面ではタッチの動きをブラウザに渡さない指定(touch-action)もしています。切り替え時は、説明文だけでなく、その裏にある背景(森・鍵盤・ステージ照明など、各プログラム固有の絵)も一緒に、ふっと横にスライドアウトしてから、次のプログラムの中身が反対側からスライドインしてくる、という一瞬のアニメーションを挟んでいます(ハブ画面のカードめくりと同じ「隣の画面に移動している」感覚を出すため)。" },
+      { "heading": null, "body": "<b>タイトル画面のスワイプ切り替え</b>：各プログラムの「はじめる」画面では、一覧に戻らなくても、左右にスワイプ(または端の矢印をタップ)するだけで隣のプログラムのタイトル画面に直接移動できます。ニャーズゲームセンターの無限ループカルーセルと同じ仕組みで、最後のプログラムから右に進むと最初のプログラムに、最初のプログラムから左に進むと最後のプログラムに、循環してつながっています。プレイ中はこの切り替えはできないようにしています。カメラを使うプログラムへ切り替わった時、まだカメラが起動していなければ、その場で起動を試みます(以前は案内文で止めていましたが、スワイプでの移動が途切れないよう、その場で試みる形にしています)。矢印部分は、ハブ画面のカード送りと同じく、手をかざして少し待つ(ドウェル)だけでも選べます。ただし、手を同じ場所に置いたままにしても連続で切り替わってしまわないよう、一度切り替わったら手がその矢印から一度離れるまでは再び反応しないようにしています(以前はここが甘く、手を離さずにいると次々と勝手にプログラムが進んでしまう不具合がありました)。実機のタッチ操作では、スワイプの途中でブラウザが画面スクロールと誤解釈してしまわないよう、この画面ではタッチの動きをブラウザに渡さない指定(touch-action)もしています。切り替え時は、説明文が横にスライドしてふわっと入れ替わり、その裏にある背景(森・鍵盤・ステージ照明など、各プログラム固有の絵)も一緒に横へスライドします。背景側は透明度を変えずに位置だけ動かしていて、これは背景の奥にあるカメラ映像が透けて見えてしまわないようにするためです。" },
       { "heading": "🖐️ 手の検出の仕組み", "body": "Google製のMediaPipe Hands(CDN経由、ブラウザ内で完結)を使い、手の21箇所のランドマーク(関節位置)をリアルタイムに検出しています。最大2本まで検出できます。" },
       { "heading": null, "body": "<b>MediaPipeとは</b>：Googleが無料公開している、カメラ映像から人の手・顔・体の動きを読み取るための技術です。カメラのコマを渡すと座標が返ってくるだけで、AIモデル自体はGoogleが用意したものをそのまま使わせてもらっています。処理は全て端末の中(オンデバイス)で行われ、映像そのものがGoogleのサーバーに送信されることはありません。" },
       { "heading": null, "body": "<b>体全体の検出(にゃー体操)</b>：このプログラムだけ、手ではなくMediaPipe Poseという別のモデルを使い、体全体33箇所(肩・肘・手首・腰など)を検出しています。プログラムに入る時だけこのモデルに切り替え、他のプログラムでは今まで通り手だけを見るモデル(Hands)に戻ります。判定は「肩と手首の位置関係」のような大まかな見方をしていて、ピッタリ合わせなくても成功するよう寛容にしています。Poseを読み込むCDNスクリプト自体も、体操を一度も開かない人には読み込まれないよう、実際に体操を開いた瞬間に初めて読み込む(遅延読み込み)ようにしています。" },
@@ -1677,6 +1681,7 @@ function resetTitleEdgeDwell(){
     if(el) el.style.background = 'conic-gradient(var(--gold) 0deg, transparent 0deg)';
   });
 }
+let titleEdgeArmed = { left:true, right:true }; // 一度発火したら、手がその矢印から離れるまで再発火しない
 function checkTitleEdgeDwell(){
   const stageRect = stageEl.getBoundingClientRect();
   const edgeLeft = document.getElementById('titleEdgeLeft');
@@ -1693,7 +1698,12 @@ function checkTitleEdgeDwell(){
     if(onThisEdge) edgeHovered = { side, el, delta };
   });
 
-  if(!edgeHovered){ resetTitleEdgeDwell(); return false; }
+  if(!edgeHovered){
+    resetTitleEdgeDwell();
+    titleEdgeArmed = { left:true, right:true }; // どちらの矢印からも手が離れたら、再武装する
+    return false;
+  }
+  if(!titleEdgeArmed[edgeHovered.side]) return true; // 既に1回発火済み。手がまだ同じ矢印にあるだけでは再発火しない
   if(titleEdgeDwellSide !== edgeHovered.side){
     resetTitleEdgeDwell();
     titleEdgeDwellSide = edgeHovered.side;
@@ -1706,6 +1716,7 @@ function checkTitleEdgeDwell(){
   fillEl.style.background = `conic-gradient(var(--gold) ${progress*360}deg, transparent ${progress*360}deg)`;
   if(progress >= 1){
     resetTitleEdgeDwell();
+    titleEdgeArmed[edgeHovered.side] = false; // 発火した。手を離すまで、この矢印は再発火しない
     feedbackTap();
     switchToAdjacentProgram(edgeHovered.delta);
   }
