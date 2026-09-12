@@ -314,9 +314,9 @@
     background:linear-gradient(180deg, #FDF6E8 0%, #F5E9D0 100%);
   }
   html.dark-mode .piano-bg{ background:linear-gradient(180deg, #2A2418 0%, #1A160E 100%); }
-  .piano-keys{ position:absolute; left:0; right:0; bottom:6%; height:32%; display:flex; pointer-events:none; }
+  .piano-keys{ position:absolute; left:0; right:0; bottom:6%; height:32%; display:flex; pointer-events:none; touch-action:none; }
   .piano-key{
-    pointer-events:auto; cursor:pointer;
+    pointer-events:auto; cursor:pointer; touch-action:none;
     box-shadow:0 3px 0 rgba(139,111,71,.15);
     transition:background .1s ease, transform .1s ease;
   }
@@ -547,7 +547,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0912-2136"
+    "buildDate": "0912-2145"
   },
   "about": {
     "paragraphs": [
@@ -590,10 +590,10 @@
       { "heading": null, "body": "<b>ダークモード</b>：色はCSS変数で管理していて、切り替えボタンひとつで全体の配色が変わります。各プログラム固有の背景(森・川・夜空・体操の背景等)も、ダークモード用の暗い配色を別途用意しています。" },
       { "heading": null, "body": "<b>カメラ・マイクの解放</b>：カメラを再接続する時や、ページを閉じる時は、それまで使っていたカメラの映像を必ず止めてから次の処理に進むようにしています。これを怠ると、特にWindows端末で、ブラウザを閉じてもカメラデバイスが掴まれたままになり、他のアプリでカメラが使えなくなったりOSの再起動が必要になったりすることがあるための対策です。マイクも同様に、手拍子プログラムから一覧に戻る時に確実に解放しています。" },
       { "heading": null, "body": "<b>共通の自然背景パーツ</b>：森(もぎ・ゆらし)と川(カヌー)は、同じ丘の稜線のSVG(数行の曲線パスだけの軽量なもの)を、森では手前の地面に、川では対岸の遠景として使い回しています。同じ形が形を変えて両方に現れることで、「ひと続きの世界の、別の場所」という繋がりを感じられるようにしています。太陽のやわらかい光暈や、水面のきらめきも、絵文字やCSSのグラデーションだけで表現していて、画像ファイルは一切使っていません。今後の新しい背景でも、この丘・光暈のパーツをそのまま使い回せます。" },
-      { "heading": null, "body": "<b>にゃーピアノ</b>：にゃーテルミン(連続的に音程が変わる)とは対照的に、画面を鍵盤ゾーンに分け、手の位置でどの音か選び、握った瞬間にその音を鳴らす、はっきりした音階で弾ける楽器です。白鍵8つ(ドレミファソラシド、1オクターブ)に加えて、本物のピアノと同じ配置(ミとファ・シとドの間には無い)で黒鍵5つ(半音)も弾けます。左右の手をそれぞれ追跡していて、両手同時に握れば和音にもなります。カメラでの手の操作に加えて、画面上の鍵盤を直接タップ/クリックしても弾けます(狙った音を正確に鳴らしたい時に使えます)。カメラで操作している時は、手の位置から、今その位置で握った時に鳴る鍵盤まで、細い線を引いて示しています。手と鍵盤が離れていても、どの音を狙っているか一目で分かるようにするための工夫です。音色は、三角波にオクターブ上のサイン波を重ね、鳴り始めが強く、時間とともに減衰していくピアノらしい音の変化(ADSR風のエンベロープ)を、Web Audio APIでその場で合成しています。また、鍵盤を押さえたまま指(または握った手)を滑らせると、通り過ぎた鍵盤を連続で鳴らせます(グリッサンド)。カメラでも「握ったまま別の鍵盤に動いた瞬間」を追加で鳴らす形で、同じ弾き方ができます。採点や失敗の概念はなく、時間制限もありません。自分で「一覧に戻る」を選ぶまで自由に演奏を続けられます。" },
+      { "heading": null, "body": "<b>にゃーピアノ</b>：にゃーテルミン(連続的に音程が変わる)とは対照的に、画面を鍵盤ゾーンに分け、手の位置でどの音か選び、握った瞬間にその音を鳴らす、はっきりした音階で弾ける楽器です。白鍵8つ(ドレミファソラシド、1オクターブ)に加えて、本物のピアノと同じ配置(ミとファ・シとドの間には無い)で黒鍵5つ(半音)も弾けます。左右の手をそれぞれ追跡していて、両手同時に握れば和音にもなります。カメラでの手の操作に加えて、画面上の鍵盤を直接タップ/クリックしても弾けます(狙った音を正確に鳴らしたい時に使えます)。カメラで操作している時は、手の位置から、今その位置で握った時に鳴る鍵盤まで、細い線を引いて示しています。手と鍵盤が離れていても、どの音を狙っているか一目で分かるようにするための工夫です。音色は、三角波にオクターブ上のサイン波を重ね、鳴り始めが強く、時間とともに減衰していくピアノらしい音の変化(ADSR風のエンベロープ)を、Web Audio APIでその場で合成しています。また、鍵盤を押さえたまま指(または握った手)を滑らせると、通り過ぎた鍵盤を連続で鳴らせます(グリッサンド)。カメラでも「握ったまま別の鍵盤に動いた瞬間」を追加で鳴らす形で、同じ弾き方ができます。黒鍵は鍵盤の上部にしか無い見た目に合わせて、手(指)が高い位置にある時だけ黒鍵も含めて判定し、低い位置では黒鍵のあたりを通っても下に伸びる白鍵の方が鳴るようにしています。採点や失敗の概念はなく、時間制限もありません。自分で「一覧に戻る」を選ぶまで自由に演奏を続けられます。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
-    "capacityNote": "このファイル1本で約198KB(共通エンジン+全8プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+    "capacityNote": "このファイル1本で約199KB(共通エンジン+全8プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
     "capacityBreakdown": [
       { "name":"共通エンジン(カメラ・マイク・音・UI等)", "kb":104.2, "pct":60.6 },
       { "name":"にゃー花火", "kb":19.5, "pct":11.3 },
@@ -3679,12 +3679,20 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     }
     return false;
   }
-  function xToNote(x){
+  const KEYBOARD_TOP_PCT = 62; // .piano-keysのbottom:6%+height:32%から逆算した、鍵盤の上端の位置
+  const KEYBOARD_HEIGHT_PCT = 32; // .piano-keysのheight
+  const BLACK_KEY_HEIGHT_RATIO = 0.58; // .piano-key.blackのheight(鍵盤全体に対する割合)
+  const BLACK_KEY_ZONE_BOTTOM_PCT = KEYBOARD_TOP_PCT + KEYBOARD_HEIGHT_PCT * BLACK_KEY_HEIGHT_RATIO;
+  function xToNote(x, y){
     x = Math.max(0, Math.min(99.999, x));
-    // 黒鍵の範囲に入っていれば黒鍵を優先(見た目通り、黒鍵が手前にある形)
-    for(let i=0;i<blackKeyRanges.length;i++){
-      const b = blackKeyRanges[i];
-      if(x >= b.left && x < b.right) return { type:'black', idx:i, freq:b.freq };
+    // 黒鍵は鍵盤の上部にしか無いので、手(指)が高い位置の時だけ黒鍵を含めて判定する。
+    // 低い位置(黒鍵より下)なら、Xが黒鍵の範囲でも、下に伸びている白鍵の方を鳴らす。
+    const canHitBlack = (y === undefined) || (y <= BLACK_KEY_ZONE_BOTTOM_PCT);
+    if(canHitBlack){
+      for(let i=0;i<blackKeyRanges.length;i++){
+        const b = blackKeyRanges[i];
+        if(x >= b.left && x < b.right) return { type:'black', idx:i, freq:b.freq };
+      }
     }
     const idx = Math.max(0, Math.min(WHITE_NOTES.length-1, Math.floor(x / WHITE_KEY_WIDTH_PCT)));
     return { type:'white', idx, freq:WHITE_NOTES[idx].freq };
@@ -3732,7 +3740,6 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     if(note.type === 'black') return blackKeyRanges[note.idx].centerPct;
     return (note.idx + 0.5) * WHITE_KEY_WIDTH_PCT;
   }
-  const KEYBOARD_TOP_PCT = 62; // .piano-keysのbottom:6%+height:32%から逆算した、鍵盤の上端の位置
   function updateTargetLine(lineEl, handX, handY, note){
     if(!lineEl) return;
     const stageRect = stageEl.getBoundingClientRect();
@@ -3758,20 +3765,24 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   let touchDragActive = false;
   let touchLastNoteKey = null;
   function setupTouchGlissando(keysEl){
-    function noteAtClientX(clientX){
-      const rect = keysEl.getBoundingClientRect();
-      const xPct = rect.width > 0 ? (clientX - rect.left) / rect.width * 100 : 0;
-      return xToNote(xPct);
+    function noteAtClient(clientX, clientY){
+      // xToNoteはステージ全体基準の%座標を期待するため、keysElではなくstageEl基準で計算する
+      const stageRect = stageEl.getBoundingClientRect();
+      const xPct = stageRect.width > 0 ? (clientX - stageRect.left) / stageRect.width * 100 : 0;
+      const yPct = stageRect.height > 0 ? (clientY - stageRect.top) / stageRect.height * 100 : 0;
+      return xToNote(xPct, yPct);
     }
     keysEl.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
       touchDragActive = true;
-      const note = noteAtClientX(e.clientX);
+      const note = noteAtClient(e.clientX, e.clientY);
       touchLastNoteKey = noteKey(note);
       playNoteAt(note);
     });
     keysEl.addEventListener('pointermove', (e)=>{
       if(!touchDragActive) return;
-      const note = noteAtClientX(e.clientX);
+      e.preventDefault();
+      const note = noteAtClient(e.clientX, e.clientY);
       const key = noteKey(note);
       if(key !== touchLastNoteKey){
         touchLastNoteKey = key;
@@ -3849,13 +3860,13 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
           if(lineEl) lineEl.style.opacity = '0';
           return;
         }
-        const note = xToNote(h.x);
+        const note = xToNote(h.x, h.y);
         if(markerEl){
           markerEl.style.left = h.x+'%';
-          markerEl.style.top = '78%';
+          markerEl.style.top = h.y+'%';
           markerEl.style.opacity = '0.9';
         }
-        updateTargetLine(lineEl, h.x, 78, note);
+        updateTargetLine(lineEl, h.x, h.y, note);
         if(checkHit(hd, h, nowMs, note)){
           playNoteAt(note);
           anyHit = true;
