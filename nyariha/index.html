@@ -310,10 +310,24 @@
 
   /* ---- にゃーピアノ用 ---- */
   .piano-bg{
-    position:absolute; inset:0; pointer-events:none;
-    background:linear-gradient(180deg, #FDF6E8 0%, #F5E9D0 100%);
+    position:absolute; inset:0; pointer-events:none; overflow:hidden;
+    background:linear-gradient(180deg, #FDF6E8 0%, #F0E2C8 55%, #E8D7B8 100%);
   }
   html.dark-mode .piano-bg{ background:linear-gradient(180deg, #2A2418 0%, #1A160E 100%); }
+  .piano-staff{ position:absolute; left:8%; right:8%; top:8%; height:16%; opacity:.4; }
+  .piano-staff svg{ width:100%; height:100%; display:block; }
+  .piano-staff svg line{ stroke:#8B6F47; }
+  html.dark-mode .piano-staff svg line{ stroke:#D8C9A8; }
+  .piano-note{
+    position:absolute; font-size:22px; color:#8B6F47; opacity:.5;
+    animation:pianoNoteFloat 9s ease-in-out infinite;
+  }
+  html.dark-mode .piano-note{ color:#D8C9A8; }
+  @keyframes pianoNoteFloat{
+    0%{ transform:translateY(0) rotate(0deg); opacity:.45; }
+    50%{ transform:translateY(-16px) rotate(8deg); opacity:.7; }
+    100%{ transform:translateY(0) rotate(0deg); opacity:.45; }
+  }
   .piano-keys{ position:absolute; left:0; right:0; bottom:6%; height:32%; display:flex; pointer-events:none; touch-action:none; }
   .piano-key{
     pointer-events:auto; cursor:pointer; touch-action:none;
@@ -547,7 +561,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0912-2145"
+    "buildDate": "0912-2205"
   },
   "about": {
     "paragraphs": [
@@ -590,19 +604,20 @@
       { "heading": null, "body": "<b>ダークモード</b>：色はCSS変数で管理していて、切り替えボタンひとつで全体の配色が変わります。各プログラム固有の背景(森・川・夜空・体操の背景等)も、ダークモード用の暗い配色を別途用意しています。" },
       { "heading": null, "body": "<b>カメラ・マイクの解放</b>：カメラを再接続する時や、ページを閉じる時は、それまで使っていたカメラの映像を必ず止めてから次の処理に進むようにしています。これを怠ると、特にWindows端末で、ブラウザを閉じてもカメラデバイスが掴まれたままになり、他のアプリでカメラが使えなくなったりOSの再起動が必要になったりすることがあるための対策です。マイクも同様に、手拍子プログラムから一覧に戻る時に確実に解放しています。" },
       { "heading": null, "body": "<b>共通の自然背景パーツ</b>：森(もぎ・ゆらし)と川(カヌー)は、同じ丘の稜線のSVG(数行の曲線パスだけの軽量なもの)を、森では手前の地面に、川では対岸の遠景として使い回しています。同じ形が形を変えて両方に現れることで、「ひと続きの世界の、別の場所」という繋がりを感じられるようにしています。太陽のやわらかい光暈や、水面のきらめきも、絵文字やCSSのグラデーションだけで表現していて、画像ファイルは一切使っていません。今後の新しい背景でも、この丘・光暈のパーツをそのまま使い回せます。" },
-      { "heading": null, "body": "<b>にゃーピアノ</b>：にゃーテルミン(連続的に音程が変わる)とは対照的に、画面を鍵盤ゾーンに分け、手の位置でどの音か選び、握った瞬間にその音を鳴らす、はっきりした音階で弾ける楽器です。白鍵8つ(ドレミファソラシド、1オクターブ)に加えて、本物のピアノと同じ配置(ミとファ・シとドの間には無い)で黒鍵5つ(半音)も弾けます。左右の手をそれぞれ追跡していて、両手同時に握れば和音にもなります。カメラでの手の操作に加えて、画面上の鍵盤を直接タップ/クリックしても弾けます(狙った音を正確に鳴らしたい時に使えます)。カメラで操作している時は、手の位置から、今その位置で握った時に鳴る鍵盤まで、細い線を引いて示しています。手と鍵盤が離れていても、どの音を狙っているか一目で分かるようにするための工夫です。音色は、三角波にオクターブ上のサイン波を重ね、鳴り始めが強く、時間とともに減衰していくピアノらしい音の変化(ADSR風のエンベロープ)を、Web Audio APIでその場で合成しています。また、鍵盤を押さえたまま指(または握った手)を滑らせると、通り過ぎた鍵盤を連続で鳴らせます(グリッサンド)。カメラでも「握ったまま別の鍵盤に動いた瞬間」を追加で鳴らす形で、同じ弾き方ができます。黒鍵は鍵盤の上部にしか無い見た目に合わせて、手(指)が高い位置にある時だけ黒鍵も含めて判定し、低い位置では黒鍵のあたりを通っても下に伸びる白鍵の方が鳴るようにしています。採点や失敗の概念はなく、時間制限もありません。自分で「一覧に戻る」を選ぶまで自由に演奏を続けられます。" },
+      { "heading": null, "body": "<b>にゃーピアノ</b>：にゃーテルミン(連続的に音程が変わる)とは対照的に、画面を鍵盤ゾーンに分け、手の位置でどの音か選び、握った瞬間にその音を鳴らす、はっきりした音階で弾ける楽器です。白鍵8つ(ドレミファソラシド、1オクターブ)に加えて、本物のピアノと同じ配置(ミとファ・シとドの間には無い)で黒鍵5つ(半音)も弾けます。左右の手をそれぞれ追跡していて、両手同時に握れば和音にもなります。カメラでの手の操作に加えて、画面上の鍵盤を直接タップ/クリックしても弾けます(狙った音を正確に鳴らしたい時に使えます)。カメラで操作している時は、手の位置から、今その位置で握った時に鳴る鍵盤まで、細い線を引いて示しています。手と鍵盤が離れていても、どの音を狙っているか一目で分かるようにするための工夫です。音色は、三角波にオクターブ上のサイン波を重ね、鳴り始めが強く、時間とともに減衰していくピアノらしい音の変化(ADSR風のエンベロープ)を、Web Audio APIでその場で合成しています。また、鍵盤を押さえたまま指(または握った手)を滑らせると、通り過ぎた鍵盤を連続で鳴らせます(グリッサンド)。カメラでも「握ったまま別の鍵盤に動いた瞬間」を追加で鳴らす形で、同じ弾き方ができます。黒鍵は鍵盤の上部にしか無い見た目に合わせて、手(指)が高い位置にある時だけ黒鍵も含めて判定し、低い位置では黒鍵のあたりを通っても下に伸びる白鍵の方が鳴るようにしています。採点や失敗の概念はなく、時間制限もありません。自分で「一覧に戻る」を選ぶまで自由に演奏を続けられます。背景は、テルミンのステージ照明(夜のライブ)とは対照的に、五線譜と漂う音符(♪♫)を配置した、練習室・楽譜のような温かみのある雰囲気にしています。画像は使わず、5本の横線(SVG)とテキスト記号だけの軽量な作りです。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
-    "capacityNote": "このファイル1本で約199KB(共通エンジン+全8プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+    "capacityNote": "このファイル1本で約201KB(共通エンジン+全8プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
     "capacityBreakdown": [
-      { "name":"共通エンジン(カメラ・マイク・音・UI等)", "kb":104.2, "pct":60.6 },
-      { "name":"にゃー花火", "kb":19.5, "pct":11.3 },
-      { "name":"にゃーテルミン", "kb":18.5, "pct":10.8 },
-      { "name":"にゃーカヌー", "kb":8.2, "pct":4.8 },
-      { "name":"にゃー体操", "kb":8.1, "pct":4.7 },
-      { "name":"にゃーもぎ", "kb":6.1, "pct":3.5 },
-      { "name":"にゃー手拍子", "kb":4.6, "pct":2.7 },
-      { "name":"にゃーゆらし", "kb":2.8, "pct":1.6 }
+      { "name":"共通エンジン(カメラ・マイク・音・UI等)", "kb":120.8, "pct":60.0 },
+      { "name":"にゃー花火", "kb":19.5, "pct":9.7 },
+      { "name":"にゃーテルミン", "kb":18.3, "pct":9.1 },
+      { "name":"にゃーピアノ", "kb":12.6, "pct":6.3 },
+      { "name":"にゃーカヌー", "kb":8.5, "pct":4.2 },
+      { "name":"にゃー体操", "kb":8.1, "pct":4.0 },
+      { "name":"にゃーもぎ", "kb":6.1, "pct":3.0 },
+      { "name":"にゃー手拍子", "kb":4.6, "pct":2.3 },
+      { "name":"にゃーゆらし", "kb":2.8, "pct":1.4 }
     ]
   },
   "programs": [
@@ -1129,7 +1144,10 @@ function buildCapacityBreakdownHtml(breakdown){
     const barWidth = Math.max(4, Math.round(b.pct/maxPct*60));
     return `<tr><td><span class="capacity-bar" style="width:${barWidth}px;"></span>${b.name}</td><td class="num">${b.kb}KB</td><td class="num">${b.pct}%</td></tr>`;
   }).join('');
-  return `<table class="capacity-table"><thead><tr><th>内訳</th><th>容量</th><th>割合</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const totalKb = breakdown.reduce((sum,b)=>sum+b.kb, 0);
+  const totalPct = breakdown.reduce((sum,b)=>sum+b.pct, 0);
+  const totalRow = `<tr class="total"><td>合計</td><td class="num">${totalKb.toFixed(1)}KB</td><td class="num">${totalPct.toFixed(1)}%</td></tr>`;
+  return `<table class="capacity-table"><thead><tr><th>内訳</th><th>容量</th><th>割合</th></tr></thead><tbody>${rows}${totalRow}</tbody></table>`;
 }
 function buildTechInfoHtml(d){
   let html = d.sections.map(s=>{
@@ -3803,7 +3821,22 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     noTimeLimit: true,
     introHtml: 'カメラを使って、ピアノを弾きます。<br>手の位置で鍵盤を選び、握ると音が鳴ります。鍵盤は直接タップしても弾けます。<br>両手で同時に弾くと、和音にもなります!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
-      <div class="piano-bg"></div>
+      <div class="piano-bg">
+        <div class="piano-staff">
+          <svg viewBox="0 0 300 60" xmlns="http://www.w3.org/2000/svg">
+            <line x1="0" y1="10" x2="300" y2="10" stroke-width="1.5"/>
+            <line x1="0" y1="20" x2="300" y2="20" stroke-width="1.5"/>
+            <line x1="0" y1="30" x2="300" y2="30" stroke-width="1.5"/>
+            <line x1="0" y1="40" x2="300" y2="40" stroke-width="1.5"/>
+            <line x1="0" y1="50" x2="300" y2="50" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="piano-note" style="left:15%; top:14%; animation-delay:0s;">♪</div>
+        <div class="piano-note" style="left:33%; top:24%; animation-delay:1.6s;">♫</div>
+        <div class="piano-note" style="left:58%; top:12%; animation-delay:3.2s;">♪</div>
+        <div class="piano-note" style="left:76%; top:26%; animation-delay:4.8s;">♫</div>
+        <div class="piano-note" style="left:46%; top:38%; animation-delay:6.4s;">♪</div>
+      </div>
       <div class="piano-target-line" id="pianoLineLeft" style="background:#FF8FC7;"></div>
       <div class="piano-target-line" id="pianoLineRight" style="background:#7FE0E8;"></div>
       <div class="piano-hand-marker" id="pianoMarkerLeft" style="background:#FF8FC7;"></div>
