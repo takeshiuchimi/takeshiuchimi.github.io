@@ -275,7 +275,7 @@
     background:linear-gradient(180deg, #8B7A63 0%, #6B5B47 100%);
   }
 
-  /* ---- にゃー楽器用 ---- */
+  /* ---- にゃーテルミン用 ---- */
   .instrument-bg{
     position:absolute; inset:0; pointer-events:none;
     background:linear-gradient(180deg, #2B1F3D 0%, #4A2F5C 60%, #6B3F6E 100%);
@@ -307,6 +307,38 @@
     opacity:0; transition:width .4s ease-out, height .4s ease-out, opacity .5s ease-out;
   }
   .instrument-crash.burst{ width:340px; height:340px; opacity:1; transition:width .35s ease-out, height .35s ease-out, opacity .1s linear; }
+
+  /* ---- にゃーピアノ用 ---- */
+  .piano-bg{
+    position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(180deg, #FDF6E8 0%, #F5E9D0 100%);
+  }
+  html.dark-mode .piano-bg{ background:linear-gradient(180deg, #2A2418 0%, #1A160E 100%); }
+  .piano-keys{ position:absolute; left:0; right:0; bottom:6%; height:32%; display:flex; pointer-events:none; }
+  .piano-key{
+    pointer-events:auto; cursor:pointer;
+    box-shadow:0 3px 0 rgba(139,111,71,.15);
+    transition:background .1s ease, transform .1s ease;
+  }
+  .piano-key.white{
+    flex:1; margin:0 2px; border-radius:0 0 8px 8px; background:#FFFDF7;
+    border:2px solid #D8C9A8; border-top:none;
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:6px;
+    font-size:11px; color:#8B6F47; position:relative; z-index:1;
+  }
+  .piano-key.black{
+    position:absolute; top:0; height:58%; z-index:2;
+    background:#3A3222; border:2px solid #201A10; border-top:none; border-radius:0 0 6px 6px;
+    box-shadow:0 3px 0 rgba(0,0,0,.35);
+  }
+  html.dark-mode .piano-key.white{ background:#3A3222; border-color:#5A4E30; color:#D8C9A8; }
+  html.dark-mode .piano-key.black{ background:#0E0B06; border-color:#000; }
+  .piano-key.pressed{ background:#FFD98A; transform:translateY(3px); box-shadow:none; }
+  .piano-hand-marker{
+    position:absolute; width:34px; height:34px; border-radius:50%; transform:translate(-50%,-50%);
+    pointer-events:none; opacity:0; transition:opacity .15s ease, left .08s linear, top .08s linear;
+    box-shadow:0 0 0 3px #fff, 0 2px 6px rgba(0,0,0,.3);
+  }
   .night-sky .ferris{
     position:absolute; bottom:-4%; left:54%; transform:translateX(-50%);
     width:195px; height:218px; opacity:.6;
@@ -510,7 +542,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0912-0131"
+    "buildDate": "0912-2107"
   },
   "about": {
     "paragraphs": [
@@ -528,11 +560,11 @@
   },
   "techInfo": {
     "sections": [
-      { "heading": null, "body": "<b>タイトル画面のスワイプ切り替え</b>：各プログラムの「はじめる」画面では、一覧に戻らなくても、左右にスワイプ(または端の矢印をタップ)するだけで隣のプログラムのタイトル画面に直接移動できます。ニャーズゲームセンターの無限ループカルーセルと同じ仕組みで、最後のプログラムから右に進むと最初のプログラムに、最初のプログラムから左に進むと最後のプログラムに、循環してつながっています。プレイ中はこの切り替えはできないようにしています。" },
+      { "heading": null, "body": "<b>タイトル画面のスワイプ切り替え</b>：各プログラムの「はじめる」画面では、一覧に戻らなくても、左右にスワイプ(または端の矢印をタップ)するだけで隣のプログラムのタイトル画面に直接移動できます。ニャーズゲームセンターの無限ループカルーセルと同じ仕組みで、最後のプログラムから右に進むと最初のプログラムに、最初のプログラムから左に進むと最後のプログラムに、循環してつながっています。プレイ中はこの切り替えはできないようにしています。カメラを使うプログラムへ切り替わった時、まだカメラが起動していなければ、その場で起動を試みます(以前は案内文で止めていましたが、スワイプでの移動が途切れないよう、その場で試みる形にしています)。矢印部分は、ハブ画面のカード送りと同じく、手をかざして少し待つ(ドウェル)だけでも選べます。" },
       { "heading": "🖐️ 手の検出の仕組み", "body": "Google製のMediaPipe Hands(CDN経由、ブラウザ内で完結)を使い、手の21箇所のランドマーク(関節位置)をリアルタイムに検出しています。最大2本まで検出できます。" },
       { "heading": null, "body": "<b>MediaPipeとは</b>：Googleが無料公開している、カメラ映像から人の手・顔・体の動きを読み取るための技術です。カメラのコマを渡すと座標が返ってくるだけで、AIモデル自体はGoogleが用意したものをそのまま使わせてもらっています。処理は全て端末の中(オンデバイス)で行われ、映像そのものがGoogleのサーバーに送信されることはありません。" },
       { "heading": null, "body": "<b>体全体の検出(にゃー体操)</b>：このプログラムだけ、手ではなくMediaPipe Poseという別のモデルを使い、体全体33箇所(肩・肘・手首・腰など)を検出しています。プログラムに入る時だけこのモデルに切り替え、他のプログラムでは今まで通り手だけを見るモデル(Hands)に戻ります。判定は「肩と手首の位置関係」のような大まかな見方をしていて、ピッタリ合わせなくても成功するよう寛容にしています。Poseを読み込むCDNスクリプト自体も、体操を一度も開かない人には読み込まれないよう、実際に体操を開いた瞬間に初めて読み込む(遅延読み込み)ようにしています。" },
-      { "heading": null, "body": "<b>にゃー楽器(テルミン風+ドラム)</b>：両手それぞれの位置を、独立した音の高さ・左右の定位(パン)に変換する、採点のないプログラムです。左右の手をそれぞれhandedness(Handsのleft/right判定)で追跡し、パー(開いた手)の間は別々のオシレーターで連続音を鳴らし続けます。両手とも開いている時だけ、2つの手を結ぶ線を表示し、2つの音がオクターブ・完全5度のような綺麗な周波数比になった瞬間だけ、その線を光らせています。加えて、手がグーになった瞬間、および保持したまま一定以上位置が動いた時に、その時のこぶしの位置に応じた高さ・左右位置でドラム音(左手=低いキック、右手=ノイズ系のスネア)を鳴らします。手がチョキになった瞬間も、同様にハイハットのような軽い音を鳴らします。速さは問わず、少し動かすだけで鳴り、保持したまま静止していれば連打はされません。この「動いたか」の判定だけは、カメラの生の位置を見ています(なめらかにした位置だと反応が鈍くなるため)。音の高さ・左右位置自体は、なめらかにした位置から計算しています。さらに、グー⇔チョキ、またはグー⇔パーを一定回数交互に繰り返すと(ドラムのロール奏法のイメージ)、シンバルのようなクラッシュ音と、画面に広がる光の演出が発火します。両手それぞれ別々に判定していて、隠しごほうびのような位置づけです。背景はSVGでステージの照明(スポットライト)を描いていて、ピンク・ゴールド・シアンの光の帯と、足元の床のライン、小さな光の粒を配置し、演奏している雰囲気を出しています。オシレーターは一度作ると止め直せないWeb Audioの特性上、連続音用のオシレーターはプログラムに入る時に手ごとに1つずつ作って鳴らし続け、一覧に戻る時に確実に停止・破棄しています(ドラム音は一発ごとに鳴らして消える別の仕組みです)。採点や失敗の概念が無いプログラムなので、終了時も星の評価ではなく「お疲れ様でした」という専用のメッセージを表示しています。" },
+      { "heading": null, "body": "<b>にゃーテルミン</b>：両手それぞれの位置を、独立した音の高さ・左右の定位(パン)に変換する、採点のないプログラムです。左右の手をそれぞれhandedness(Handsのleft/right判定)で追跡し、パー(開いた手)の間は別々のオシレーターで連続音を鳴らし続けます。両手とも開いている時だけ、2つの手を結ぶ線を表示し、2つの音がオクターブ・完全5度のような綺麗な周波数比になった瞬間だけ、その線を光らせています。加えて、手がグーになった瞬間、および保持したまま一定以上位置が動いた時に、その時のこぶしの位置に応じた高さ・左右位置でドラム音(左手=低いキック、右手=ノイズ系のスネア)を鳴らします。手がチョキになった瞬間も、同様にハイハットのような軽い音を鳴らします。速さは問わず、少し動かすだけで鳴り、保持したまま静止していれば連打はされません。この「動いたか」の判定だけは、カメラの生の位置を見ています(なめらかにした位置だと反応が鈍くなるため)。音の高さ・左右位置自体は、なめらかにした位置から計算しています。さらに、グー⇔チョキ、またはグー⇔パーを一定回数交互に繰り返すと(ドラムのロール奏法のイメージ)、シンバルのようなクラッシュ音と、画面に広がる光の演出が発火します。両手それぞれ別々に判定していて、隠しごほうびのような位置づけです。背景はSVGでステージの照明(スポットライト)を描いていて、ピンク・ゴールド・シアンの光の帯と、足元の床のライン、小さな光の粒を配置し、演奏している雰囲気を出しています。オシレーターは一度作ると止め直せないWeb Audioの特性上、連続音用のオシレーターはプログラムに入る時に手ごとに1つずつ作って鳴らし続け、一覧に戻る時に確実に停止・破棄しています(ドラム音は一発ごとに鳴らして消える別の仕組みです)。採点や失敗の概念が無いプログラムなので、終了時も星の評価ではなく「お疲れ様でした」という専用のメッセージを表示しています。" },
       { "heading": null, "body": "<b>骨格ガイド</b>：カメラ映像そのものは表示しませんが(もぎの手カーソルと同じ考え方)、検出できた肩・肘・手首・腰の位置を、線と丸でつないだ骨格として画面に重ねて表示しています。カメラとの距離や角度によって認識のされ方が変わるため、実際にどう見えているかを確認しながら立ち位置を調整できます。" },
       { "heading": null, "body": "<b>今後の展開候補</b>：MediaPipeには手・体全体の検出以外にも、表情や瞬きを検出する「Face」、人物だけを背景から切り抜く「Selfie Segmentation」といった機能があります。今後の候補として検討しています。" },
       { "heading": null, "body": "<b>グーチョキパー判定</b>：4本の指(人差し指・中指・薬指・小指)それぞれの指先と、その一つ手前の関節(PIP)の、手首からの距離を比較し、伸びているか曲がっているかを判定します。人差し指・中指だけが伸びていれば「チョキ」、3本以上伸びていれば「パー」、それ以外は「グー」としています。" },
@@ -553,13 +585,14 @@
       { "heading": null, "body": "<b>ダークモード</b>：色はCSS変数で管理していて、切り替えボタンひとつで全体の配色が変わります。各プログラム固有の背景(森・川・夜空・体操の背景等)も、ダークモード用の暗い配色を別途用意しています。" },
       { "heading": null, "body": "<b>カメラ・マイクの解放</b>：カメラを再接続する時や、ページを閉じる時は、それまで使っていたカメラの映像を必ず止めてから次の処理に進むようにしています。これを怠ると、特にWindows端末で、ブラウザを閉じてもカメラデバイスが掴まれたままになり、他のアプリでカメラが使えなくなったりOSの再起動が必要になったりすることがあるための対策です。マイクも同様に、手拍子プログラムから一覧に戻る時に確実に解放しています。" },
       { "heading": null, "body": "<b>共通の自然背景パーツ</b>：森(もぎ・ゆらし)と川(カヌー)は、同じ丘の稜線のSVG(数行の曲線パスだけの軽量なもの)を、森では手前の地面に、川では対岸の遠景として使い回しています。同じ形が形を変えて両方に現れることで、「ひと続きの世界の、別の場所」という繋がりを感じられるようにしています。太陽のやわらかい光暈や、水面のきらめきも、絵文字やCSSのグラデーションだけで表現していて、画像ファイルは一切使っていません。今後の新しい背景でも、この丘・光暈のパーツをそのまま使い回せます。" },
+      { "heading": null, "body": "<b>にゃーピアノ</b>：にゃーテルミン(連続的に音程が変わる)とは対照的に、画面を鍵盤ゾーンに分け、手の位置でどの音か選び、握った瞬間にその音を鳴らす、はっきりした音階で弾ける楽器です。白鍵8つ(ドレミファソラシド、1オクターブ)に加えて、本物のピアノと同じ配置(ミとファ・シとドの間には無い)で黒鍵5つ(半音)も弾けます。左右の手をそれぞれ追跡していて、両手同時に握れば和音にもなります。カメラでの手の操作に加えて、画面上の鍵盤を直接タップ/クリックしても弾けます(狙った音を正確に鳴らしたい時に使えます)。音色は、三角波にオクターブ上のサイン波を重ね、鳴り始めが強く、時間とともに減衰していくピアノらしい音の変化(ADSR風のエンベロープ)を、Web Audio APIでその場で合成しています。採点や失敗の概念はありません。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
-    "capacityNote": "このファイル1本で約180KB(共通エンジン+全7プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+    "capacityNote": "このファイル1本で約194KB(共通エンジン+全8プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
     "capacityBreakdown": [
       { "name":"共通エンジン(カメラ・マイク・音・UI等)", "kb":104.2, "pct":60.6 },
       { "name":"にゃー花火", "kb":19.5, "pct":11.3 },
-      { "name":"にゃー楽器", "kb":18.5, "pct":10.8 },
+      { "name":"にゃーテルミン", "kb":18.5, "pct":10.8 },
       { "name":"にゃーカヌー", "kb":8.2, "pct":4.8 },
       { "name":"にゃー体操", "kb":8.1, "pct":4.7 },
       { "name":"にゃーもぎ", "kb":6.1, "pct":3.5 },
@@ -574,7 +607,8 @@
     { "key":"hanabi", "icon":"🎆", "name":"にゃー花火", "desc":"夜空の星に手を合わせて花火を打ち上げ", "disabled": false, "purpose":"夜空に浮かぶ星を目で探し、その位置に向かって手を伸ばします。星は毎回違う位置に現れるので、上下左右へ手を伸ばす動きを繰り返し引き出します。" },
     { "key":"tehyoushi", "icon":"👏", "name":"にゃー手拍子", "desc":"リズムに合わせて手拍子しよう(マイク使用)", "disabled": false, "purpose":"降りてくる合図に合わせて、一定のリズムで手を叩きます。カメラではなくマイクを使うプログラムで、タイミングを合わせて両手を合わせる動きを引き出します。" },
     { "key":"taisou", "icon":"🐾", "name":"にゃー体操", "desc":"画面の猫と同じポーズをキープしよう", "disabled": false, "purpose":"画面に出る猫のポーズを見て、腕を伸ばしたり体を左右に曲げたりして真似します。手だけでなく体全体を使うプログラムで、腕の伸展や体幹のストレッチを引き出します。" },
-    { "key":"instrument", "icon":"🎹", "name":"にゃー楽器", "desc":"両手の位置で音を鳴らして、好きな音を探そう", "disabled": false, "purpose":"両手を開く・握るだけで音の高さや左右の位置が変わる、採点のない自由演奏プログラムです。両手を協調させる動き・独立して動かす動きを引き出します。" }
+    { "key":"instrument", "icon":"🎻", "name":"にゃーテルミン", "desc":"両手の位置で音を鳴らして、好きな音を探そう", "disabled": false, "purpose":"両手を開く・握るだけで音の高さや左右の位置が変わる、採点のない自由演奏プログラムです。両手を協調させる動き・独立して動かす動きを引き出します。" },
+    { "key":"piano", "icon":"🎹", "name":"にゃーピアノ", "desc":"鍵盤を選んで握り、ドレミを弾こう", "disabled": false, "purpose":"手の位置で鍵盤(ドレミファソラシド+半音の黒鍵)を選び、握ると音が鳴る、採点のない自由演奏プログラムです。鍵盤は直接タップしても弾けます。狙った位置に手を運んで握る動きや、両手を使った和音を引き出します。" }
   ]
 }
 </script>
@@ -671,8 +705,8 @@
       </div>
       <div class="callout" id="callout"></div>
       <div class="overlay-msg" id="startOverlay">
-        <div class="edge-nav-btn left" id="titleEdgeLeft"><div class="edge-nav-gauge">◀</div></div>
-        <div class="edge-nav-btn right" id="titleEdgeRight"><div class="edge-nav-gauge">▶</div></div>
+        <div class="edge-nav-btn left" id="titleEdgeLeft"><div class="edge-nav-gauge">◀<div class="edge-nav-fill" id="titleEdgeFillLeft"></div></div></div>
+        <div class="edge-nav-btn right" id="titleEdgeRight"><div class="edge-nav-gauge">▶<div class="edge-nav-fill" id="titleEdgeFillRight"></div></div></div>
         <div id="startOverlayText"></div>
         <div class="dwell-btn" id="startDwellBtn">
           <svg class="dwell-ring" viewBox="0 0 100 100">
@@ -1596,6 +1630,55 @@ function resetDwell(){
     if(btn) btn.classList.remove('active');
   });
 }
+// ---- タイトル(はじめる)画面: 左右の矢印も手のドウェルで選べるようにする ----
+let titleEdgeDwellSide = null;
+let titleEdgeDwellStartTime = null;
+function resetTitleEdgeDwell(){
+  titleEdgeDwellSide = null;
+  titleEdgeDwellStartTime = null;
+  ['titleEdgeLeft','titleEdgeRight'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  ['titleEdgeFillLeft','titleEdgeFillRight'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.background = 'conic-gradient(var(--gold) 0deg, transparent 0deg)';
+  });
+}
+function checkTitleEdgeDwell(){
+  const stageRect = stageEl.getBoundingClientRect();
+  const edgeLeft = document.getElementById('titleEdgeLeft');
+  const edgeRight = document.getElementById('titleEdgeRight');
+  let edgeHovered = null;
+  const hands = handsList.length > 0 ? handsList : [{x:handX, y:handY}];
+  [['left',edgeLeft,-1],['right',edgeRight,1]].forEach(([side,el,delta])=>{
+    const rect = el.getBoundingClientRect();
+    const cx = ((rect.left + rect.width/2 - stageRect.left) / stageRect.width) * 100;
+    const cy = ((rect.top + rect.height/2 - stageRect.top) / stageRect.height) * 100;
+    const cw = (rect.width / stageRect.width) * 100;
+    const ch = (rect.height / stageRect.height) * 100;
+    const onThisEdge = hands.some(h => Math.abs(h.x-cx) < cw/2 && Math.abs(h.y-cy) < ch/2);
+    if(onThisEdge) edgeHovered = { side, el, delta };
+  });
+
+  if(!edgeHovered){ resetTitleEdgeDwell(); return false; }
+  if(titleEdgeDwellSide !== edgeHovered.side){
+    resetTitleEdgeDwell();
+    titleEdgeDwellSide = edgeHovered.side;
+    titleEdgeDwellStartTime = Date.now();
+    edgeHovered.el.classList.add('active');
+  }
+  const elapsed = Date.now() - titleEdgeDwellStartTime;
+  const progress = Math.min(1, elapsed / DWELL_DURATION_MS);
+  const fillEl = document.getElementById(edgeHovered.side==='left' ? 'titleEdgeFillLeft' : 'titleEdgeFillRight');
+  fillEl.style.background = `conic-gradient(var(--gold) ${progress*360}deg, transparent ${progress*360}deg)`;
+  if(progress >= 1){
+    resetTitleEdgeDwell();
+    feedbackTap();
+    switchToAdjacentProgram(edgeHovered.delta);
+  }
+  return true;
+}
 function checkGameDwell(){
   let candidates = [];
   if(gameEnded){
@@ -1604,6 +1687,7 @@ function checkGameDwell(){
       { btn: backDwellBtn, ring: backRingFg, onComplete: backToHub },
     ];
   }else if(!running){
+    if(checkTitleEdgeDwell()){ resetDwell(); return; } // 矢印にホバー中は、はじめるボタン側のドウェルは進めない
     candidates = [ { btn: startDwellBtn, ring: startRingFg, onComplete: startProgram } ];
   }else{
     resetDwell(); return;
@@ -2052,8 +2136,8 @@ document.getElementById('startDwellBtn').addEventListener('click', startProgram)
 function openProgram(key){
   const def = PROGRAMS[key];
   if(!(def && def.requiresMic) && !cameraActive){
-    alert('先にハブ画面で「カメラをオンにする」を押してください');
-    return;
+    // アラートで止めるとスワイプでの移動が止まってしまうので、その場でカメラ起動を試みつつ画面は開く
+    startCameraOnly();
   }
   // タイトル画面同士を直接スワイプで移動した時など、前のプログラムが開いたままなら後片付けする
   if(currentProgramKey && currentProgramKey !== key){
@@ -3135,7 +3219,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 })();
 
 /* ============================================================
-   プログラム: にゃー楽器
+   プログラム: にゃーテルミン
    パー(開いた手): 両手それぞれの位置で連続音を鳴らす(上下=音の高さ、左右=左右の音の位置)。
    両手ともパーの時、良い響き(ハーモニー)になった瞬間だけ2つの手を結ぶ線が光る。
    グー(握った瞬間): その時のこぶしの位置(上下=音の高さ、左右=左右の音の位置)でドラムを鳴らす。
@@ -3365,7 +3449,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   }
 
   registerProgram('instrument', {
-    title: '🎹 にゃー楽器',
+    title: '🎻 にゃーテルミン',
     durationSec: 90,
     noScoring: true,
     introHtml: 'カメラを使って、両手で音を鳴らします。<br>手を開くと音の高さ・左右が変わり、握るとドラムが鳴ります。<br>好きな音を探してみてください!<br>カメラへのアクセスを許可してください。',
@@ -3514,6 +3598,185 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       }else if(lineEl && !bothPlaying){
         lineEl.style.opacity = '0'; lineEl.classList.remove('glow');
       }
+    },
+    onTick(){},
+  });
+})();
+
+/* ============================================================
+   プログラム: にゃーピアノ
+   画面を鍵盤ゾーンに分け、手の位置でどの音か選び、握ると弾く。
+   にゃーテルミン(連続的に音程が変わる)とは対照的に、
+   はっきりした音階(ドレミファソラシド+半音の黒鍵)を、ピアノのように弾ける楽器。
+   カメラでの操作に加えて、鍵盤を直接タップ/クリックしても弾ける。
+   採点や失敗の概念はなく、自由に演奏を楽しむもの。
+   ============================================================ */
+(function(){
+  // 白鍵8つ(ド〜高いド、C4〜C5)+黒鍵5つ(半音)、本物のピアノと同じ配置
+  const WHITE_NOTES = [
+    { name:'ド',  freq:261.63 },
+    { name:'レ',  freq:293.66 },
+    { name:'ミ',  freq:329.63 },
+    { name:'ファ', freq:349.23 },
+    { name:'ソ',  freq:392.00 },
+    { name:'ラ',  freq:440.00 },
+    { name:'シ',  freq:493.88 },
+    { name:'ド',  freq:523.25 },
+  ];
+  // afterWhiteIdx: この白鍵とその次の白鍵の間(境界)に配置する黒鍵
+  const BLACK_NOTES = [
+    { freq:277.18, afterWhiteIdx:0 }, // ド#
+    { freq:311.13, afterWhiteIdx:1 }, // レ#
+    { freq:369.99, afterWhiteIdx:3 }, // ファ#
+    { freq:415.30, afterWhiteIdx:4 }, // ソ#
+    { freq:466.16, afterWhiteIdx:5 }, // ラ#
+  ];
+  const WHITE_KEY_WIDTH_PCT = 100/WHITE_NOTES.length;
+  const BLACK_KEY_WIDTH_PCT = WHITE_KEY_WIDTH_PCT * 0.55;
+  // 黒鍵の中心位置(白鍵の境界)と、その左右の範囲
+  const blackKeyRanges = BLACK_NOTES.map(b=>{
+    const centerPct = (b.afterWhiteIdx+1) * WHITE_KEY_WIDTH_PCT;
+    return { ...b, centerPct, left:centerPct-BLACK_KEY_WIDTH_PCT/2, right:centerPct+BLACK_KEY_WIDTH_PCT/2 };
+  });
+
+  let whiteKeyEls = [], blackKeyEls = [];
+  let markerLeftEl, markerRightEl;
+  const HIT_COOLDOWN_MS = 200;
+  let hitArmed = { Left:true, Right:true };
+  let lastHitAt = { Left:0, Right:0 };
+
+  function checkHit(handedness, h, now){
+    // シンプルに「開いた手が握られた瞬間」だけを見る(にゃーテルミンのドラムと同じ考え方)
+    if(h.shape !== 'guu'){ hitArmed[handedness] = true; return false; }
+    if(hitArmed[handedness] && (now - lastHitAt[handedness]) > HIT_COOLDOWN_MS){
+      lastHitAt[handedness] = now;
+      hitArmed[handedness] = false;
+      return true;
+    }
+    return false;
+  }
+  function xToNote(x){
+    x = Math.max(0, Math.min(99.999, x));
+    // 黒鍵の範囲に入っていれば黒鍵を優先(見た目通り、黒鍵が手前にある形)
+    for(let i=0;i<blackKeyRanges.length;i++){
+      const b = blackKeyRanges[i];
+      if(x >= b.left && x < b.right) return { type:'black', idx:i, freq:b.freq };
+    }
+    const idx = Math.max(0, Math.min(WHITE_NOTES.length-1, Math.floor(x / WHITE_KEY_WIDTH_PCT)));
+    return { type:'white', idx, freq:WHITE_NOTES[idx].freq };
+  }
+  function makePanner(){
+    const ctx = getAudioCtx();
+    try{ return ctx.createStereoPanner(); }catch(e){ return null; }
+  }
+  function playPianoNote(freq, pan){
+    // 三角波+オクターブ上のサイン波を重ね、ピアノらしい減衰(ADSR風)を付ける
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const dur = 0.9;
+    const vol = 0.16;
+    const out = ctx.createGain();
+    out.gain.setValueAtTime(0.0001, now);
+    out.gain.exponentialRampToValueAtTime(vol, now+0.01);
+    out.gain.exponentialRampToValueAtTime(vol*0.45, now+0.12);
+    out.gain.exponentialRampToValueAtTime(0.0001, now+dur*0.92);
+    const panner = makePanner();
+    if(panner){ panner.pan.value = pan; out.connect(panner); panner.connect(ctx.destination); }
+    else{ out.connect(ctx.destination); }
+
+    const o1 = ctx.createOscillator();
+    o1.type = 'triangle';
+    o1.frequency.value = freq;
+    o1.connect(out);
+    const o2 = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    g2.gain.value = 0.2;
+    o2.type = 'sine';
+    o2.frequency.value = freq*2;
+    o2.connect(g2); g2.connect(out);
+    o1.start(now); o2.start(now);
+    o1.stop(now+dur); o2.stop(now+dur);
+  }
+  function flashKeyEl(el){
+    if(!el) return;
+    el.classList.add('pressed');
+    setTimeout(()=>{ if(el) el.classList.remove('pressed'); }, 180);
+  }
+  function playNoteAt(note){
+    const pan = (note.idx/(WHITE_NOTES.length-1))*2-1;
+    playPianoNote(note.freq, pan);
+    flashKeyEl(note.type==='white' ? whiteKeyEls[note.idx] : blackKeyEls[note.idx]);
+    const labelEl = document.getElementById('pianoLabel');
+    if(labelEl) labelEl.textContent = '🎶 いい音!';
+  }
+
+  registerProgram('piano', {
+    title: '🎹 にゃーピアノ',
+    durationSec: 90,
+    noScoring: true,
+    introHtml: 'カメラを使って、ピアノを弾きます。<br>手の位置で鍵盤を選び、握ると音が鳴ります。鍵盤は直接タップしても弾けます。<br>両手で同時に弾くと、和音にもなります!<br>カメラへのアクセスを許可してください。',
+    layerHtml: `
+      <div class="piano-bg"></div>
+      <div class="piano-hand-marker" id="pianoMarkerLeft" style="background:#FF8FC7;"></div>
+      <div class="piano-hand-marker" id="pianoMarkerRight" style="background:#7FE0E8;"></div>
+      <div class="piano-keys" id="pianoKeys"></div>
+      <div class="instrument-label" id="pianoLabel">好きな鍵盤を選んで、握って(またはタップして)弾いてみよう</div>
+    `,
+    setup(){
+      const keysEl = document.getElementById('pianoKeys');
+      keysEl.innerHTML = '';
+      whiteKeyEls = WHITE_NOTES.map((note, idx)=>{
+        const el = document.createElement('div');
+        el.className = 'piano-key white';
+        el.textContent = note.name;
+        el.addEventListener('pointerdown', ()=> playNoteAt({ type:'white', idx, freq:note.freq }));
+        keysEl.appendChild(el);
+        return el;
+      });
+      blackKeyEls = blackKeyRanges.map((b, idx)=>{
+        const el = document.createElement('div');
+        el.className = 'piano-key black';
+        el.style.left = b.left+'%';
+        el.style.width = BLACK_KEY_WIDTH_PCT+'%';
+        el.addEventListener('pointerdown', ()=> playNoteAt({ type:'black', idx, freq:b.freq }));
+        keysEl.appendChild(el);
+        return el;
+      });
+      markerLeftEl = document.getElementById('pianoMarkerLeft');
+      markerRightEl = document.getElementById('pianoMarkerRight');
+    },
+    start(){
+      hitArmed = { Left:true, Right:true };
+      lastHitAt = { Left:0, Right:0 };
+      [markerLeftEl, markerRightEl].forEach(el=>{ if(el) el.style.opacity = '0'; });
+    },
+    reset(){ this.start(); },
+    onHand(){
+      const nowMs = Date.now();
+      const states = { Left:null, Right:null };
+      handsList.slice(0,2).forEach(h=>{
+        if(h.handedness === 'Left' || h.handedness === 'Right') states[h.handedness] = h;
+      });
+      const labelEl = document.getElementById('pianoLabel');
+      let anyHit = false;
+
+      ['Left','Right'].forEach(hd=>{
+        const h = states[hd];
+        const markerEl = hd === 'Left' ? markerLeftEl : markerRightEl;
+        if(!h){ if(markerEl) markerEl.style.opacity = '0'; return; }
+        const note = xToNote(h.x);
+        if(markerEl){
+          markerEl.style.left = h.x+'%';
+          markerEl.style.top = '78%';
+          markerEl.style.opacity = '0.9';
+        }
+        if(checkHit(hd, h, nowMs)){
+          playNoteAt(note);
+          anyHit = true;
+        }
+      });
+      if(!anyHit && labelEl && !states.Left && !states.Right) labelEl.textContent = '好きな鍵盤を選んで、握って(またはタップして)弾いてみよう';
     },
     onTick(){},
   });
