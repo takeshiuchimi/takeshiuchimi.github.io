@@ -387,6 +387,7 @@
   html.dark-mode .quiz-question-box{ background:rgba(40,34,24,.97); color:#F0E6D8; }
   .quiz-category{ font-size:12px; color:var(--brown-deep); opacity:.8; margin-bottom:4px; }
   .quiz-question-text{ font-size:20px; font-weight:bold; color:var(--line-dark); }
+  .quiz-flag-svg{ width:96px; height:64px; display:block; margin:4px auto 6px; border-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,.25); }
   .quiz-choices{
     position:absolute; left:0; right:0; bottom:5%; height:24%;
     display:flex; gap:8px; padding:0 4%; pointer-events:auto;
@@ -4029,11 +4030,11 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       {q:'「レガシィ」を作っているメーカーは?', a:'スバル'}, {q:'「eKワゴン」を作っているメーカーは?', a:'三菱'},
     ]},
     { name:'国旗当て', icon:'🌍', items:[
-      {q:'🇯🇵 この国旗の国は?', a:'日本'}, {q:'🇺🇸 この国旗の国は?', a:'アメリカ'},
-      {q:'🇫🇷 この国旗の国は?', a:'フランス'}, {q:'🇧🇷 この国旗の国は?', a:'ブラジル'},
-      {q:'🇮🇹 この国旗の国は?', a:'イタリア'}, {q:'🇰🇷 この国旗の国は?', a:'韓国'},
-      {q:'🇨🇦 この国旗の国は?', a:'カナダ'}, {q:'🇦🇺 この国旗の国は?', a:'オーストラリア'},
-      {q:'🇩🇪 この国旗の国は?', a:'ドイツ'}, {q:'🇬🇧 この国旗の国は?', a:'イギリス'},
+      {q:'この国旗の国は?', a:'日本', flag:'jp'}, {q:'この国旗の国は?', a:'アメリカ', flag:'us'},
+      {q:'この国旗の国は?', a:'フランス', flag:'fr'}, {q:'この国旗の国は?', a:'ブラジル', flag:'br'},
+      {q:'この国旗の国は?', a:'イタリア', flag:'it'}, {q:'この国旗の国は?', a:'韓国', flag:'kr'},
+      {q:'この国旗の国は?', a:'カナダ', flag:'ca'}, {q:'この国旗の国は?', a:'オーストラリア', flag:'au'},
+      {q:'この国旗の国は?', a:'ドイツ', flag:'de'}, {q:'この国旗の国は?', a:'イギリス', flag:'gb'},
     ]},
     { name:'ことわざの続き', icon:'📜', items:[
       {q:'「猿も木から」の続きは?', a:'落ちる'}, {q:'「石の上にも」の続きは?', a:'三年'},
@@ -4050,6 +4051,41 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   ];
   const QUESTION_COUNT = 8; // これだけ答えたら終了
 
+  // 国旗絵文字はPC(Windows等)では旗として表示されずアルファベット2文字になってしまう環境依存の問題があるため、
+  // 自作のSVGで描画する(全端末で同じ見た目になる)。viewBox "0 0 3 2" の3:2比率。
+  const FLAG_SVG = {
+    jp: `<rect width="3" height="2" fill="#fff"/><circle cx="1.5" cy="1" r="0.6" fill="#BC002D"/>`,
+    us: `<rect width="3" height="2" fill="#B22234"/>
+      ${Array.from({length:6}).map((_,i)=>`<rect y="${(2*(2*i+1))/13}" width="3" height="${2/13}" fill="#fff"/>`).join('')}
+      <rect width="1.2" height="${2*7/13}" fill="#3C3B6E"/>`,
+    fr: `<rect width="1" height="2" fill="#0055A4"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#EF4135"/>`,
+    it: `<rect width="1" height="2" fill="#008C45"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#CD212A"/>`,
+    de: `<rect width="3" height="2" fill="#FFCE00"/><rect width="3" height="0.667" fill="#000"/><rect y="0.667" width="3" height="0.667" fill="#DD0000"/>`,
+    br: `<rect width="3" height="2" fill="#009639"/><polygon points="1.5,0.25 2.75,1 1.5,1.75 0.25,1" fill="#FEDF00"/><circle cx="1.5" cy="1" r="0.45" fill="#002776"/>`,
+    kr: `<rect width="3" height="2" fill="#fff"/>
+      <path d="M1.5,0.55 A0.35,0.35 0 0 1 1.5,1.25 A0.175,0.175 0 0 0 1.5,0.9 A0.175,0.175 0 0 1 1.5,0.55 Z" fill="#CD2E3A"/>
+      <path d="M1.5,1.45 A0.35,0.35 0 0 1 1.5,0.75 A0.175,0.175 0 0 0 1.5,1.1 A0.175,0.175 0 0 1 1.5,1.45 Z" fill="#0047A0"/>`,
+    ca: `<rect width="3" height="2" fill="#fff"/><rect width="0.75" height="2" fill="#FF0000"/><rect x="2.25" width="0.75" height="2" fill="#FF0000"/>
+      <path d="M1.5,0.4 1.62,0.75 2,0.65 1.8,0.95 2.05,1.05 1.65,1.15 1.7,1.5 1.5,1.25 1.3,1.5 1.35,1.15 0.95,1.05 1.2,0.95 1,0.65 1.38,0.75 Z" fill="#FF0000"/>`,
+    au: `<rect width="3" height="2" fill="#00247D"/><rect width="1.5" height="1" fill="#00247D"/>
+      <path d="M0,0 1.5,1 M1.5,0 0,1" stroke="#fff" stroke-width="0.22"/>
+      <path d="M0,0 1.5,1 M1.5,0 0,1" stroke="#F93939" stroke-width="0.1"/>
+      <rect x="0.65" width="0.2" height="1" fill="#fff"/><rect y="0.4" width="1.5" height="0.2" fill="#fff"/>
+      <rect x="0.72" width="0.06" height="1" fill="#F93939"/><rect y="0.47" width="1.5" height="0.06" fill="#F93939"/>
+      <g fill="#fff">
+        <circle cx="2.3" cy="1.55" r="0.14"/><circle cx="2.55" cy="0.35" r="0.11"/>
+        <circle cx="2.75" cy="1.1" r="0.11"/><circle cx="2.35" cy="0.75" r="0.11"/><circle cx="2.05" cy="0.55" r="0.08"/>
+      </g>`,
+    gb: `<rect width="3" height="2" fill="#00247D"/>
+      <path d="M0,0 3,2 M3,0 0,2" stroke="#fff" stroke-width="0.42"/>
+      <path d="M0,0 3,2 M3,0 0,2" stroke="#CF142B" stroke-width="0.16"/>
+      <rect x="1.2" width="0.6" height="2" fill="#fff"/><rect y="0.7" width="3" height="0.6" fill="#fff"/>
+      <rect x="1.33" width="0.34" height="2" fill="#CF142B"/><rect y="0.83" width="3" height="0.34" fill="#CF142B"/>`,
+  };
+  function flagSvg(code){
+    return `<svg viewBox="0 0 3 2" class="quiz-flag-svg" xmlns="http://www.w3.org/2000/svg">${FLAG_SVG[code]||''}</svg>`;
+  }
+
   function shuffle(arr){ return arr.slice().sort(()=>Math.random()-0.5); }
   function pickQuestion(){
     const cat = QUIZ_CATEGORIES[Math.floor(Math.random()*QUIZ_CATEGORIES.length)];
@@ -4059,7 +4095,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     const otherAnswers = items.filter((it,i)=> i!==correctIdx && it.a !== correct.a).map(it=>it.a);
     const shuffledOthers = shuffle(otherAnswers);
     const choices = shuffle([correct.a, shuffledOthers[0], shuffledOthers[1]]);
-    return { categoryName:cat.name, categoryIcon:cat.icon, question:correct.q, correctAnswer:correct.a, choices };
+    return { categoryName:cat.name, categoryIcon:cat.icon, question:correct.q, flag:correct.flag, correctAnswer:correct.a, choices };
   }
 
   function makePanner(){
@@ -4135,7 +4171,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     currentQuestion = pickQuestion();
     selectedIdx = null;
     phase = 'waiting';
-    questionBoxEl.innerHTML = `<div class="quiz-category">${currentQuestion.categoryIcon} ${currentQuestion.categoryName}</div><div class="quiz-question-text">${currentQuestion.question}</div>`;
+    const flagHtml = currentQuestion.flag ? flagSvg(currentQuestion.flag) : '';
+    questionBoxEl.innerHTML = `<div class="quiz-category">${currentQuestion.categoryIcon} ${currentQuestion.categoryName}</div>${flagHtml}<div class="quiz-question-text">${currentQuestion.question}</div>`;
     choiceEls.forEach((el, i)=>{
       el.textContent = currentQuestion.choices[i];
       el.classList.remove('highlighted','correct','wrong');
