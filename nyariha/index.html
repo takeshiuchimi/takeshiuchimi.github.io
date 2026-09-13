@@ -368,6 +368,62 @@
     transform-origin:0 50%; border-radius:2px; opacity:0;
     pointer-events:none; transition:opacity .12s ease; z-index:5;
   }
+
+  /* ---- にゃークイズ用 ---- */
+  .quiz-bg{
+    position:absolute; inset:0; pointer-events:none; overflow:hidden;
+    background:linear-gradient(180deg, #2E1F45 0%, #4A2F5C 55%, #6B3F6E 100%);
+  }
+  .quiz-bg .quiz-spot{ position:absolute; top:0; width:70px; height:100%; opacity:.28; }
+  .quiz-progress{
+    position:absolute; top:4%; left:50%; transform:translateX(-50%);
+    font-size:13px; color:#fff; background:rgba(0,0,0,.35); padding:4px 14px; border-radius:12px;
+  }
+  .quiz-question-box{
+    position:absolute; top:12%; left:6%; right:6%;
+    background:rgba(255,253,247,.97); border-radius:16px; padding:16px;
+    text-align:center; box-shadow:0 4px 0 rgba(0,0,0,.2);
+  }
+  html.dark-mode .quiz-question-box{ background:rgba(40,34,24,.97); color:#F0E6D8; }
+  .quiz-category{ font-size:12px; color:var(--brown-deep); opacity:.8; margin-bottom:4px; }
+  .quiz-question-text{ font-size:20px; font-weight:bold; color:var(--line-dark); }
+  .quiz-choices{
+    position:absolute; left:0; right:0; bottom:5%; height:24%;
+    display:flex; gap:8px; padding:0 4%; pointer-events:auto;
+  }
+  .quiz-choice{
+    flex:1; background:#FFFDF7; border-radius:14px; border:3px solid var(--gold);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-size:15px; font-weight:bold; color:var(--brown-deep); padding:6px;
+    box-shadow:0 4px 0 rgba(139,111,71,.25); transition:transform .12s ease, box-shadow .12s ease;
+    cursor:pointer;
+  }
+  html.dark-mode .quiz-choice{ background:#3A3222; color:#F0E6D8; }
+  .quiz-choice.highlighted{ transform:translateY(-6px) scale(1.05); box-shadow:0 8px 0 var(--gold); border-color:#fff; }
+  .quiz-choice.correct{ background:#8FD98A !important; border-color:#4C9A46; }
+  .quiz-choice.wrong{ background:#E88A8A !important; border-color:#B84A4A; }
+  .quiz-result-mark{
+    position:absolute; top:56%; left:50%; transform:translate(-50%,-50%) scale(0.3);
+    font-size:80px; opacity:0; pointer-events:none; transition:transform .25s ease, opacity .2s ease;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,.4));
+  }
+  .quiz-result-mark.show{ transform:translate(-50%,-50%) scale(1); opacity:1; }
+  .quiz-confetti{
+    position:absolute; width:8px; height:8px; top:-10px; opacity:.95; border-radius:2px;
+    animation:quizConfettiFall 1.1s ease-in forwards;
+  }
+  @keyframes quizConfettiFall{
+    0%{ transform:translateY(0) rotate(0deg); opacity:.95; }
+    100%{ transform:translateY(340px) rotate(360deg); opacity:0; }
+  }
+  @keyframes quizShake{
+    0%,100%{ transform:translateX(0); }
+    20%{ transform:translateX(-8px); }
+    40%{ transform:translateX(7px); }
+    60%{ transform:translateX(-5px); }
+    80%{ transform:translateX(4px); }
+  }
+  .quiz-shake{ animation:quizShake .35s ease; }
   .night-sky .ferris{
     position:absolute; bottom:-4%; left:54%; transform:translateX(-50%);
     width:195px; height:218px; opacity:.6;
@@ -571,7 +627,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0912-2304"
+    "buildDate": "0913-0230"
   },
   "about": {
     "paragraphs": [
@@ -616,19 +672,21 @@
       { "heading": null, "body": "<b>カメラ・マイクの解放</b>：カメラを再接続する時や、ページを閉じる時は、それまで使っていたカメラの映像を必ず止めてから次の処理に進むようにしています。これを怠ると、特にWindows端末で、ブラウザを閉じてもカメラデバイスが掴まれたままになり、他のアプリでカメラが使えなくなったりOSの再起動が必要になったりすることがあるための対策です。マイクも同様に、手拍子プログラムから一覧に戻る時に確実に解放しています。" },
       { "heading": null, "body": "<b>共通の自然背景パーツ</b>：森(もぎ・ゆらし)と川(カヌー)は、同じ丘の稜線のSVG(数行の曲線パスだけの軽量なもの)を、森では手前の地面に、川では対岸の遠景として使い回しています。同じ形が形を変えて両方に現れることで、「ひと続きの世界の、別の場所」という繋がりを感じられるようにしています。太陽のやわらかい光暈や、水面のきらめきも、絵文字やCSSのグラデーションだけで表現していて、画像ファイルは一切使っていません。今後の新しい背景でも、この丘・光暈のパーツをそのまま使い回せます。" },
       { "heading": null, "body": "<b>にゃーピアノ</b>：にゃーテルミン(連続的に音程が変わる)とは対照的に、画面を鍵盤ゾーンに分け、手の位置でどの音か選び、握った瞬間にその音を鳴らす、はっきりした音階で弾ける楽器です。白鍵8つ(ドレミファソラシド、1オクターブ)に加えて、本物のピアノと同じ配置(ミとファ・シとドの間には無い)で黒鍵5つ(半音)も弾けます。左右の手をそれぞれ追跡していて、両手同時に握れば和音にもなります。カメラでの手の操作に加えて、画面上の鍵盤を直接タップ/クリックしても弾けます(狙った音を正確に鳴らしたい時に使えます)。カメラで操作している時は、手の位置から、今その位置で握った時に鳴る鍵盤まで、細い線を引いて示しています。手と鍵盤が離れていても、どの音を狙っているか一目で分かるようにするための工夫です。音色は、三角波にオクターブ上のサイン波を重ね、鳴り始めが強く、時間とともに減衰していくピアノらしい音の変化(ADSR風のエンベロープ)を、Web Audio APIでその場で合成しています。また、鍵盤を押さえたまま指(または握った手)を滑らせると、通り過ぎた鍵盤を連続で鳴らせます(グリッサンド)。カメラでも「握ったまま別の鍵盤に動いた瞬間」を追加で鳴らす形で、同じ弾き方ができます。黒鍵は鍵盤の上部にしか無い見た目に合わせて、手(指)が高い位置にある時だけ黒鍵も含めて判定し、低い位置では黒鍵のあたりを通っても下に伸びる白鍵の方が鳴るようにしています。採点や失敗の概念はなく、時間制限もありません。自分で「一覧に戻る」を選ぶまで自由に演奏を続けられます。背景は、テルミンのステージ照明(夜のライブ)とは対照的に、五線譜と漂う音符(♪♫)を配置した、練習室・楽譜のような温かみのある雰囲気にしています。画像は使わず、5本の横線(SVG)とテキスト記号だけの軽量な作りです。" },
+      { "heading": null, "body": "<b>にゃークイズ</b>：県庁所在地・車種→メーカー・国旗・ことわざの続き・都道府県の名産品、5つのジャンルから毎回ランダムに出題する3択クイズです。画面を左・中央・右の3つのゾーンに分け、手をその方向に動かすと選択肢が浮き上がり、握ると決定します。鍵盤と同じく、選択肢を直接タップ/クリックしても答えられます。決定すると、ドラムロール音(Web Audio APIでノイズ音を連打し、だんだん大きくする自作の音)が鳴って少し間を置いてから、正解なら⭕と紙吹雪、不正解なら❌と画面の小さな揺れで結果を発表します。クイズ番組のような緊張感を演出していますが、特定の番組を再現したものではありません。全8問固定で、何問正解できたかで評価が決まります。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
-    "capacityNote": "このファイル1本で約201KB(共通エンジン+全8プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+    "capacityNote": "このファイル1本で約220KB(共通エンジン+全9プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
     "capacityBreakdown": [
-      { "name":"共通エンジン(カメラ・マイク・音・UI等)", "kb":120.8, "pct":60.0 },
-      { "name":"にゃー花火", "kb":19.5, "pct":9.7 },
-      { "name":"にゃーテルミン", "kb":18.3, "pct":9.1 },
-      { "name":"にゃーピアノ", "kb":12.6, "pct":6.3 },
-      { "name":"にゃーカヌー", "kb":8.5, "pct":4.2 },
-      { "name":"にゃー体操", "kb":8.1, "pct":4.0 },
-      { "name":"にゃーもぎ", "kb":6.1, "pct":3.0 },
-      { "name":"にゃー手拍子", "kb":4.6, "pct":2.3 },
-      { "name":"にゃーゆらし", "kb":2.8, "pct":1.4 }
+      { "name":"共通エンジン(カメラ・マイク・音・UI等)", "kb":128.7, "pct":58.4 },
+      { "name":"にゃー花火", "kb":19.5, "pct":8.8 },
+      { "name":"にゃーテルミン", "kb":18.3, "pct":8.3 },
+      { "name":"にゃーピアノ", "kb":12.6, "pct":5.7 },
+      { "name":"にゃークイズ", "kb":11.0, "pct":5.0 },
+      { "name":"にゃーカヌー", "kb":8.5, "pct":3.9 },
+      { "name":"にゃー体操", "kb":8.1, "pct":3.7 },
+      { "name":"にゃーもぎ", "kb":6.1, "pct":2.8 },
+      { "name":"にゃー手拍子", "kb":4.6, "pct":2.1 },
+      { "name":"にゃーゆらし", "kb":2.8, "pct":1.3 }
     ]
   },
   "programs": [
@@ -639,7 +697,8 @@
     { "key":"tehyoushi", "icon":"👏", "name":"にゃー手拍子", "desc":"リズムに合わせて手拍子しよう(マイク使用)", "disabled": false, "purpose":"降りてくる合図に合わせて、一定のリズムで手を叩きます。カメラではなくマイクを使うプログラムで、タイミングを合わせて両手を合わせる動きを引き出します。" },
     { "key":"taisou", "icon":"🐾", "name":"にゃー体操", "desc":"画面の猫と同じポーズをキープしよう", "disabled": false, "purpose":"画面に出る猫のポーズを見て、腕を伸ばしたり体を左右に曲げたりして真似します。手だけでなく体全体を使うプログラムで、腕の伸展や体幹のストレッチを引き出します。" },
     { "key":"instrument", "icon":"🎻", "name":"にゃーテルミン", "desc":"両手の位置で音を鳴らして、好きな音を探そう", "disabled": false, "purpose":"両手を開く・握るだけで音の高さや左右の位置が変わる、採点のない自由演奏プログラムです。両手を協調させる動き・独立して動かす動きを引き出します。" },
-    { "key":"piano", "icon":"🎹", "name":"にゃーピアノ", "desc":"鍵盤を選んで握り、ドレミを弾こう", "disabled": false, "purpose":"手の位置で鍵盤(ドレミファソラシド+半音の黒鍵)を選び、握ると音が鳴る、採点のない自由演奏プログラムです。鍵盤は直接タップしても弾けます。狙った位置に手を運んで握る動きや、両手を使った和音を引き出します。" }
+    { "key":"piano", "icon":"🎹", "name":"にゃーピアノ", "desc":"鍵盤を選んで握り、ドレミを弾こう", "disabled": false, "purpose":"手の位置で鍵盤(ドレミファソラシド+半音の黒鍵)を選び、握ると音が鳴る、採点のない自由演奏プログラムです。鍵盤は直接タップしても弾けます。狙った位置に手を運んで握る動きや、両手を使った和音を引き出します。" },
+    { "key":"quiz", "icon":"❓", "name":"にゃークイズ", "desc":"3択クイズに手で答えよう(全8問)", "disabled": false, "purpose":"県庁所在地・車のメーカー・国旗・ことわざ・名産品の3択クイズを、手を左右に動かして選び、握って答える、頭を使う脳トレプログラムです。狙った方向に手を動かして握る動きを引き出しつつ、考える力も刺激します。" }
   ]
 }
 </script>
@@ -3942,6 +4001,233 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         }
       });
       if(!anyHit && labelEl && !states.Left && !states.Right) labelEl.textContent = '好きな鍵盤を選んで、握って(またはタップして)弾いてみよう';
+    },
+    onTick(){},
+  });
+})();
+
+/* ============================================================
+   プログラム: にゃークイズ
+   3択クイズ(県庁所在地・車種→メーカー・国旗・ことわざ・名産品)を、
+   手を左右に動かして選び、握って決定する。頭を使う脳トレ系プログラム。
+   演出はクイズ番組風(ドラムロール→正誤発表)だが、特定の番組の再現ではない。
+   ============================================================ */
+(function(){
+  const QUIZ_CATEGORIES = [
+    { name:'県庁所在地', icon:'🏛️', items:[
+      {q:'宮城県の県庁所在地は?', a:'仙台市'}, {q:'群馬県の県庁所在地は?', a:'前橋市'},
+      {q:'埼玉県の県庁所在地は?', a:'さいたま市'}, {q:'神奈川県の県庁所在地は?', a:'横浜市'},
+      {q:'愛知県の県庁所在地は?', a:'名古屋市'}, {q:'三重県の県庁所在地は?', a:'津市'},
+      {q:'滋賀県の県庁所在地は?', a:'大津市'}, {q:'兵庫県の県庁所在地は?', a:'神戸市'},
+      {q:'島根県の県庁所在地は?', a:'松江市'}, {q:'香川県の県庁所在地は?', a:'高松市'},
+      {q:'愛媛県の県庁所在地は?', a:'松山市'}, {q:'沖縄県の県庁所在地は?', a:'那覇市'},
+    ]},
+    { name:'車種→メーカー', icon:'🚗', items:[
+      {q:'「プリウス」を作っているメーカーは?', a:'トヨタ'}, {q:'「フィット」を作っているメーカーは?', a:'ホンダ'},
+      {q:'「ノート」を作っているメーカーは?', a:'日産'}, {q:'「ワゴンR」を作っているメーカーは?', a:'スズキ'},
+      {q:'「タント」を作っているメーカーは?', a:'ダイハツ'}, {q:'「CX-5」を作っているメーカーは?', a:'マツダ'},
+      {q:'「レガシィ」を作っているメーカーは?', a:'スバル'}, {q:'「eKワゴン」を作っているメーカーは?', a:'三菱'},
+    ]},
+    { name:'国旗当て', icon:'🌍', items:[
+      {q:'🇯🇵 この国旗の国は?', a:'日本'}, {q:'🇺🇸 この国旗の国は?', a:'アメリカ'},
+      {q:'🇫🇷 この国旗の国は?', a:'フランス'}, {q:'🇧🇷 この国旗の国は?', a:'ブラジル'},
+      {q:'🇮🇹 この国旗の国は?', a:'イタリア'}, {q:'🇰🇷 この国旗の国は?', a:'韓国'},
+      {q:'🇨🇦 この国旗の国は?', a:'カナダ'}, {q:'🇦🇺 この国旗の国は?', a:'オーストラリア'},
+      {q:'🇩🇪 この国旗の国は?', a:'ドイツ'}, {q:'🇬🇧 この国旗の国は?', a:'イギリス'},
+    ]},
+    { name:'ことわざの続き', icon:'📜', items:[
+      {q:'「猿も木から」の続きは?', a:'落ちる'}, {q:'「石の上にも」の続きは?', a:'三年'},
+      {q:'「頭隠して」の続きは?', a:'尻隠さず'}, {q:'「七転び」の続きは?', a:'八起き'},
+      {q:'「二階から」の続きは?', a:'目薬'}, {q:'「灯台下」の続きは?', a:'暗し'},
+      {q:'「蛙の子は」の続きは?', a:'蛙'}, {q:'「犬も歩けば」の続きは?', a:'棒に当たる'},
+    ]},
+    { name:'都道府県の名産品', icon:'🍎', items:[
+      {q:'青森県といえば?', a:'りんご'}, {q:'宮城県といえば?', a:'牛タン'},
+      {q:'静岡県といえば?', a:'お茶'}, {q:'北海道といえば?', a:'じゃがいも'},
+      {q:'山梨県といえば?', a:'ぶどう'}, {q:'鹿児島県といえば?', a:'さつまいも'},
+      {q:'香川県といえば?', a:'うどん'}, {q:'愛知県といえば?', a:'ういろう'},
+    ]},
+  ];
+  const QUESTION_COUNT = 8; // これだけ答えたら終了
+
+  function shuffle(arr){ return arr.slice().sort(()=>Math.random()-0.5); }
+  function pickQuestion(){
+    const cat = QUIZ_CATEGORIES[Math.floor(Math.random()*QUIZ_CATEGORIES.length)];
+    const items = cat.items;
+    const correctIdx = Math.floor(Math.random()*items.length);
+    const correct = items[correctIdx];
+    const otherAnswers = items.filter((it,i)=> i!==correctIdx && it.a !== correct.a).map(it=>it.a);
+    const shuffledOthers = shuffle(otherAnswers);
+    const choices = shuffle([correct.a, shuffledOthers[0], shuffledOthers[1]]);
+    return { categoryName:cat.name, categoryIcon:cat.icon, question:correct.q, correctAnswer:correct.a, choices };
+  }
+
+  function makePanner(){
+    const ctx = getAudioCtx();
+    try{ return ctx.createStereoPanner(); }catch(e){ return null; }
+  }
+  function playDrumRoll(durationSec, onComplete){
+    const ctx = getAudioCtx();
+    if(!ctx){ if(onComplete) setTimeout(onComplete, durationSec*1000); return; }
+    const now = ctx.currentTime;
+    const hitInterval = 0.08;
+    const hitCount = Math.max(1, Math.floor(durationSec / hitInterval));
+    for(let i=0;i<hitCount;i++){
+      const t = now + i*hitInterval;
+      const vol = 0.08 + (i/hitCount)*0.22;
+      const len = Math.floor(ctx.sampleRate*0.06);
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for(let j=0;j<len;j++) data[j] = (Math.random()*2-1)*(1-j/len);
+      const src = ctx.createBufferSource();
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = 1800;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(vol, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t+0.06);
+      src.buffer = buf; src.connect(bp); bp.connect(gain); gain.connect(ctx.destination);
+      src.start(t); src.stop(t+0.07);
+    }
+    setTimeout(()=>{ if(onComplete) onComplete(); }, durationSec*1000);
+  }
+  function playBuzz(){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(150, now);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now+0.4);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(now); osc.stop(now+0.42);
+  }
+  function spawnConfetti(container){
+    const colors = ['#FFD98A','#FF8FC7','#7FE0E8','#8FD98A','#D4AF37'];
+    for(let i=0;i<24;i++){
+      const el = document.createElement('div');
+      el.className = 'quiz-confetti';
+      el.style.left = (5 + Math.random()*90) + '%';
+      el.style.background = colors[Math.floor(Math.random()*colors.length)];
+      el.style.animationDelay = (Math.random()*0.2) + 's';
+      container.appendChild(el);
+      setTimeout(()=>{ if(el) el.remove(); }, 1500);
+    }
+  }
+
+  let questionIndex = 0;
+  let currentQuestion = null;
+  let selectedIdx = null;
+  let phase = 'waiting'; // waiting(選択待ち) -> locked(演出中) -> next
+  let choiceEls = [];
+  let questionBoxEl, progressEl, resultMarkEl, confettiLayerEl;
+  const HIT_COOLDOWN_MS = 250;
+  let hitArmed = true;
+  let lastHitAt = 0;
+
+  function xToChoiceIdx(x){
+    if(x < 33.3) return 0;
+    if(x < 66.6) return 1;
+    return 2;
+  }
+  function renderQuestion(){
+    currentQuestion = pickQuestion();
+    selectedIdx = null;
+    phase = 'waiting';
+    questionBoxEl.innerHTML = `<div class="quiz-category">${currentQuestion.categoryIcon} ${currentQuestion.categoryName}</div><div class="quiz-question-text">${currentQuestion.question}</div>`;
+    choiceEls.forEach((el, i)=>{
+      el.textContent = currentQuestion.choices[i];
+      el.classList.remove('highlighted','correct','wrong');
+    });
+    progressEl.textContent = `第${questionIndex+1}問 / ${QUESTION_COUNT}問`;
+    if(resultMarkEl){ resultMarkEl.classList.remove('show'); resultMarkEl.textContent=''; }
+  }
+  function confirmChoice(idx){
+    if(phase !== 'waiting') return;
+    phase = 'locked';
+    selectedIdx = idx;
+    choiceEls.forEach((el,i)=>{ if(i!==idx) el.classList.remove('highlighted'); });
+    choiceEls[idx].classList.add('highlighted');
+    progressEl.textContent = 'ドキドキ…';
+    playDrumRoll(1.3, revealAnswer);
+  }
+  function revealAnswer(){
+    const isCorrect = choiceEls[selectedIdx].textContent === currentQuestion.correctAnswer;
+    choiceEls.forEach((el)=>{
+      if(el.textContent === currentQuestion.correctAnswer) el.classList.add('correct');
+      else if(el === choiceEls[selectedIdx]) el.classList.add('wrong');
+    });
+    if(resultMarkEl){
+      resultMarkEl.textContent = isCorrect ? '⭕' : '❌';
+      resultMarkEl.classList.add('show');
+    }
+    if(isCorrect){
+      onSuccess();
+      statusEl.textContent = '';
+      if(confettiLayerEl) spawnConfetti(confettiLayerEl);
+    }else{
+      onMiss('残念、不正解でした');
+      playBuzz();
+      if(stageEl){ stageEl.classList.add('quiz-shake'); setTimeout(()=>{ if(stageEl) stageEl.classList.remove('quiz-shake'); }, 400); }
+    }
+    questionIndex++;
+    setTimeout(()=>{
+      if(questionIndex >= QUESTION_COUNT){ endGame(); return; }
+      renderQuestion();
+    }, 1700);
+  }
+  function checkHit(h, now){
+    if(h.shape !== 'guu'){ hitArmed = true; return false; }
+    if(hitArmed && (now - lastHitAt) > HIT_COOLDOWN_MS){
+      lastHitAt = now; hitArmed = false; return true;
+    }
+    return false;
+  }
+
+  registerProgram('quiz', {
+    title: '❓ にゃークイズ',
+    durationSec: 999,
+    noTimeLimit: true,
+    introHtml: 'カメラを使った3択クイズです。<br>手を左右に動かして選び、握って決定します。鍵盤と同じく直接タップしても選べます。<br>全8問、何問正解できるか挑戦!<br>カメラへのアクセスを許可してください。',
+    layerHtml: `
+      <div class="quiz-bg">
+        <svg class="quiz-spot" style="left:8%;" viewBox="0 0 70 400" xmlns="http://www.w3.org/2000/svg"><polygon points="20,0 50,0 65,400 5,400" fill="#FFD98A"/></svg>
+        <svg class="quiz-spot" style="left:70%;" viewBox="0 0 70 400" xmlns="http://www.w3.org/2000/svg"><polygon points="20,0 50,0 65,400 5,400" fill="#7FE0E8"/></svg>
+      </div>
+      <div class="quiz-progress" id="quizProgress"></div>
+      <div class="quiz-question-box" id="quizQuestionBox"></div>
+      <div class="quiz-result-mark" id="quizResultMark"></div>
+      <div id="quizConfettiLayer"></div>
+      <div class="quiz-choices" id="quizChoices">
+        <div class="quiz-choice" data-idx="0"></div>
+        <div class="quiz-choice" data-idx="1"></div>
+        <div class="quiz-choice" data-idx="2"></div>
+      </div>
+    `,
+    setup(){
+      questionBoxEl = document.getElementById('quizQuestionBox');
+      progressEl = document.getElementById('quizProgress');
+      resultMarkEl = document.getElementById('quizResultMark');
+      confettiLayerEl = document.getElementById('quizConfettiLayer');
+      choiceEls = Array.from(document.querySelectorAll('#quizChoices .quiz-choice'));
+      choiceEls.forEach((el, i)=>{
+        el.addEventListener('click', ()=> confirmChoice(i));
+      });
+    },
+    start(){
+      questionIndex = 0;
+      hitArmed = true; lastHitAt = 0;
+      renderQuestion();
+    },
+    reset(){ this.start(); },
+    onHand(){
+      if(phase !== 'waiting') return;
+      const h = handsList[0];
+      if(!h){ choiceEls.forEach(el=>el.classList.remove('highlighted')); return; }
+      const idx = xToChoiceIdx(h.x);
+      choiceEls.forEach((el,i)=> el.classList.toggle('highlighted', i===idx));
+      if(checkHit(h, Date.now())) confirmChoice(idx);
     },
     onTick(){},
   });
