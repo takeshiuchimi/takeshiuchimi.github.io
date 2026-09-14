@@ -365,14 +365,15 @@
     100%{ box-shadow:0 3px 0 rgba(139,111,71,.15); }
   }
   .piano-autoplay-btn{
-    position:relative; top:auto; left:auto; z-index:6;
+    position:relative; top:auto; left:auto; z-index:6; overflow:hidden;
     display:flex; align-items:center; gap:4px;
     background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47); border-radius:20px;
     padding:5px 12px; font-size:12px; font-weight:bold; color:var(--brown-deep,#8B6F47);
     cursor:pointer; touch-action:manipulation;
   }
-  .piano-toolbar-left{ position:absolute; top:8px; left:8px; z-index:6; display:flex; align-items:center; gap:6px; }
+  .piano-toolbar-left{ position:absolute; top:8px; left:8px; z-index:7; display:flex; align-items:center; gap:6px; }
   .piano-song-switch-btn{
+    position:relative; overflow:hidden;
     width:30px; height:30px; border-radius:50%; z-index:6;
     background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47);
     color:var(--brown-deep,#8B6F47); font-size:14px; cursor:pointer; touch-action:manipulation;
@@ -382,13 +383,15 @@
   .piano-autoplay-btn.on{ background:#FFD98A; }
   html.dark-mode .piano-autoplay-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
   html.dark-mode .piano-autoplay-btn.on{ background:#8B6F47; color:#fff; }
+  .btn-dwell-fill{ position:absolute; inset:0; z-index:-1; width:0%; background:rgba(212,175,55,.55); pointer-events:none; }
   .piano-octave-ctrl{
-    position:absolute; top:8px; right:8px; z-index:6;
+    position:absolute; top:8px; right:8px; z-index:7;
     display:flex; align-items:center; gap:2px;
     background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47); border-radius:20px;
     padding:3px; font-size:12px; font-weight:bold; color:var(--brown-deep,#8B6F47);
   }
   .piano-octave-btn{
+    position:relative; overflow:hidden;
     width:28px; height:28px; border-radius:50%; border:none; background:transparent;
     color:inherit; font-size:15px; cursor:pointer; touch-action:manipulation;
     display:flex; align-items:center; justify-content:center;
@@ -3826,6 +3829,48 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   let whiteKeyEls = [], blackKeyEls = [];
   let markerLeftEl, markerRightEl, lineLeftEl, lineRightEl;
+  // 合奏ボタン等を、タップだけでなく手をかざすドウェル操作でも押せるようにするための状態
+  const UI_DWELL_MS = 1200; // 他のドウェル選択(はじめる等)と同じ待ち時間
+  let uiDwellButtons = [];
+  let dwellHoverEl = null;
+  let dwellHoverSince = 0;
+  function isHandOverEl(hx, hy, el){
+    if(!el || !stageEl) return false;
+    const stageRect = stageEl.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    if(stageRect.width === 0 || stageRect.height === 0) return false;
+    const px = stageRect.left + stageRect.width * (hx/100);
+    const py = stageRect.top + stageRect.height * (hy/100);
+    return px >= elRect.left && px <= elRect.right && py >= elRect.top && py <= elRect.bottom;
+  }
+  function updateUiDwell(hands){
+    // 2つの手のうち、どれかがボタンの上にあればそれをホバー対象とする
+    let hovered = null;
+    for(const h of hands){
+      if(!h) continue;
+      hovered = uiDwellButtons.find(btn => !btn.disabled && isHandOverEl(h.x, h.y, btn));
+      if(hovered) break;
+    }
+    if(hovered !== dwellHoverEl){
+      dwellHoverEl = hovered;
+      dwellHoverSince = hovered ? Date.now() : 0;
+    }
+    uiDwellButtons.forEach(btn=>{
+      const fill = btn.querySelector('.btn-dwell-fill');
+      if(!fill) return;
+      if(btn === dwellHoverEl){
+        const elapsed = Date.now() - dwellHoverSince;
+        fill.style.width = Math.min(100, (elapsed/UI_DWELL_MS)*100) + '%';
+        if(elapsed >= UI_DWELL_MS){
+          btn.click();
+          dwellHoverEl = null; dwellHoverSince = 0;
+          fill.style.width = '0%';
+        }
+      }else{
+        fill.style.width = '0%';
+      }
+    });
+  }
   const HIT_COOLDOWN_MS = 200;
   let hitArmed = { Left:true, Right:true };
   let lastHitAt = { Left:0, Right:0 };
@@ -3982,10 +4027,10 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     aTimeout(autoPlayStepOnce, song.melodyNoteMs);
   }
   function updateAutoplayBtnLabel(){
-    const btn = document.getElementById('pianoAutoplayBtn');
-    if(!btn) return;
+    const labelEl = document.getElementById('pianoAutoplayLabel');
+    if(!labelEl) return;
     const song = SONGS[currentSongIdx];
-    btn.textContent = autoPlayOn ? `${song.label} 演奏中(タップで停止)` : `${song.label} で合奏する`;
+    labelEl.textContent = autoPlayOn ? `${song.label} 演奏中(タップで停止)` : `${song.label} で合奏する`;
   }
   function startAutoPlay(){
     if(autoPlayOn) return;
@@ -4071,13 +4116,13 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="piano-hand-marker" id="pianoMarkerLeft" style="background:#FF8FC7;"></div>
       <div class="piano-hand-marker" id="pianoMarkerRight" style="background:#7FE0E8;"></div>
       <div class="piano-toolbar-left">
-        <button class="piano-autoplay-btn" id="pianoAutoplayBtn">⛪ 聖者の行進 で合奏する</button>
-        <button class="piano-song-switch-btn" id="pianoSongSwitchBtn" title="曲を変える">🔀</button>
+        <button class="piano-autoplay-btn" id="pianoAutoplayBtn"><span class="btn-dwell-fill" id="pianoAutoplayFill"></span><span id="pianoAutoplayLabel">⛪ 聖者の行進 で合奏する</span></button>
+        <button class="piano-song-switch-btn" id="pianoSongSwitchBtn" title="曲を変える"><span class="btn-dwell-fill" id="pianoSongSwitchFill"></span>🔀</button>
       </div>
       <div class="piano-octave-ctrl">
-        <button class="piano-octave-btn" id="pianoOctaveDown" aria-label="1オクターブ下げる">🔽</button>
+        <button class="piano-octave-btn" id="pianoOctaveDown" aria-label="1オクターブ下げる"><span class="btn-dwell-fill" id="pianoOctaveDownFill"></span>🔽</button>
         <span class="piano-octave-label" id="pianoOctaveLabel">ふつう</span>
-        <button class="piano-octave-btn" id="pianoOctaveUp" aria-label="1オクターブ上げる">🔼</button>
+        <button class="piano-octave-btn" id="pianoOctaveUp" aria-label="1オクターブ上げる"><span class="btn-dwell-fill" id="pianoOctaveUpFill"></span>🔼</button>
       </div>
       <div class="piano-keys" id="pianoKeys"></div>
       <div class="instrument-label" id="pianoLabel">好きな鍵盤を選んで、握って(またはタップして)弾いてみよう</div>
@@ -4119,6 +4164,9 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       if(octDownBtn) octDownBtn.addEventListener('click', ()=> setOctaveShift(octaveShift-1));
       if(octUpBtn) octUpBtn.addEventListener('click', ()=> setOctaveShift(octaveShift+1));
       updateOctaveLabel();
+      // タップだけでなく、手をかざして少し待つ(ドウェル)操作でも押せるようにする
+      uiDwellButtons = [autoplayBtn, songSwitchBtn, octDownBtn, octUpBtn].filter(Boolean);
+      dwellHoverEl = null; dwellHoverSince = 0;
     },
     start(){
       hitArmed = { Left:true, Right:true };
@@ -4137,6 +4185,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       handsList.slice(0,2).forEach(h=>{
         if(h.handedness === 'Left' || h.handedness === 'Right') states[h.handedness] = h;
       });
+      updateUiDwell([states.Left, states.Right]); // 合奏・オクターブ切替ボタン等のドウェル選択
       const labelEl = document.getElementById('pianoLabel');
       let anyHit = false;
 
