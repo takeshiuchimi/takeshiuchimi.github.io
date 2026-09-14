@@ -358,6 +358,44 @@
   html.dark-mode .piano-key.white{ background:#3A3222; border-color:#5A4E30; color:#D8C9A8; }
   html.dark-mode .piano-key.black{ background:#0E0B06; border-color:#000; }
   .piano-key.pressed{ background:#FFD98A; transform:translateY(3px); box-shadow:none; }
+  .piano-key.guide{ animation:pianoKeyGuide 0.5s ease; }
+  @keyframes pianoKeyGuide{
+    0%{ box-shadow:0 0 0 0 rgba(212,175,55,.9), 0 3px 0 rgba(139,111,71,.15); }
+    50%{ box-shadow:0 0 14px 4px rgba(212,175,55,.9), 0 3px 0 rgba(139,111,71,.15); }
+    100%{ box-shadow:0 3px 0 rgba(139,111,71,.15); }
+  }
+  .piano-autoplay-btn{
+    position:relative; top:auto; left:auto; z-index:6;
+    display:flex; align-items:center; gap:4px;
+    background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47); border-radius:20px;
+    padding:5px 12px; font-size:12px; font-weight:bold; color:var(--brown-deep,#8B6F47);
+    cursor:pointer; touch-action:manipulation;
+  }
+  .piano-toolbar-left{ position:absolute; top:8px; left:8px; z-index:6; display:flex; align-items:center; gap:6px; }
+  .piano-song-switch-btn{
+    width:30px; height:30px; border-radius:50%; z-index:6;
+    background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47);
+    color:var(--brown-deep,#8B6F47); font-size:14px; cursor:pointer; touch-action:manipulation;
+    display:flex; align-items:center; justify-content:center;
+  }
+  html.dark-mode .piano-song-switch-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
+  .piano-autoplay-btn.on{ background:#FFD98A; }
+  html.dark-mode .piano-autoplay-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
+  html.dark-mode .piano-autoplay-btn.on{ background:#8B6F47; color:#fff; }
+  .piano-octave-ctrl{
+    position:absolute; top:8px; right:8px; z-index:6;
+    display:flex; align-items:center; gap:2px;
+    background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47); border-radius:20px;
+    padding:3px; font-size:12px; font-weight:bold; color:var(--brown-deep,#8B6F47);
+  }
+  .piano-octave-btn{
+    width:28px; height:28px; border-radius:50%; border:none; background:transparent;
+    color:inherit; font-size:15px; cursor:pointer; touch-action:manipulation;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .piano-octave-btn:active{ background:rgba(139,111,71,.2); }
+  .piano-octave-label{ min-width:44px; text-align:center; font-size:11px; }
+  html.dark-mode .piano-octave-ctrl{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
   .piano-hand-marker{
     position:absolute; width:34px; height:34px; border-radius:50%; transform:translate(-50%,-50%);
     pointer-events:none; opacity:0; transition:opacity .15s ease, left .08s linear, top .08s linear;
@@ -698,7 +736,7 @@
     { "key":"tehyoushi", "icon":"👏", "name":"にゃー手拍子", "desc":"リズムに合わせて手拍子しよう(マイク使用)", "disabled": false, "purpose":"降りてくる合図に合わせて、一定のリズムで手を叩きます。カメラではなくマイクを使うプログラムで、タイミングを合わせて両手を合わせる動きを引き出します。" },
     { "key":"taisou", "icon":"🐾", "name":"にゃー体操", "desc":"画面の猫と同じポーズをキープしよう", "disabled": false, "purpose":"画面に出る猫のポーズを見て、腕を伸ばしたり体を左右に曲げたりして真似します。手だけでなく体全体を使うプログラムで、腕の伸展や体幹のストレッチを引き出します。" },
     { "key":"instrument", "icon":"🎻", "name":"にゃーテルミン", "desc":"両手の位置で音を鳴らして、好きな音を探そう", "disabled": false, "purpose":"両手を開く・握るだけで音の高さや左右の位置が変わる、採点のない自由演奏プログラムです。両手を協調させる動き・独立して動かす動きを引き出します。" },
-    { "key":"piano", "icon":"🎹", "name":"にゃーピアノ", "desc":"鍵盤を選んで握り、ドレミを弾こう", "disabled": false, "purpose":"手の位置で鍵盤(ドレミファソラシド+半音の黒鍵)を選び、握ると音が鳴る、採点のない自由演奏プログラムです。鍵盤は直接タップしても弾けます。狙った位置に手を運んで握る動きや、両手を使った和音を引き出します。" },
+    { "key":"piano", "icon":"🎹", "name":"にゃーピアノ", "desc":"鍵盤を選んで握り、ドレミを弾こう(自動演奏との合奏もできます)", "disabled": false, "purpose":"手の位置で鍵盤(ドレミファソラシド+半音の黒鍵)を選び、握ると音が鳴る、採点のない自由演奏プログラムです。鍵盤は直接タップしても弾けます。狙った位置に手を運んで握る動きや、両手を使った和音を引き出します。猫の曲の自動演奏に鍵盤を光らせながら合わせて弾く「合奏」モードもあります。" },
     { "key":"quiz", "icon":"❓", "name":"にゃークイズ", "desc":"3択クイズに手で答えよう(全8問)", "disabled": false, "purpose":"県庁所在地・車のメーカー・国旗・ことわざ・名産品の3択クイズを、手を左右に動かして選び、握って答える、頭を使う脳トレプログラムです。狙った方向に手を動かして握る動きを引き出しつつ、考える力も刺激します。" }
   ]
 }
@@ -3767,6 +3805,25 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     return { ...b, centerPct, left:centerPct-BLACK_KEY_WIDTH_PCT/2, right:centerPct+BLACK_KEY_WIDTH_PCT/2 };
   });
 
+  // オクターブ切替: 鍵盤の見た目(白鍵8つ+黒鍵5つ)は1オクターブ分のまま、
+  // 上下ボタンで表示中のオクターブをスライドさせることで、実質2オクターブ以上の音域を弾けるようにする。
+  const OCTAVE_MIN = -1, OCTAVE_MAX = 1; // -1:1オクターブ下 / 0:標準(C4-C5) / +1:1オクターブ上
+  const OCTAVE_LABELS = { '-1':'ひくい', '0':'ふつう', '1':'たかい' };
+  let octaveShift = 0;
+  function octaveFreq(baseFreq){ return baseFreq * Math.pow(2, octaveShift); }
+  function updateOctaveLabel(){
+    const labelEl = document.getElementById('pianoOctaveLabel');
+    if(labelEl) labelEl.textContent = OCTAVE_LABELS[String(octaveShift)] || '';
+    const downBtn = document.getElementById('pianoOctaveDown');
+    const upBtn = document.getElementById('pianoOctaveUp');
+    if(downBtn) downBtn.disabled = (octaveShift <= OCTAVE_MIN);
+    if(upBtn) upBtn.disabled = (octaveShift >= OCTAVE_MAX);
+  }
+  function setOctaveShift(next){
+    octaveShift = Math.max(OCTAVE_MIN, Math.min(OCTAVE_MAX, next));
+    updateOctaveLabel();
+  }
+
   let whiteKeyEls = [], blackKeyEls = [];
   let markerLeftEl, markerRightEl, lineLeftEl, lineRightEl;
   const HIT_COOLDOWN_MS = 200;
@@ -3874,10 +3931,82 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   }
   function playNoteAt(note){
     const pan = (note.idx/(WHITE_NOTES.length-1))*2-1;
-    playPianoNote(note.freq, pan);
+    playPianoNote(octaveFreq(note.freq), pan);
     flashKeyEl(note.type==='white' ? whiteKeyEls[note.idx] : blackKeyEls[note.idx]);
     const labelEl = document.getElementById('pianoLabel');
     if(labelEl) labelEl.textContent = '🎶 いい音!';
+  }
+
+  /* ---- 自動伴奏(にゃー合奏): 著作権の切れた曲を自動演奏し、鳴らす鍵盤をその都度光らせる。
+     自動演奏中も、ユーザーは今まで通り自分で鍵盤を弾けるので、自動演奏に自分の音を重ねる
+     「合奏」として遊べる。曲は複数用意し、ボタンで切り替えられるようにしている。 ---- */
+  function W(idx, oct){ return {type:'white', idx, oct:oct||0}; }
+  const SONGS = [
+    { key:'saints', label:'⛪ 聖者の行進', melodyNoteMs:340, melody:[
+      // When the Saints Go Marching In (伝承曲/黒人霊歌、作者不詳のパブリックドメイン曲)。
+      // ド=0,レ=1,ミ=2,ファ=3,ソ=4,ラ=5,シ=6,高いド=7 の音階番号で、白鍵1オクターブに収まる。
+      W(0),W(2),W(3),W(4), W(0),W(2),W(3),W(4), W(0),W(2),W(3),W(4),W(2),W(0),
+      W(0),W(2),W(3),W(4), W(0),W(2),W(3),W(4), W(0),W(2),W(3),W(4),W(2),W(0),
+      W(2),W(3),W(2),W(0),W(2),W(3),W(4),
+      W(0),W(2),W(3),W(4),W(2),W(0),
+    ]},
+    { key:'neko', label:'🐾 猫の曲', melodyNoteMs:360, melody:[
+      // 伝承曲「猫ふんじゃった」をイメージした、1オクターブの鍵盤に収まるオリジナルの簡易アレンジ。
+      W(2),W(3),W(4), W(1),W(2),W(3), W(4),W(5),W(4), W(3),W(2),W(1),
+    ]},
+  ];
+  let currentSongIdx = 0;
+  let autoPlayOn = false;
+  let autoPlayTimers = [];
+  let autoPlayStep = 0;
+  function aTimeout(fn, ms){
+    const id = setTimeout(()=>{
+      autoPlayTimers = autoPlayTimers.filter(t=>t!==id);
+      fn();
+    }, ms);
+    autoPlayTimers.push(id);
+    return id;
+  }
+  function clearAutoPlayTimers(){
+    autoPlayTimers.forEach(id=>clearTimeout(id));
+    autoPlayTimers = [];
+  }
+  function autoPlayStepOnce(){
+    const song = SONGS[currentSongIdx];
+    const note = song.melody[autoPlayStep % song.melody.length];
+    setOctaveShift(note.oct || 0); // 曲の音がその都度どのオクターブにあるかに合わせて、表示中のオクターブを追従させる
+    const el = whiteKeyEls[note.idx];
+    if(el){ el.classList.remove('guide'); void el.offsetWidth; el.classList.add('guide'); }
+    playNoteAt(note);
+    autoPlayStep++;
+    aTimeout(autoPlayStepOnce, song.melodyNoteMs);
+  }
+  function updateAutoplayBtnLabel(){
+    const btn = document.getElementById('pianoAutoplayBtn');
+    if(!btn) return;
+    const song = SONGS[currentSongIdx];
+    btn.textContent = autoPlayOn ? `${song.label} 演奏中(タップで停止)` : `${song.label} で合奏する`;
+  }
+  function startAutoPlay(){
+    if(autoPlayOn) return;
+    autoPlayOn = true;
+    autoPlayStep = 0;
+    const btn = document.getElementById('pianoAutoplayBtn');
+    if(btn) btn.classList.add('on');
+    updateAutoplayBtnLabel();
+    autoPlayStepOnce();
+  }
+  function stopAutoPlay(){
+    autoPlayOn = false;
+    clearAutoPlayTimers();
+    const btn = document.getElementById('pianoAutoplayBtn');
+    if(btn) btn.classList.remove('on');
+    updateAutoplayBtnLabel();
+  }
+  function switchToNextSong(){
+    if(autoPlayOn) return; // 演奏中は曲を切り替えない(停止してから選ぶ)
+    currentSongIdx = (currentSongIdx + 1) % SONGS.length;
+    updateAutoplayBtnLabel();
   }
   // タッチ/クリックで、鍵盤の上を指でなぞると(押したまま動かすと)、通り過ぎた鍵盤を連続で鳴らす(グリッサンド)
   let touchDragActive = false;
@@ -3919,7 +4048,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     durationSec: 90,
     noScoring: true,
     noTimeLimit: true,
-    introHtml: 'カメラを使って、ピアノを弾きます。<br>手の位置で鍵盤を選び、握ると音が鳴ります。鍵盤は直接タップしても弾けます。<br>両手で同時に弾くと、和音にもなります!<br>カメラへのアクセスを許可してください。',
+    introHtml: 'カメラを使って、ピアノを弾きます。<br>手の位置で鍵盤を選び、握ると音が鳴ります。鍵盤は直接タップしても弾けます。<br>両手で同時に弾くと、和音にもなります!<br>右上のボタンで1オクターブ上下に切り替えられ、鍵盤の見た目のままより広い音域を弾けます。<br>左上のボタンで、著作権の切れた曲の自動演奏に合わせて一緒に弾く「合奏」もできます(🔀で曲を切り替え)。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="piano-bg">
         <div class="piano-staff">
@@ -3941,6 +4070,15 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="piano-target-line" id="pianoLineRight" style="background:#7FE0E8;"></div>
       <div class="piano-hand-marker" id="pianoMarkerLeft" style="background:#FF8FC7;"></div>
       <div class="piano-hand-marker" id="pianoMarkerRight" style="background:#7FE0E8;"></div>
+      <div class="piano-toolbar-left">
+        <button class="piano-autoplay-btn" id="pianoAutoplayBtn">⛪ 聖者の行進 で合奏する</button>
+        <button class="piano-song-switch-btn" id="pianoSongSwitchBtn" title="曲を変える">🔀</button>
+      </div>
+      <div class="piano-octave-ctrl">
+        <button class="piano-octave-btn" id="pianoOctaveDown" aria-label="1オクターブ下げる">🔽</button>
+        <span class="piano-octave-label" id="pianoOctaveLabel">ふつう</span>
+        <button class="piano-octave-btn" id="pianoOctaveUp" aria-label="1オクターブ上げる">🔼</button>
+      </div>
       <div class="piano-keys" id="pianoKeys"></div>
       <div class="instrument-label" id="pianoLabel">好きな鍵盤を選んで、握って(またはタップして)弾いてみよう</div>
     `,
@@ -3967,14 +4105,32 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       markerRightEl = document.getElementById('pianoMarkerRight');
       lineLeftEl = document.getElementById('pianoLineLeft');
       lineRightEl = document.getElementById('pianoLineRight');
+      const autoplayBtn = document.getElementById('pianoAutoplayBtn');
+      if(autoplayBtn){
+        autoplayBtn.addEventListener('click', ()=>{
+          if(autoPlayOn) stopAutoPlay(); else startAutoPlay();
+        });
+      }
+      const songSwitchBtn = document.getElementById('pianoSongSwitchBtn');
+      if(songSwitchBtn) songSwitchBtn.addEventListener('click', switchToNextSong);
+      updateAutoplayBtnLabel();
+      const octDownBtn = document.getElementById('pianoOctaveDown');
+      const octUpBtn = document.getElementById('pianoOctaveUp');
+      if(octDownBtn) octDownBtn.addEventListener('click', ()=> setOctaveShift(octaveShift-1));
+      if(octUpBtn) octUpBtn.addEventListener('click', ()=> setOctaveShift(octaveShift+1));
+      updateOctaveLabel();
     },
     start(){
       hitArmed = { Left:true, Right:true };
       lastHitAt = { Left:0, Right:0 };
       lastPlayedNoteKey = { Left:null, Right:null };
+      currentSongIdx = 0; // 新しいセッションでは曲選択も先頭(聖者の行進)に戻す
+      stopAutoPlay(); // 新しいセッションでは自動演奏は止めた状態から始める
+      setOctaveShift(0); // オクターブ表示も標準に戻す
       [markerLeftEl, markerRightEl, lineLeftEl, lineRightEl].forEach(el=>{ if(el) el.style.opacity = '0'; });
     },
     reset(){ this.start(); },
+    onLeave(){ stopAutoPlay(); }, // 一覧に戻る時、自動演奏のループが鳴り続けないよう確実に止める
     onHand(){
       const nowMs = Date.now();
       const states = { Left:null, Right:null };
