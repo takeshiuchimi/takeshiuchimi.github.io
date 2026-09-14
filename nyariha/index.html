@@ -669,7 +669,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0914-1400"
+    "buildDate": "0914-1436"
   },
   "about": {
     "paragraphs": [
@@ -3921,17 +3921,18 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     const ctx = getAudioCtx();
     try{ return ctx.createStereoPanner(); }catch(e){ return null; }
   }
-  function playPianoNote(freq, pan){
+  function playPianoNote(freq, pan, opts){
     // 三角波+オクターブ上のサイン波を重ね、ピアノらしい減衰(ADSR風)を付ける
     const ctx = getAudioCtx();
     if(!ctx) return;
+    const o = opts || {};
     const now = ctx.currentTime;
-    const dur = 0.9;
-    const vol = 0.16;
+    const dur = o.sustainSec || 0.9; // 音の長さ。自動演奏では音符の長さに合わせて短めにし、粒立ちをはっきりさせる
+    const vol = (o.vol != null ? o.vol : 0.16);
     const out = ctx.createGain();
     out.gain.setValueAtTime(0.0001, now);
     out.gain.exponentialRampToValueAtTime(vol, now+0.01);
-    out.gain.exponentialRampToValueAtTime(vol*0.45, now+0.12);
+    out.gain.exponentialRampToValueAtTime(vol*0.45, now+Math.min(0.12, dur*0.3));
     out.gain.exponentialRampToValueAtTime(0.0001, now+dur*0.92);
     const panner = makePanner();
     if(panner){ panner.pan.value = pan; out.connect(panner); panner.connect(ctx.destination); }
@@ -3974,9 +3975,9 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     lineEl.style.transform = `rotate(${angle}deg)`;
     lineEl.style.opacity = '0.7';
   }
-  function playNoteAt(note){
+  function playNoteAt(note, opts){
     const pan = (note.idx/(WHITE_NOTES.length-1))*2-1;
-    playPianoNote(octaveFreq(note.freq), pan);
+    playPianoNote(octaveFreq(note.freq), pan, opts);
     flashKeyEl(note.type==='white' ? whiteKeyEls[note.idx] : blackKeyEls[note.idx]);
     const labelEl = document.getElementById('pianoLabel');
     if(labelEl) labelEl.textContent = '🎶 いい音!';
@@ -3984,20 +3985,32 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   /* ---- 自動伴奏(にゃー合奏): 著作権の切れた曲を自動演奏し、鳴らす鍵盤をその都度光らせる。
      自動演奏中も、ユーザーは今まで通り自分で鍵盤を弾けるので、自動演奏に自分の音を重ねる
-     「合奏」として遊べる。曲は複数用意し、ボタンで切り替えられるようにしている。 ---- */
-  function W(idx, oct){ return {type:'white', idx, oct:oct||0, freq:WHITE_NOTES[idx].freq}; }
+     「合奏」として遊べる。曲は複数用意し、ボタンで切り替えられるようにしている。
+     単に一定間隔で音を並べるだけだと機械的に聞こえるため、
+     ・フレーズの最後の音は長めに伸ばす/フレーズの間に小さな「間(息継ぎ)」を入れる
+     ・音の長さ(sustain)を、次の音までの間隔に合わせて短めにし、音同士が濁って重ならないようにする
+     ・タイミングと音量をほんの少しだけランダムに揺らす(完全に機械的にしない)
+     という簡単な演奏表現を加えている。 ---- */
+  function W(idx, dur, oct){ return {type:'white', idx, dur:dur||1, oct:oct||0, freq:WHITE_NOTES[idx].freq}; }
+  function REST(dur){ return { rest:true, dur:dur||1 }; }
+  function makePhrase(indices, restAfter){
+    // 音階番号の配列を渡すと、最後の音だけ長め(dur:2)にし、末尾に間(REST)を付けて返す
+    const notes = indices.map((idx,i)=> W(idx, i===indices.length-1 ? 2 : 1));
+    if(restAfter) notes.push(REST(restAfter));
+    return notes;
+  }
   const SONGS = [
-    { key:'saints', label:'⛪ 聖者の行進', melodyNoteMs:340, melody:[
+    { key:'saints', label:'⛪ 聖者の行進', bpm:132, melody:[
       // When the Saints Go Marching In (伝承曲/黒人霊歌、作者不詳のパブリックドメイン曲)。
       // ド=0,レ=1,ミ=2,ファ=3,ソ=4,ラ=5,シ=6,高いド=7 の音階番号で、白鍵1オクターブに収まる。
-      W(0),W(2),W(3),W(4), W(0),W(2),W(3),W(4), W(0),W(2),W(3),W(4),W(2),W(0),
-      W(0),W(2),W(3),W(4), W(0),W(2),W(3),W(4), W(0),W(2),W(3),W(4),W(2),W(0),
-      W(2),W(3),W(2),W(0),W(2),W(3),W(4),
-      W(0),W(2),W(3),W(4),W(2),W(0),
+      ...makePhrase([0,2,3,4,0,2,3,4,0,2,3,4,2,0], 1),
+      ...makePhrase([0,2,3,4,0,2,3,4,0,2,3,4,2,0], 1),
+      ...makePhrase([2,3,2,0,2,3,4], 1),
+      ...makePhrase([0,2,3,4,2,0], 2),
     ]},
-    { key:'neko', label:'🐾 猫の曲', melodyNoteMs:360, melody:[
+    { key:'neko', label:'🐾 猫の曲', bpm:150, melody:[
       // 伝承曲「猫ふんじゃった」をイメージした、1オクターブの鍵盤に収まるオリジナルの簡易アレンジ。
-      W(2),W(3),W(4), W(1),W(2),W(3), W(4),W(5),W(4), W(3),W(2),W(1),
+      ...makePhrase([2,3,4,1,2,3,4,5,4,3,2,1], 1),
     ]},
   ];
   let currentSongIdx = 0;
@@ -4018,13 +4031,22 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   }
   function autoPlayStepOnce(){
     const song = SONGS[currentSongIdx];
+    const beatMs = 60000 / song.bpm;
     const note = song.melody[autoPlayStep % song.melody.length];
-    setOctaveShift(note.oct || 0); // 曲の音がその都度どのオクターブにあるかに合わせて、表示中のオクターブを追従させる
-    const el = whiteKeyEls[note.idx];
-    if(el){ el.classList.remove('guide'); void el.offsetWidth; el.classList.add('guide'); }
-    playNoteAt(note);
+    const noteMs = beatMs * note.dur;
+    // タイミングをほんの少しだけ揺らす(人が弾いているような自然さを出す。機械的に正確すぎないように)
+    const jitter = 1 + (Math.random()*0.06 - 0.03);
+    if(!note.rest){
+      setOctaveShift(note.oct || 0); // 曲の音がその都度どのオクターブにあるかに合わせて、表示中のオクターブを追従させる
+      const el = whiteKeyEls[note.idx];
+      if(el){ el.classList.remove('guide'); void el.offsetWidth; el.classList.add('guide'); }
+      // 音の長さは次の音までの間隔の85%程度にとどめ、隣の音と濁って重ならないようにする
+      const sustainSec = Math.max(0.12, (noteMs*jitter/1000) * 0.85);
+      const vol = 0.15 + Math.random()*0.03; // 音量もわずかに揺らす
+      playNoteAt(note, { sustainSec, vol });
+    }
     autoPlayStep++;
-    aTimeout(autoPlayStepOnce, song.melodyNoteMs);
+    aTimeout(autoPlayStepOnce, noteMs*jitter);
   }
   function updateAutoplayBtnLabel(){
     const labelEl = document.getElementById('pianoAutoplayLabel');
