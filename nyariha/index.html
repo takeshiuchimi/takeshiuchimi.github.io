@@ -669,7 +669,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0914-1534"
+    "buildDate": "0914-1548"
   },
   "about": {
     "paragraphs": [
@@ -3951,6 +3951,24 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     o1.start(now); o2.start(now);
     o1.stop(now+dur); o2.stop(now+dur);
   }
+  function playBassNote(freq, vol){
+    // 自動演奏の「左手」役。サイン波だけのシンプルな低音で、メロディ(三角波)と音色を分け、
+    // 鍵盤の見た目は光らせず(表示はメロディのみ)、裏で鳴らすだけの伴奏として重ねる。
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const dur = 0.55;
+    const out = ctx.createGain();
+    out.gain.setValueAtTime(0.0001, now);
+    out.gain.exponentialRampToValueAtTime(vol || 0.11, now+0.02);
+    out.gain.exponentialRampToValueAtTime(0.0001, now+dur*0.9);
+    out.connect(ctx.destination); // 左右には振らず中央に置く
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    o.connect(out);
+    o.start(now); o.stop(now+dur);
+  }
   function flashKeyEl(el){
     if(!el) return;
     el.classList.add('pressed');
@@ -4029,6 +4047,22 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     autoPlayTimers.forEach(id=>clearTimeout(id));
     autoPlayTimers = [];
   }
+  function startBassLoop(song){
+    // 「左手」のベースを、拍ごとにルート(ド)と五度(ソ)を交互に鳴らす簡易な伴奏(オンパ風)。
+    // 曲のコード進行に厳密に追従しているわけではない簡易版。1オクターブ下の低い音域で、常に固定。
+    const pattern = song.bassPattern || [0,4];
+    const beatMs = 60000 / song.bpm;
+    let step = 0;
+    function tick(){
+      const idx = pattern[step % pattern.length];
+      const freq = WHITE_NOTES[idx].freq / 2; // ベースは常に1オクターブ下(表示中のオクターブとは独立)
+      const jitter = 1 + (Math.random()*0.05 - 0.025);
+      playBassNote(freq, 0.10 + Math.random()*0.02);
+      step++;
+      aTimeout(tick, beatMs*jitter);
+    }
+    tick();
+  }
   function autoPlayStepOnce(){
     const song = SONGS[currentSongIdx];
     const beatMs = 60000 / song.bpm;
@@ -4062,6 +4096,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     if(btn) btn.classList.add('on');
     updateAutoplayBtnLabel();
     autoPlayStepOnce();
+    startBassLoop(SONGS[currentSongIdx]); // 左手役のベースも一緒に鳴らし始める(音だけ、鍵盤は光らせない)
   }
   function stopAutoPlay(){
     autoPlayOn = false;
@@ -4115,7 +4150,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     durationSec: 90,
     noScoring: true,
     noTimeLimit: true,
-    introHtml: 'カメラを使って、ピアノを弾きます。<br>手の位置で鍵盤を選び、握ると音が鳴ります。鍵盤は直接タップしても弾けます。<br>両手で同時に弾くと、和音にもなります!<br>右上のボタンで1オクターブ上下に切り替えられ、鍵盤の見た目のままより広い音域を弾けます。<br>左上のボタンで、著作権の切れた曲の自動演奏に合わせて一緒に弾く「合奏」もできます(🔀で曲を切り替え)。<br>カメラへのアクセスを許可してください。',
+    introHtml: 'カメラを使って、ピアノを弾きます。<br>手の位置で鍵盤を選び、握ると音が鳴ります。鍵盤は直接タップしても弾けます。<br>両手で同時に弾くと、和音にもなります!<br>右上のボタンで1オクターブ上下に切り替えられ、鍵盤の見た目のままより広い音域を弾けます。<br>左上のボタンで、著作権の切れた曲の自動演奏(低音の伴奏付き)に合わせて一緒に弾く「合奏」もできます(🔀で曲を切り替え)。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="piano-bg">
         <div class="piano-staff">
