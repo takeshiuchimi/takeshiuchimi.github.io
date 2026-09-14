@@ -669,7 +669,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0914-0735"
+    "buildDate": "0914-1400"
   },
   "about": {
     "paragraphs": [
@@ -3985,7 +3985,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   /* ---- 自動伴奏(にゃー合奏): 著作権の切れた曲を自動演奏し、鳴らす鍵盤をその都度光らせる。
      自動演奏中も、ユーザーは今まで通り自分で鍵盤を弾けるので、自動演奏に自分の音を重ねる
      「合奏」として遊べる。曲は複数用意し、ボタンで切り替えられるようにしている。 ---- */
-  function W(idx, oct){ return {type:'white', idx, oct:oct||0}; }
+  function W(idx, oct){ return {type:'white', idx, oct:oct||0, freq:WHITE_NOTES[idx].freq}; }
   const SONGS = [
     { key:'saints', label:'⛪ 聖者の行進', melodyNoteMs:340, melody:[
       // When the Saints Go Marching In (伝承曲/黒人霊歌、作者不詳のパブリックドメイン曲)。
