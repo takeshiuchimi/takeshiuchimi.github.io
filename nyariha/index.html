@@ -151,7 +151,7 @@
   .overlay-msg{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     flex-direction:column; gap:10px; padding:20px; text-align:center;
-    background:rgba(90,70,48,.45); color:#fff; font-size:14px; z-index:5; touch-action:none;
+    background:rgba(90,70,48,.45); color:#fff; font-size:14px; z-index:9; touch-action:none;
   }
   html.dark-mode .overlay-msg{ background:rgba(20,16,11,.55); }
   .rating-star{ font-size:44px; text-align:center; }
@@ -371,7 +371,10 @@
     padding:5px 12px; font-size:12px; font-weight:bold; color:var(--brown-deep,#8B6F47);
     cursor:pointer; touch-action:manipulation;
   }
-  .piano-toolbar-left{ position:absolute; top:8px; left:8px; z-index:7; display:flex; align-items:center; gap:6px; }
+  .piano-toolbar-left{
+    position:absolute; top:34px; left:8px; right:8px; z-index:7;
+    display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  }
   .piano-song-switch-btn{
     position:relative; overflow:hidden;
     width:30px; height:30px; border-radius:50%; z-index:6;
@@ -381,22 +384,26 @@
   }
   html.dark-mode .piano-song-switch-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
   .piano-score-wrap{
-    position:absolute; top:44px; left:8px; right:8px; z-index:6;
+    position:absolute; top:78px; left:8px; right:8px; z-index:6;
     background:rgba(255,255,255,.92); border-radius:8px; padding:4px;
-    height:64px; overflow-x:auto; overflow-y:hidden; color:#3A2C1E;
+    height:104px; overflow-x:auto; overflow-y:hidden; color:#3A2C1E;
+    scrollbar-width:thin; /* Firefox: スクロールバーを細くして高さを圧迫しないようにする */
   }
+  .piano-score-wrap::-webkit-scrollbar{ height:6px; }
+  .piano-score-wrap::-webkit-scrollbar-thumb{ background:rgba(139,111,71,.4); border-radius:3px; }
   .piano-score-wrap.hidden{ display:none; }
-  .piano-score-svg{ height:56px; display:block; }
+  .piano-score-svg{ height:90px; display:block; }
   .piano-score-svg .score-item.current ellipse{ fill:#D4534A !important; stroke:#D4534A !important; }
   .piano-score-svg .score-item.current rect{ fill:#D4534A !important; }
   html.dark-mode .piano-score-wrap{ background:rgba(30,25,15,.92); color:#D8C9A8; }
+  .piano-pending{ display:none !important; } /* はじめる前は、これらの操作ボタンを隠して押せなくする */
   .piano-autoplay-btn.on{ background:#FFD98A; }
   html.dark-mode .piano-autoplay-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
   html.dark-mode .piano-autoplay-btn.on{ background:#8B6F47; color:#fff; }
   .btn-dwell-fill{ position:absolute; inset:0; z-index:-1; width:0%; background:rgba(212,175,55,.55); pointer-events:none; }
   .piano-song-credit{ font-size:9px; color:#a8967a; text-align:center; margin-top:2px; }
   .piano-xml-panel{
-    position:absolute; top:44px; left:8px; right:8px; z-index:7;
+    position:absolute; top:78px; left:8px; right:8px; z-index:7;
     background:rgba(255,255,255,.95); border:2px solid var(--brown-deep,#8B6F47); border-radius:10px;
     padding:8px; font-family:"Hiragino Sans","Yu Gothic",sans-serif; font-size:11px;
   }
@@ -409,7 +416,7 @@
   .piano-xml-track-row button{ font-size:11px; padding:4px 10px; border-radius:14px; }
   html.dark-mode .piano-xml-panel{ background:rgba(30,25,15,.95); color:#D8C9A8; }
   .piano-octave-ctrl{
-    position:absolute; top:8px; right:8px; z-index:7;
+    position:absolute; top:34px; right:8px; z-index:7;
     display:flex; align-items:center; gap:2px;
     background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47); border-radius:20px;
     padding:3px; font-size:12px; font-weight:bold; color:var(--brown-deep,#8B6F47);
@@ -693,7 +700,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0915-0914"
+    "buildDate": "0915-1853"
   },
   "about": {
     "paragraphs": [
@@ -3347,7 +3354,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   registerProgram('canoe', {
     title: '🛶 にゃーカヌー',
     durationSec: 60,
-    introHtml: 'カメラを使って、手の位置でカヌーを操縦します。<br>グーで握るとパドルが出ます。そのまま上下に振って漕ぎながら、岩を避けて魚をゲット!<br>両手でも片手でも遊べます。<br>カメラへのアクセスを許可してください。',
+    introHtml: '手の位置でカヌーを操縦。グーで握って漕ぎ、岩を避けて魚をゲット!<br>両手でも片手でもOK。カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="river-area">
         <div class="nature-hills top">${NATURE_HILLS_SVG}</div>
@@ -3912,7 +3919,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     title: '🐾 にゃー体操',
     durationSec: 60,
     requiresPose: true,
-    introHtml: 'カメラを使って、体の動きを見ます(手ではなく体全体)。<br>上半身が画面に入るよう、少しカメラから離れてください。<br>画面の猫と同じポーズを、しばらくキープしてください!<br>カメラへのアクセスを許可してください。',
+    introHtml: '体全体の動きを見ます。上半身が入るよう少し離れてください。<br>猫と同じポーズをキープ!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="taisou-bg"></div>
       <canvas id="taisouSkeletonCanvas"></canvas>
@@ -4876,16 +4883,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   }
 
   const SONGS = [
-    { key:'saints', label:'⛪ 聖者の行進', bpm:116, melody:[
-      ...SAINTS_INTRO,
-      ...SAINTS_MAIN,          // 1コーラス目
-      ...withDouble(SAINTS_MAIN), // 2コーラス目(同じ主旋律に、オクターブ上を薄く重ねて少し厚みを出す)
-      ...SAINTS_ENDING,
-    ]},
-    { key:'neko', label:'🐾 猫の曲', bpm:150, melody:[
-      // 伝承曲「猫ふんじゃった」をイメージした、1オクターブの鍵盤に収まるオリジナルの簡易アレンジ。
-      ...makePhrase([2,3,4,1,2,3,4,5,4,3,2,1], 1),
-    ]},
+    // いったん「ふるさと」のみ。MusicXML埋め込み方式のデータが揃い次第、同じ形で追加していく予定。
     { key:'furusato', label:'🏞️ ふるさと', bpm:72, get melody(){ return getFurusatoMelody(); },
       credit:'岡野貞一作曲(1941年没・パブリックドメイン)。メロディは五重奏編曲(Hideo Kamioka, CC BY-NC 4.0)を参考に抽出。' },
   ];
@@ -4945,7 +4943,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     const labelEl = document.getElementById('pianoAutoplayLabel');
     if(!labelEl) return;
     const song = SONGS[currentSongIdx];
-    labelEl.textContent = autoPlayOn ? `${song.label} 演奏中(タップで停止)` : `${song.label} で合奏する`;
+    labelEl.textContent = autoPlayOn ? `${song.label} 演奏中` : `${song.label}で合奏`;
     const creditEl = document.getElementById('pianoSongCredit');
     if(creditEl) creditEl.textContent = song.credit || '';
     const scoreWrap = document.getElementById('pianoScoreWrap');
@@ -4956,11 +4954,12 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     const svgEl = document.getElementById('pianoScoreSvg');
     if(!svgEl) return;
     const song = SONGS[currentSongIdx];
-    const topLineY = 12;
-    const { svg, totalWidth, items } = renderScoreSVG(song.melody, topLineY, 56);
-    svgEl.setAttribute('viewBox', `0 0 ${totalWidth} 56`);
+    const topLineY = 28; // 上に加線(高い音)が入っても余裕を持たせる
+    const svgHeight = 90;
+    const { svg, totalWidth, items } = renderScoreSVG(song.melody, topLineY, svgHeight);
+    svgEl.setAttribute('viewBox', `0 0 ${totalWidth} ${svgHeight}`);
     svgEl.setAttribute('width', totalWidth);
-    svgEl.setAttribute('height', 56);
+    svgEl.setAttribute('height', svgHeight);
     svgEl.innerHTML = svg;
     currentScoreItems = items;
   }
@@ -5091,7 +5090,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     durationSec: 90,
     noScoring: true,
     noTimeLimit: true,
-    introHtml: 'カメラを使って、ピアノを弾きます。<br>手の位置で鍵盤を選び、握ると音が鳴ります。鍵盤は直接タップしても弾けます。<br>両手で同時に弾くと、和音にもなります!<br>右上のボタンで1オクターブ上下に切り替えられ、鍵盤の見た目のままより広い音域を弾けます。<br>左上のボタンで、著作権の切れた曲の自動演奏(低音の伴奏付き)に合わせて一緒に弾く「合奏」もできます(🔀で曲を切り替え)。<br>カメラへのアクセスを許可してください。',
+    introHtml: '手の位置で鍵盤を選び、握ると音が鳴ります(タップも可)。<br>両手で和音も!右上でオクターブ切替、左上で自動演奏と合奏もできます。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="piano-bg">
         <div class="piano-staff">
@@ -5113,7 +5112,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="piano-target-line" id="pianoLineRight" style="background:#7FE0E8;"></div>
       <div class="piano-hand-marker" id="pianoMarkerLeft" style="background:#FF8FC7;"></div>
       <div class="piano-hand-marker" id="pianoMarkerRight" style="background:#7FE0E8;"></div>
-      <div class="piano-toolbar-left">
+      <div class="piano-toolbar-left piano-pending" id="pianoToolbarLeft">
         <button class="piano-autoplay-btn" id="pianoAutoplayBtn"><span class="btn-dwell-fill" id="pianoAutoplayFill"></span><span id="pianoAutoplayLabel">⛪ 聖者の行進 で合奏する</span></button>
         <button class="piano-song-switch-btn" id="pianoSongSwitchBtn" title="曲を変える"><span class="btn-dwell-fill" id="pianoSongSwitchFill"></span>🔀</button>
         <button class="piano-song-switch-btn" id="pianoXmlLoadBtn" title="MusicXMLを読み込む"><span class="btn-dwell-fill" id="pianoXmlLoadFill"></span>📂</button>
@@ -5131,7 +5130,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
           <button id="pianoXmlCloseBtn" type="button">閉じる</button>
         </div>
       </div>
-      <div class="piano-octave-ctrl">
+      <div class="piano-octave-ctrl piano-pending" id="pianoOctaveCtrl">
         <button class="piano-octave-btn" id="pianoOctaveDown" aria-label="1オクターブ下げる"><span class="btn-dwell-fill" id="pianoOctaveDownFill"></span>🔽</button>
         <span class="piano-octave-label" id="pianoOctaveLabel">ふつう</span>
         <button class="piano-octave-btn" id="pianoOctaveUp" aria-label="1オクターブ上げる"><span class="btn-dwell-fill" id="pianoOctaveUpFill"></span>🔼</button>
@@ -5262,6 +5261,11 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       stopAutoPlay(); // 新しいセッションでは自動演奏は止めた状態から始める
       setOctaveShift(0); // オクターブ表示も標準に戻す
       [markerLeftEl, markerRightEl, lineLeftEl, lineRightEl].forEach(el=>{ if(el) el.style.opacity = '0'; });
+      // 「はじめる」を押していよいよ演奏開始、というタイミングで、合奏・オクターブ等のボタンを表示する
+      const toolbarLeftEl = document.getElementById('pianoToolbarLeft');
+      const octaveCtrlEl = document.getElementById('pianoOctaveCtrl');
+      if(toolbarLeftEl) toolbarLeftEl.classList.remove('piano-pending');
+      if(octaveCtrlEl) octaveCtrlEl.classList.remove('piano-pending');
     },
     reset(){ this.start(); },
     onLeave(){ stopAutoPlay(); }, // 一覧に戻る時、自動演奏のループが鳴り続けないよう確実に止める
@@ -5548,7 +5552,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     title: '❓ にゃークイズ',
     durationSec: 999,
     noTimeLimit: true,
-    introHtml: 'カメラを使った3択クイズです。<br>手を左右に動かして選び、握って決定します。鍵盤と同じく直接タップしても選べます。<br>全8問、何問正解できるか挑戦!<br>カメラへのアクセスを許可してください。',
+    introHtml: '3択クイズ。手を動かして選び、握って決定(タップも可)。<br>全8問に挑戦!<br>カメラへのアクセスを許可してください。',
     layerHtml: `
       <div class="quiz-bg">
         <svg class="quiz-spot" style="left:8%;" viewBox="0 0 70 400" xmlns="http://www.w3.org/2000/svg"><polygon points="20,0 50,0 65,400 5,400" fill="#FFD98A"/></svg>
