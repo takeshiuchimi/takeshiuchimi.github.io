@@ -372,8 +372,12 @@
     cursor:pointer; touch-action:manipulation;
   }
   .piano-toolbar-left{
-    position:absolute; top:34px; left:8px; right:118px; z-index:7;
+    position:absolute; top:34px; left:8px; right:8px; z-index:7;
     display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  }
+  .piano-toolbar-secondary{
+    position:absolute; top:70px; left:8px; z-index:7;
+    display:flex; align-items:center; gap:6px;
   }
   .piano-song-switch-btn{
     position:relative; overflow:hidden;
@@ -384,7 +388,7 @@
   }
   html.dark-mode .piano-song-switch-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
   .piano-score-wrap{
-    position:absolute; top:78px; left:8px; right:8px; z-index:6;
+    position:absolute; top:104px; left:8px; right:8px; z-index:6;
     background:rgba(255,255,255,.92); border-radius:8px; padding:4px;
     height:104px; overflow-x:auto; overflow-y:hidden; color:#3A2C1E;
     scrollbar-width:thin; /* Firefox: スクロールバーを細くして高さを圧迫しないようにする */
@@ -403,7 +407,7 @@
   .btn-dwell-fill{ position:absolute; inset:0; z-index:-1; width:0%; background:rgba(212,175,55,.55); pointer-events:none; }
   .piano-song-credit{ font-size:9px; color:#a8967a; text-align:center; margin-top:2px; }
   .piano-xml-panel{
-    position:absolute; top:78px; left:8px; right:8px; z-index:7;
+    position:absolute; top:104px; left:8px; right:8px; z-index:7;
     background:rgba(255,255,255,.95); border:2px solid var(--brown-deep,#8B6F47); border-radius:10px;
     padding:8px; font-family:"Hiragino Sans","Yu Gothic",sans-serif; font-size:11px;
   }
@@ -416,7 +420,7 @@
   .piano-xml-track-row button{ font-size:11px; padding:4px 10px; border-radius:14px; }
   html.dark-mode .piano-xml-panel{ background:rgba(30,25,15,.95); color:#D8C9A8; }
   .piano-octave-ctrl{
-    position:absolute; top:34px; right:8px; z-index:7;
+    position:relative; z-index:7;
     display:flex; align-items:center; gap:2px;
     background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47); border-radius:20px;
     padding:3px; font-size:12px; font-weight:bold; color:var(--brown-deep,#8B6F47);
@@ -430,6 +434,7 @@
   .piano-octave-btn:active{ background:rgba(139,111,71,.2); }
   .piano-octave-label{ min-width:44px; text-align:center; font-size:11px; }
   html.dark-mode .piano-octave-ctrl{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
+  #pianoLabel.instrument-label{ top:230px; } /* 上のボタン列・楽譜パネルと重ならないよう、この楽器だけメッセージ表示位置を下にずらす */
   .piano-hand-marker{
     position:absolute; width:34px; height:34px; border-radius:50%; transform:translate(-50%,-50%);
     pointer-events:none; opacity:0; transition:opacity .15s ease, left .08s linear, top .08s linear;
@@ -700,7 +705,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0915-1905"
+    "buildDate": "0916-0557"
   },
   "about": {
     "paragraphs": [
@@ -5115,6 +5120,13 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="piano-toolbar-left piano-pending" id="pianoToolbarLeft">
         <button class="piano-autoplay-btn" id="pianoAutoplayBtn"><span class="btn-dwell-fill" id="pianoAutoplayFill"></span><span id="pianoAutoplayLabel">⛪ 聖者の行進 で合奏する</span></button>
         <button class="piano-song-switch-btn" id="pianoSongSwitchBtn" title="曲を変える"><span class="btn-dwell-fill" id="pianoSongSwitchFill"></span>🔀</button>
+        <div class="piano-octave-ctrl" id="pianoOctaveCtrl">
+          <button class="piano-octave-btn" id="pianoOctaveDown" aria-label="1オクターブ下げる"><span class="btn-dwell-fill" id="pianoOctaveDownFill"></span>🔽</button>
+          <span class="piano-octave-label" id="pianoOctaveLabel">ふつう</span>
+          <button class="piano-octave-btn" id="pianoOctaveUp" aria-label="1オクターブ上げる"><span class="btn-dwell-fill" id="pianoOctaveUpFill"></span>🔼</button>
+        </div>
+      </div>
+      <div class="piano-toolbar-secondary piano-pending" id="pianoToolbarSecondary">
         <button class="piano-song-switch-btn" id="pianoXmlLoadBtn" title="MusicXMLを読み込む"><span class="btn-dwell-fill" id="pianoXmlLoadFill"></span>📂</button>
         <button class="piano-song-switch-btn" id="pianoScoreToggleBtn" title="楽譜を表示"><span class="btn-dwell-fill" id="pianoScoreToggleFill"></span>🎼</button>
       </div>
@@ -5129,11 +5141,6 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
           <button id="pianoXmlUseBtn" type="button">使う</button>
           <button id="pianoXmlCloseBtn" type="button">閉じる</button>
         </div>
-      </div>
-      <div class="piano-octave-ctrl piano-pending" id="pianoOctaveCtrl">
-        <button class="piano-octave-btn" id="pianoOctaveDown" aria-label="1オクターブ下げる"><span class="btn-dwell-fill" id="pianoOctaveDownFill"></span>🔽</button>
-        <span class="piano-octave-label" id="pianoOctaveLabel">ふつう</span>
-        <button class="piano-octave-btn" id="pianoOctaveUp" aria-label="1オクターブ上げる"><span class="btn-dwell-fill" id="pianoOctaveUpFill"></span>🔼</button>
       </div>
       <div class="piano-keys" id="pianoKeys"></div>
       <div class="piano-song-credit" id="pianoSongCredit"></div>
@@ -5263,9 +5270,9 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       [markerLeftEl, markerRightEl, lineLeftEl, lineRightEl].forEach(el=>{ if(el) el.style.opacity = '0'; });
       // 「はじめる」を押していよいよ演奏開始、というタイミングで、合奏・オクターブ等のボタンを表示する
       const toolbarLeftEl = document.getElementById('pianoToolbarLeft');
-      const octaveCtrlEl = document.getElementById('pianoOctaveCtrl');
+      const toolbarSecondaryEl = document.getElementById('pianoToolbarSecondary');
       if(toolbarLeftEl) toolbarLeftEl.classList.remove('piano-pending');
-      if(octaveCtrlEl) octaveCtrlEl.classList.remove('piano-pending');
+      if(toolbarSecondaryEl) toolbarSecondaryEl.classList.remove('piano-pending');
     },
     reset(){ this.start(); },
     onLeave(){ stopAutoPlay(); }, // 一覧に戻る時、自動演奏のループが鳴り続けないよう確実に止める
