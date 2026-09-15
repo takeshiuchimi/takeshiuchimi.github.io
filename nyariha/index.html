@@ -366,10 +366,13 @@
   }
   .piano-autoplay-btn{
     position:relative; top:auto; left:auto; z-index:6; overflow:hidden;
-    display:flex; align-items:center; gap:4px;
+    display:flex; align-items:center; gap:4px; max-width:100%;
     background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47); border-radius:20px;
     padding:5px 12px; font-size:12px; font-weight:bold; color:var(--brown-deep,#8B6F47);
     cursor:pointer; touch-action:manipulation;
+  }
+  #pianoAutoplayLabel{
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px; display:inline-block; vertical-align:middle;
   }
   .piano-toolbar-left{
     position:absolute; top:34px; left:8px; right:8px; z-index:7;
@@ -705,7 +708,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0916-0557"
+    "buildDate": "0916-0605"
   },
   "about": {
     "paragraphs": [
@@ -5249,7 +5252,10 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       }
       function file_name_placeholder(){
         const f = xmlFileInput && xmlFileInput.files[0];
-        return f ? f.name.replace(/\.(xml|musicxml)$/i,'') : '読み込んだ曲';
+        if(!f) return '読み込んだ曲';
+        let name = f.name.replace(/\.(xml|musicxml)$/i,'');
+        if(name.length > 10) name = name.slice(0,10) + '…'; // 長いファイル名でボタンが崩れないよう短縮する
+        return name;
       }
       const octDownBtn = document.getElementById('pianoOctaveDown');
       const octUpBtn = document.getElementById('pianoOctaveUp');
