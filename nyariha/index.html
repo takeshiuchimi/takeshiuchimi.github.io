@@ -380,10 +380,34 @@
     display:flex; align-items:center; justify-content:center;
   }
   html.dark-mode .piano-song-switch-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
+  .piano-score-wrap{
+    position:absolute; top:44px; left:8px; right:8px; z-index:6;
+    background:rgba(255,255,255,.92); border-radius:8px; padding:4px;
+    height:64px; overflow-x:auto; overflow-y:hidden; color:#3A2C1E;
+  }
+  .piano-score-wrap.hidden{ display:none; }
+  .piano-score-svg{ height:56px; display:block; }
+  .piano-score-svg .score-item.current ellipse{ fill:#D4534A !important; stroke:#D4534A !important; }
+  .piano-score-svg .score-item.current rect{ fill:#D4534A !important; }
+  html.dark-mode .piano-score-wrap{ background:rgba(30,25,15,.92); color:#D8C9A8; }
   .piano-autoplay-btn.on{ background:#FFD98A; }
   html.dark-mode .piano-autoplay-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
   html.dark-mode .piano-autoplay-btn.on{ background:#8B6F47; color:#fff; }
   .btn-dwell-fill{ position:absolute; inset:0; z-index:-1; width:0%; background:rgba(212,175,55,.55); pointer-events:none; }
+  .piano-song-credit{ font-size:9px; color:#a8967a; text-align:center; margin-top:2px; }
+  .piano-xml-panel{
+    position:absolute; top:44px; left:8px; right:8px; z-index:7;
+    background:rgba(255,255,255,.95); border:2px solid var(--brown-deep,#8B6F47); border-radius:10px;
+    padding:8px; font-family:"Hiragino Sans","Yu Gothic",sans-serif; font-size:11px;
+  }
+  .piano-xml-panel.hidden{ display:none; }
+  .piano-xml-panel input[type=file]{ font-size:11px; max-width:100%; }
+  .piano-xml-status{ margin-top:4px; color:#8B6F47; min-height:14px; }
+  .piano-xml-track-row{ margin-top:6px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .piano-xml-track-row.hidden{ display:none; }
+  .piano-xml-track-row select{ font-size:11px; max-width:60%; }
+  .piano-xml-track-row button{ font-size:11px; padding:4px 10px; border-radius:14px; }
+  html.dark-mode .piano-xml-panel{ background:rgba(30,25,15,.95); color:#D8C9A8; }
   .piano-octave-ctrl{
     position:absolute; top:8px; right:8px; z-index:7;
     display:flex; align-items:center; gap:2px;
@@ -669,7 +693,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0914-1609"
+    "buildDate": "0915-0914"
   },
   "about": {
     "paragraphs": [
@@ -878,6 +902,556 @@
   </div>
 
 </div>
+
+<!-- にゃーピアノ用: 「ふるさと」(岡野貞一, 1941年没・パブリックドメイン)のメロディラインのみを
+     MusicXML形式で埋め込み。5重奏編曲(Hideo Kamioka, CC BY-NC 4.0)の楽譜データを参照して
+     メロディのみ抽出したもの(和声・他パートは含まない)。実行時にJSでパースして使用する。 -->
+<script type="application/xml" id="furusato-melody-xml">
+<score-partwise version="4.0">
+  <part-list>
+    <score-part id="P1">
+      <part-name>Melody</part-name>
+    </score-part>
+  </part-list>
+  <part id="P1">
+    <measure implicit="no" number="0">
+      <attributes>
+        <divisions>10080</divisions>
+        <key>
+          <fifths>3</fifths>
+        </key>
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+      </attributes>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>15120</duration>
+        <type>quarter</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>30240</duration>
+        <type>half</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>15120</duration>
+        <type>quarter</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <attributes>
+        <key>
+          <fifths>3</fifths>
+        </key>
+      </attributes>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>30240</duration>
+        <type>half</type>
+        <dot />
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+        <beam number="1">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>15120</duration>
+        <type>quarter</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <attributes>
+        <key>
+          <fifths>3</fifths>
+        </key>
+      </attributes>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <beam number="1">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>20160</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <stem>down</stem>
+      </note>
+      <note print-object="no" print-spacing="yes">
+        <rest />
+        <duration>10080</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <backup>
+        <duration>40320</duration>
+      </backup>
+      <note print-object="no" print-spacing="yes">
+        <rest />
+        <duration>10080</duration>
+        <voice>5</voice>
+        <type>quarter</type>
+      </note>
+      <note print-object="no" print-spacing="yes">
+        <rest />
+        <duration>30240</duration>
+        <voice>5</voice>
+        <type>half</type>
+        <dot />
+      </note>
+      <backup>
+        <duration>40320</duration>
+      </backup>
+      <note print-object="no" print-spacing="yes">
+        <rest />
+        <duration>30240</duration>
+        <voice>9</voice>
+        <type>half</type>
+        <dot />
+      </note>
+      <note print-object="no" print-spacing="yes">
+        <rest />
+        <duration>10080</duration>
+        <voice>9</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>15120</duration>
+        <type>quarter</type>
+        <dot />
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="0">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>30240</duration>
+        <type>half</type>
+        <dot />
+        <stem>up</stem>
+      </note>
+    </measure>
+  </part>
+</score-partwise>
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 <script>
@@ -3829,6 +4403,172 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   let whiteKeyEls = [], blackKeyEls = [];
   let markerLeftEl, markerRightEl, lineLeftEl, lineRightEl;
+
+  // ---- 楽譜表示(自前でSVG描画。既存の楽譜画像等はコピーせず、音符データから毎回生成する) ----
+  const DIATONIC = {C:0,D:1,E:2,F:3,G:4,A:5,B:6};
+  const WHITE_LETTERS = ['C','D','E','F','G','A','B'];
+  const BLACK_LETTERS = ['C','D','F','G','A']; // BLACK_NOTES(ド#,レ#,ファ#,ソ#,ラ#)の元になる白鍵の文字
+  function noteToPitchInfo(note){
+    if(note.rest) return null;
+    let letter, actualOctave, accidental=null;
+    if(note.type==='white'){
+      letter = WHITE_LETTERS[note.idx % 7];
+      actualOctave = 4 + note.oct + (note.idx===7 ? 1 : 0); // idx7=1オクターブ上のド
+    }else{
+      letter = BLACK_LETTERS[note.idx];
+      actualOctave = 4 + note.oct;
+      accidental = '#';
+    }
+    return { diatonic: DIATONIC[letter] + 7*actualOctave, accidental };
+  }
+
+  const STAFF_LINE_GAP = 8; // 隣り合う五線同士の間隔(px)
+  const STEP = STAFF_LINE_GAP/2; // 1音階ステップ(線→間、または間→線)ぶんの高さ
+  const TOP_LINE_DIATONIC = DIATONIC.F + 7*5; // ト音記号 最上段の線 = ソ5(F5)
+  function diatonicToY(diatonic, topLineY){
+    return topLineY + (TOP_LINE_DIATONIC - diatonic) * STEP;
+  }
+
+  // 1曲分の音符列を、小節・連桁(ビーム)込みでレイアウトする
+  function layoutScore(melody){
+    const BEAT_W = 34; // 1拍あたりの幅(px)
+    let x = 40; // クレフ分の余白から開始
+    let beatInMeasure = 0;
+    let cursorBeat = 0;
+    const items = []; // {note, x, dur, diatonic, accidental, beamGroupId}
+    const barlinesX = [40];
+    let beamGroupCounter = 0;
+    let currentBeamGroup = null;
+    let currentBeamGroupStartBeat = null;
+
+    melody.forEach((note, i)=>{
+      const w = note.dur * BEAT_W;
+      const pInfo = note.rest ? null : noteToPitchInfo(note);
+      const isShort = !note.rest && note.dur < 1; // 8分音符以下は連桁の対象
+      const beatFloor = Math.floor(cursorBeat + 1e-6);
+
+      if(isShort){
+        if(currentBeamGroup !== null && currentBeamGroupStartBeat === beatFloor){
+          // 同じ拍の中で連桁を継続
+        }else{
+          currentBeamGroup = beamGroupCounter++;
+          currentBeamGroupStartBeat = beatFloor;
+        }
+      }else{
+        currentBeamGroup = null;
+        currentBeamGroupStartBeat = null;
+      }
+
+      items.push({
+        note, x, w, dur:note.dur, rest:note.rest,
+        diatonic: pInfo ? pInfo.diatonic : null,
+        accidental: pInfo ? pInfo.accidental : null,
+        beamGroup: isShort ? currentBeamGroup : null,
+      });
+
+      x += w;
+      cursorBeat += note.dur;
+      beatInMeasure += note.dur;
+      while(beatInMeasure >= 4 - 1e-6){
+        beatInMeasure -= 4;
+        barlinesX.push(x);
+      }
+    });
+    return { items, totalWidth: x + 20, barlinesX };
+  }
+
+  function noteheadPath(cx, cy, filled){
+    // 少し斜めに傾いた符頭(楕円)を簡易的なpathで描く
+    const rx=4.2, ry=3.2;
+    return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(-20 ${cx} ${cy})" ${filled?'fill="currentColor"':'fill="none" stroke="currentColor" stroke-width="1.2"'} />`;
+  }
+
+  function renderScoreSVG(melody, topLineY, height){
+    const { items, totalWidth, barlinesX } = layoutScore(melody);
+    let svg = '';
+    // 五線
+    for(let i=0;i<5;i++){
+      const y = topLineY + i*STAFF_LINE_GAP;
+      svg += `<line x1="0" y1="${y}" x2="${totalWidth}" y2="${y}" stroke="currentColor" stroke-width="1" opacity="0.6"/>`;
+    }
+    // 小節線
+    barlinesX.forEach(bx=>{
+      svg += `<line x1="${bx}" y1="${topLineY}" x2="${bx}" y2="${topLineY+4*STAFF_LINE_GAP}" stroke="currentColor" stroke-width="1" opacity="0.5"/>`;
+    });
+    // ト音記号(簡易的な記号で代用)
+    svg += `<text x="6" y="${topLineY + 3.4*STAFF_LINE_GAP}" font-size="26" font-family="serif">𝄞</text>`;
+
+    // ビームグループごとの音符リストを作る(連桁を描くため)
+    const beamGroups = {};
+    items.forEach((it,i)=>{ if(it.beamGroup!==null){ (beamGroups[it.beamGroup] = beamGroups[it.beamGroup]||[]).push(i); } });
+
+    items.forEach((it, i)=>{
+      if(it.rest){
+        // 休符(拍数に応じて簡易的な記号を表示)
+        const cy = topLineY + 2*STAFF_LINE_GAP;
+        svg += `<g data-idx="${i}" class="score-item"><rect x="${it.x-3}" y="${cy-2}" width="7" height="4" fill="currentColor" opacity="0.7"/></g>`;
+        return;
+      }
+      const cy = diatonicToY(it.diatonic, topLineY);
+      const cx = it.x + it.w*0.32;
+      const stemUp = it.diatonic < TOP_LINE_DIATONIC - 4; // 中央より低ければ符尾は上向き
+      const filled = it.dur < 3.5; // 全音符相当(4拍)は白玉、それ以外は黒玉
+      let g = `<g data-idx="${i}" class="score-item">`;
+      // 五線からはみ出す場合の加線
+      for(let ld = TOP_LINE_DIATONIC+2; ld <= it.diatonic; ld+=2){
+        const ly = diatonicToY(ld, topLineY);
+        g += `<line x1="${cx-6}" y1="${ly}" x2="${cx+6}" y2="${ly}" stroke="currentColor" stroke-width="1"/>`;
+      }
+      for(let ld = TOP_LINE_DIATONIC-8; ld >= it.diatonic; ld-=2){
+        const ly = diatonicToY(ld, topLineY);
+        g += `<line x1="${cx-6}" y1="${ly}" x2="${cx+6}" y2="${ly}" stroke="currentColor" stroke-width="1"/>`;
+      }
+      // 臨時記号(シャープ)
+      if(it.accidental === '#'){
+        g += `<text x="${cx-13}" y="${cy+3}" font-size="10" font-family="serif">♯</text>`;
+      }
+      // 符頭
+      g += noteheadPath(cx, cy, filled);
+      // 符尾(全音符以外)
+      if(it.dur < 3.5){
+        const stemH = 3.2*STAFF_LINE_GAP;
+        if(stemUp){
+          g += `<line x1="${cx+4.1}" y1="${cy}" x2="${cx+4.1}" y2="${cy-stemH}" stroke="currentColor" stroke-width="1.1"/>`;
+        }else{
+          g += `<line x1="${cx-4.1}" y1="${cy}" x2="${cx-4.1}" y2="${cy+stemH}" stroke="currentColor" stroke-width="1.1"/>`;
+        }
+        // 符尾の先の旗(連桁が無い単独の8分音符以下のみ)
+        if(it.dur < 1 && it.beamGroup!==null && beamGroups[it.beamGroup].length===1){
+          const flagY = stemUp ? cy-stemH : cy+stemH;
+          const dir = stemUp ? 1 : -1;
+          const sx = stemUp ? cx+4.1 : cx-4.1;
+          g += `<path d="M${sx},${flagY} q6,${4*dir} 6,${9*dir}" stroke="currentColor" stroke-width="1.1" fill="none"/>`;
+        }
+      }
+      // 付点
+      const base = Math.pow(2, Math.floor(Math.log2(it.dur+1e-9)));
+      if(Math.abs(it.dur - base*1.5) < 0.01){
+        g += `<circle cx="${cx+8}" cy="${cy-2}" r="1.3" fill="currentColor"/>`;
+      }
+      g += '</g>';
+      svg += g;
+    });
+
+    // 連桁(ビーム)を描画: 同じグループの音符のあいだを1本の太い線でつなぐ
+    Object.values(beamGroups).forEach(idxs=>{
+      if(idxs.length < 2) return;
+      const first = items[idxs[0]], last = items[idxs[idxs.length-1]];
+      const stemUp = first.diatonic < TOP_LINE_DIATONIC - 4;
+      const stemH = 3.2*STAFF_LINE_GAP;
+      const x1 = first.x + first.w*0.32 + (stemUp?4.1:-4.1);
+      const x2 = last.x + last.w*0.32 + (stemUp?4.1:-4.1);
+      const y1 = diatonicToY(first.diatonic, topLineY) + (stemUp?-stemH:stemH);
+      const y2 = diatonicToY(last.diatonic, topLineY) + (stemUp?-stemH:stemH);
+      svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="3"/>`;
+    });
+
+    return { svg, totalWidth, itemCount: items.length, items };
+  }
   // 合奏ボタン等を、タップだけでなく手をかざすドウェル操作でも押せるようにするための状態
   const UI_DWELL_MS = 1200; // 他のドウェル選択(はじめる等)と同じ待ち時間
   let uiDwellButtons = [];
@@ -4058,6 +4798,83 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     W(0,2), REST(2),  // 3小節(軽いこだま)
     W(0,4),            // 4小節(最後は伸ばして終わる)
   ];
+
+  // ---- 埋め込みMusicXMLから曲を読み込む仕組み ----
+  // 「ふるさと」(岡野貞一 作曲, 1941年没・パブリックドメイン)のメロディラインのみを、
+  // MusicXML形式でHTML内に埋め込んでおき、実行時にパースしてこのアプリの音符形式に変換する。
+  // 参照元は5重奏編曲(Hideo Kamioka, CC BY-NC 4.0)の楽譜から、主旋律(1パート)だけを抽出したもの。
+  function pitchNameToNote(name, dur){
+    // 例: "C#5" "A4" "Eb5" のような音名を、このアプリの{type,idx,oct,freq}形式に変換する
+    const m = name.match(/^([A-G])(#|b)?(\d+)$/);
+    if(!m) return null;
+    const letter = m[1], acc = m[2]||'', octave = parseInt(m[3],10);
+    const WHITE_LETTERS = ['C','D','E','F','G','A','B'];
+    const SHARP_BLACK_IDX = {C:0,D:1,F:2,G:3,A:4}; // BLACK_NOTESの並び順(ド#,レ#,ファ#,ソ#,ラ#)に対応
+    const FLAT_TO_SHARP = {D:'C',E:'D',G:'F',A:'G',B:'A'}; // 異名同音(例:Eb=D#)に変換するための、半音下の白鍵名
+    if(acc === '#'){
+      const idx = SHARP_BLACK_IDX[letter];
+      if(idx === undefined) return null; // E#, B# 等は今回使わないので非対応
+      return { type:'black', idx, oct: octave-4, dur, freq: BLACK_NOTES[idx].freq };
+    }
+    if(acc === 'b'){
+      const sharpLetter = FLAT_TO_SHARP[letter];
+      if(!sharpLetter) return null; // Cb, Fb 等は非対応
+      const idx = SHARP_BLACK_IDX[sharpLetter];
+      return { type:'black', idx, oct: octave-4, dur, freq: BLACK_NOTES[idx].freq };
+    }
+    const idx = WHITE_LETTERS.indexOf(letter);
+    if(idx < 0) return null;
+    return { type:'white', idx, oct: octave-4, dur, freq: WHITE_NOTES[idx].freq };
+  }
+
+  function parseEmbeddedMusicXmlMelody(elementId){
+    const xmlEl = document.getElementById(elementId);
+    if(!xmlEl) return [];
+    const doc = new DOMParser().parseFromString(xmlEl.textContent, 'application/xml');
+    if(doc.querySelector('parsererror')) return [];
+    let divisions = 10080;
+    const out = [];
+    doc.querySelectorAll('part').forEach(part=>{
+      part.querySelectorAll('measure').forEach(measure=>{
+        const divEl = measure.querySelector('attributes > divisions');
+        if(divEl) divisions = parseInt(divEl.textContent, 10);
+        measure.querySelectorAll(':scope > note').forEach(note=>{
+          const voiceEl = note.querySelector('voice');
+          const voice = voiceEl ? voiceEl.textContent : '1';
+          if(voice !== '1') return; // メロディ(声部1)のみを使う
+          if(note.querySelector('chord')) return; // 単旋律として扱う(和音は無視)
+          const durEl = note.querySelector('duration');
+          const dur = durEl ? (parseInt(durEl.textContent,10) / divisions) : 1;
+          if(note.querySelector('rest')){
+            out.push(REST(dur));
+          }else{
+            const pitchEl = note.querySelector('pitch');
+            if(!pitchEl) return;
+            const step = pitchEl.querySelector('step').textContent;
+            const alterEl = pitchEl.querySelector('alter');
+            const alter = alterEl ? parseInt(alterEl.textContent,10) : 0;
+            const octave = pitchEl.querySelector('octave').textContent;
+            const name = step + (alter===1?'#':(alter===-1?'b':'')) + octave;
+            const noteObj = pitchNameToNote(name, dur);
+            if(noteObj) out.push(noteObj);
+          }
+        });
+      });
+    });
+    return out;
+  }
+  let furusatoMelodyCache = null;
+  function getFurusatoMelody(){
+    if(!furusatoMelodyCache){
+      furusatoMelodyCache = parseEmbeddedMusicXmlMelody('furusato-melody-xml');
+      if(furusatoMelodyCache.length === 0){
+        // 万一パースに失敗した場合の保険として、簡易な代替メロディにフォールバックする
+        furusatoMelodyCache = makePhrase([4,4,4,4,5,4,3,4,2,1,0], 1);
+      }
+    }
+    return furusatoMelodyCache;
+  }
+
   const SONGS = [
     { key:'saints', label:'⛪ 聖者の行進', bpm:116, melody:[
       ...SAINTS_INTRO,
@@ -4069,6 +4886,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       // 伝承曲「猫ふんじゃった」をイメージした、1オクターブの鍵盤に収まるオリジナルの簡易アレンジ。
       ...makePhrase([2,3,4,1,2,3,4,5,4,3,2,1], 1),
     ]},
+    { key:'furusato', label:'🏞️ ふるさと', bpm:72, get melody(){ return getFurusatoMelody(); },
+      credit:'岡野貞一作曲(1941年没・パブリックドメイン)。メロディは五重奏編曲(Hideo Kamioka, CC BY-NC 4.0)を参考に抽出。' },
   ];
   let currentSongIdx = 0;
   let autoPlayOn = false;
@@ -4111,13 +4930,14 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     const jitter = 1 + (Math.random()*0.06 - 0.03);
     if(!note.rest){
       setOctaveShift(note.oct || 0); // 曲の音がその都度どのオクターブにあるかに合わせて、表示中のオクターブを追従させる
-      const el = whiteKeyEls[note.idx];
+      const el = note.type==='white' ? whiteKeyEls[note.idx] : blackKeyEls[note.idx];
       if(el){ el.classList.remove('guide'); void el.offsetWidth; el.classList.add('guide'); }
       // 音の長さは次の音までの間隔の85%程度にとどめ、隣の音と濁って重ならないようにする
       const sustainSec = Math.max(0.12, (noteMs*jitter/1000) * 0.85);
       const vol = (0.15 + Math.random()*0.03) * (note.dbl ? 1.12 : 1); // 2コーラス目は少し音量を上げる
       playNoteAt(note, { sustainSec, vol, doubleOctaveVol: note.dbl ? vol*0.35 : undefined });
     }
+    highlightScoreItem(autoPlayStep % song.melody.length); // 楽譜表示中なら、今鳴っている音をハイライト
     autoPlayStep++;
     aTimeout(autoPlayStepOnce, noteMs*jitter);
   }
@@ -4126,6 +4946,37 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     if(!labelEl) return;
     const song = SONGS[currentSongIdx];
     labelEl.textContent = autoPlayOn ? `${song.label} 演奏中(タップで停止)` : `${song.label} で合奏する`;
+    const creditEl = document.getElementById('pianoSongCredit');
+    if(creditEl) creditEl.textContent = song.credit || '';
+    const scoreWrap = document.getElementById('pianoScoreWrap');
+    if(scoreWrap && !scoreWrap.classList.contains('hidden')) renderCurrentScore();
+  }
+  let currentScoreItems = null;
+  function renderCurrentScore(){
+    const svgEl = document.getElementById('pianoScoreSvg');
+    if(!svgEl) return;
+    const song = SONGS[currentSongIdx];
+    const topLineY = 12;
+    const { svg, totalWidth, items } = renderScoreSVG(song.melody, topLineY, 56);
+    svgEl.setAttribute('viewBox', `0 0 ${totalWidth} 56`);
+    svgEl.setAttribute('width', totalWidth);
+    svgEl.setAttribute('height', 56);
+    svgEl.innerHTML = svg;
+    currentScoreItems = items;
+  }
+  function highlightScoreItem(stepIdx){
+    const svgEl = document.getElementById('pianoScoreSvg');
+    if(!svgEl) return;
+    svgEl.querySelectorAll('.score-item.current').forEach(el=>el.classList.remove('current'));
+    const el = svgEl.querySelector(`.score-item[data-idx="${stepIdx}"]`);
+    if(el){
+      el.classList.add('current');
+      const wrap = document.getElementById('pianoScoreWrap');
+      if(wrap){
+        const targetX = el.getBBox ? el.getBBox().x : 0;
+        wrap.scrollLeft = Math.max(0, targetX - wrap.clientWidth*0.3);
+      }
+    }
   }
   function startAutoPlay(){
     if(autoPlayOn) return;
@@ -4148,6 +4999,57 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     if(autoPlayOn) return; // 演奏中は曲を切り替えない(停止してから選ぶ)
     currentSongIdx = (currentSongIdx + 1) % SONGS.length;
     updateAutoplayBtnLabel();
+  }
+
+  // ---- 任意のMusicXMLファイルをその場で読み込む ----
+  // 埋め込み済みの曲だけでなく、ユーザーが手元のMusicXMLファイルを選んで
+  // その場でメロディとして読み込めるようにする(パート/ボイスを選んで使う)。
+  function parseGenericMusicXmlTracks(xmlText){
+    const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+    if(doc.querySelector('parsererror')) throw new Error('MusicXMLの解析に失敗しました');
+    const partNames = {};
+    doc.querySelectorAll('part-list score-part').forEach(sp=>{
+      const nameEl = sp.querySelector('part-name');
+      partNames[sp.getAttribute('id')] = nameEl ? nameEl.textContent : sp.getAttribute('id');
+    });
+    const tracks = {}; // key = partId|voice
+    doc.querySelectorAll('part').forEach(part=>{
+      const partId = part.getAttribute('id');
+      let divisions = 10080;
+      part.querySelectorAll('measure').forEach(measure=>{
+        const divEl = measure.querySelector('attributes > divisions');
+        if(divEl) divisions = parseInt(divEl.textContent, 10);
+        measure.querySelectorAll(':scope > note').forEach(note=>{
+          const voiceEl = note.querySelector('voice');
+          const voice = voiceEl ? voiceEl.textContent : '1';
+          const key = partId + '|' + voice;
+          if(!tracks[key]) tracks[key] = { partName:partNames[partId]||partId, voice, notes:[] };
+          if(note.querySelector('chord')) return; // 和音は無視し、単旋律として扱う
+          const durEl = note.querySelector('duration');
+          const dur = durEl ? (parseInt(durEl.textContent,10) / divisions) : 1;
+          if(note.querySelector('rest')){
+            tracks[key].notes.push(REST(dur));
+          }else{
+            const pitchEl = note.querySelector('pitch');
+            if(!pitchEl) return;
+            const step = pitchEl.querySelector('step').textContent;
+            const alterEl = pitchEl.querySelector('alter');
+            const alter = alterEl ? parseInt(alterEl.textContent,10) : 0;
+            const octave = pitchEl.querySelector('octave').textContent;
+            const name = step + (alter===1?'#':(alter===-1?'b':'')) + octave;
+            const noteObj = pitchNameToNote(name, dur);
+            if(noteObj) tracks[key].notes.push(noteObj);
+          }
+        });
+      });
+    });
+    return tracks;
+  }
+
+  let loadedXmlTracks = null;
+  function pianoXmlTrackPreview(track){
+    return track.notes.filter(n=>!n.rest).slice(0,5)
+      .map(n=> n.type==='white' ? WHITE_NOTES[n.idx].name : ['ド#','レ#','ファ#','ソ#','ラ#'][n.idx]).join(' ');
   }
   // タッチ/クリックで、鍵盤の上を指でなぞると(押したまま動かすと)、通り過ぎた鍵盤を連続で鳴らす(グリッサンド)
   let touchDragActive = false;
@@ -4214,6 +5116,20 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="piano-toolbar-left">
         <button class="piano-autoplay-btn" id="pianoAutoplayBtn"><span class="btn-dwell-fill" id="pianoAutoplayFill"></span><span id="pianoAutoplayLabel">⛪ 聖者の行進 で合奏する</span></button>
         <button class="piano-song-switch-btn" id="pianoSongSwitchBtn" title="曲を変える"><span class="btn-dwell-fill" id="pianoSongSwitchFill"></span>🔀</button>
+        <button class="piano-song-switch-btn" id="pianoXmlLoadBtn" title="MusicXMLを読み込む"><span class="btn-dwell-fill" id="pianoXmlLoadFill"></span>📂</button>
+        <button class="piano-song-switch-btn" id="pianoScoreToggleBtn" title="楽譜を表示"><span class="btn-dwell-fill" id="pianoScoreToggleFill"></span>🎼</button>
+      </div>
+      <div class="piano-score-wrap hidden" id="pianoScoreWrap">
+        <svg id="pianoScoreSvg" class="piano-score-svg"></svg>
+      </div>
+      <div class="piano-xml-panel hidden" id="pianoXmlPanel">
+        <input type="file" id="pianoXmlFileInput" accept=".xml,.musicxml">
+        <div id="pianoXmlStatus" class="piano-xml-status"></div>
+        <div id="pianoXmlTrackRow" class="piano-xml-track-row hidden">
+          <select id="pianoXmlTrackSelect"></select>
+          <button id="pianoXmlUseBtn" type="button">使う</button>
+          <button id="pianoXmlCloseBtn" type="button">閉じる</button>
+        </div>
       </div>
       <div class="piano-octave-ctrl">
         <button class="piano-octave-btn" id="pianoOctaveDown" aria-label="1オクターブ下げる"><span class="btn-dwell-fill" id="pianoOctaveDownFill"></span>🔽</button>
@@ -4221,6 +5137,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         <button class="piano-octave-btn" id="pianoOctaveUp" aria-label="1オクターブ上げる"><span class="btn-dwell-fill" id="pianoOctaveUpFill"></span>🔼</button>
       </div>
       <div class="piano-keys" id="pianoKeys"></div>
+      <div class="piano-song-credit" id="pianoSongCredit"></div>
       <div class="instrument-label" id="pianoLabel">好きな鍵盤を選んで、握って(またはタップして)弾いてみよう</div>
     `,
     setup(){
@@ -4255,6 +5172,79 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       const songSwitchBtn = document.getElementById('pianoSongSwitchBtn');
       if(songSwitchBtn) songSwitchBtn.addEventListener('click', switchToNextSong);
       updateAutoplayBtnLabel();
+
+      // 楽譜表示の切替
+      const scoreToggleBtn = document.getElementById('pianoScoreToggleBtn');
+      const scoreWrap = document.getElementById('pianoScoreWrap');
+      if(scoreToggleBtn && scoreWrap){
+        scoreToggleBtn.addEventListener('click', ()=>{
+          scoreWrap.classList.toggle('hidden');
+          if(!scoreWrap.classList.contains('hidden')) renderCurrentScore();
+        });
+      }
+
+      // MusicXMLファイルの読み込みUI
+      const xmlLoadBtn = document.getElementById('pianoXmlLoadBtn');
+      const xmlPanel = document.getElementById('pianoXmlPanel');
+      const xmlFileInput = document.getElementById('pianoXmlFileInput');
+      const xmlStatus = document.getElementById('pianoXmlStatus');
+      const xmlTrackRow = document.getElementById('pianoXmlTrackRow');
+      const xmlTrackSelect = document.getElementById('pianoXmlTrackSelect');
+      const xmlUseBtn = document.getElementById('pianoXmlUseBtn');
+      const xmlCloseBtn = document.getElementById('pianoXmlCloseBtn');
+      if(xmlLoadBtn && xmlPanel){
+        xmlLoadBtn.addEventListener('click', ()=>{
+          if(autoPlayOn) stopAutoPlay();
+          xmlPanel.classList.toggle('hidden');
+        });
+      }
+      if(xmlCloseBtn) xmlCloseBtn.addEventListener('click', ()=> xmlPanel.classList.add('hidden'));
+      if(xmlFileInput){
+        xmlFileInput.addEventListener('change', async ()=>{
+          const file = xmlFileInput.files[0];
+          if(!file) return;
+          xmlStatus.textContent = '読み込み中…';
+          xmlTrackRow.classList.add('hidden');
+          try{
+            const text = await file.text();
+            loadedXmlTracks = parseGenericMusicXmlTracks(text);
+            const keys = Object.keys(loadedXmlTracks);
+            if(keys.length === 0){ xmlStatus.textContent = '音符が見つかりませんでした'; return; }
+            xmlTrackSelect.innerHTML = '';
+            keys.forEach(k=>{
+              const t = loadedXmlTracks[k];
+              const opt = document.createElement('option');
+              opt.value = k;
+              opt.textContent = `${t.partName}/v${t.voice}: ${pianoXmlTrackPreview(t)}`;
+              xmlTrackSelect.appendChild(opt);
+            });
+            xmlStatus.textContent = `${keys.length}個のパートを検出。使うトラックを選んでください。`;
+            xmlTrackRow.classList.remove('hidden');
+          }catch(err){
+            console.error(err);
+            xmlStatus.textContent = '読み込みに失敗しました';
+          }
+        });
+      }
+      if(xmlUseBtn){
+        xmlUseBtn.addEventListener('click', ()=>{
+          if(!loadedXmlTracks) return;
+          const key = xmlTrackSelect.value;
+          const track = loadedXmlTracks[key];
+          if(!track || track.notes.length===0){ xmlStatus.textContent = 'このトラックには音符がありません'; return; }
+          const customSong = { key:'custom', label:'📂 ' + file_name_placeholder(), bpm:100, melody:track.notes, credit:'読み込んだMusicXMLファイルより' };
+          const existingIdx = SONGS.findIndex(s=>s.key==='custom');
+          if(existingIdx>=0) SONGS[existingIdx] = customSong; else SONGS.push(customSong);
+          currentSongIdx = SONGS.findIndex(s=>s.key==='custom');
+          updateAutoplayBtnLabel();
+          xmlStatus.textContent = 'この曲を読み込みました。「合奏する」ボタンで再生できます。';
+          xmlPanel.classList.add('hidden');
+        });
+      }
+      function file_name_placeholder(){
+        const f = xmlFileInput && xmlFileInput.files[0];
+        return f ? f.name.replace(/\.(xml|musicxml)$/i,'') : '読み込んだ曲';
+      }
       const octDownBtn = document.getElementById('pianoOctaveDown');
       const octUpBtn = document.getElementById('pianoOctaveUp');
       if(octDownBtn) octDownBtn.addEventListener('click', ()=> setOctaveShift(octaveShift-1));
