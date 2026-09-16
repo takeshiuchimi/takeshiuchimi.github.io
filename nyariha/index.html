@@ -374,12 +374,14 @@
   #pianoAutoplayLabel{
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px; display:inline-block; vertical-align:middle;
   }
-  .piano-toolbar-left{
+  .piano-controls-panel{
     position:absolute; top:34px; left:8px; right:8px; z-index:7;
+    display:flex; flex-direction:column; gap:6px; align-items:flex-start;
+  }
+  .piano-toolbar-left{
     display:flex; align-items:center; gap:6px; flex-wrap:wrap;
   }
   .piano-toolbar-secondary{
-    position:absolute; top:70px; left:8px; z-index:7;
     display:flex; align-items:center; gap:6px;
   }
   .piano-song-switch-btn{
@@ -391,7 +393,7 @@
   }
   html.dark-mode .piano-song-switch-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
   .piano-score-wrap{
-    position:absolute; top:104px; left:8px; right:8px; z-index:6;
+    width:100%; z-index:6;
     background:rgba(255,255,255,.92); border-radius:8px; padding:4px;
     height:104px; overflow-x:auto; overflow-y:hidden; color:#3A2C1E;
     scrollbar-width:thin; /* Firefox: スクロールバーを細くして高さを圧迫しないようにする */
@@ -410,7 +412,7 @@
   .btn-dwell-fill{ position:absolute; inset:0; z-index:-1; width:0%; background:rgba(212,175,55,.55); pointer-events:none; }
   .piano-song-credit{ font-size:9px; color:#a8967a; text-align:center; margin-top:2px; }
   .piano-xml-panel{
-    position:absolute; top:104px; left:8px; right:8px; z-index:7;
+    width:100%; z-index:7; box-sizing:border-box;
     background:rgba(255,255,255,.95); border:2px solid var(--brown-deep,#8B6F47); border-radius:10px;
     padding:8px; font-family:"Hiragino Sans","Yu Gothic",sans-serif; font-size:11px;
   }
@@ -708,7 +710,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0916-0605"
+    "buildDate": "0917-0511"
   },
   "about": {
     "paragraphs": [
@@ -1949,25 +1951,50 @@ const BGM_BEAT = 60/BGM_BPM;
 const BGM_STEP_DUR = BGM_BEAT/2; // 8分音符
 const BGM_LOOP_STEPS = 64; // 32拍(約18.6秒)でループ
 
-const bgmHz = n => 440 * Math.pow(2, (n-69)/12); // MIDIノート番号→Hz
+// ---- 簡易楽譜記法のパーサー ----
+// "C4:1" (音名:拍数) / "R:1" (休符) / "[C4,E4,G4]:1" (和音) をスペース区切りで並べたもの。
+// MusicXMLほど冗長ではなく、数値のMIDIノート番号の羅列より読みやすい、この曲用の軽量な記法。
+// 外部ファイルの読み込み(にゃーピアノの📂)は引き続きMusicXMLをそのまま読めるようにしてあり、
+// この記法はアプリ内で自作する曲(BGM等)のデータの持ち方として使う。
+function parseCompactScore(str){
+  return str.trim().split(/\s+/).map(tok=>{
+    const idx = tok.lastIndexOf(':');
+    const pitchPart = tok.slice(0, idx);
+    const beats = parseFloat(tok.slice(idx+1));
+    if(pitchPart === 'R') return { rest:true, names:[], beats };
+    if(pitchPart.startsWith('[')){
+      return { rest:false, names: pitchPart.slice(1,-1).split(','), beats };
+    }
+    return { rest:false, names:[pitchPart], beats };
+  });
+}
+function noteNameToFreq(name){
+  const m = name.match(/^([A-G])(#|b)?(-?\d+)$/);
+  const STEP = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+  let semitone = STEP[m[1]];
+  if(m[2]==='#') semitone += 1;
+  if(m[2]==='b') semitone -= 1;
+  const midi = 12*(parseInt(m[3],10)+1) + semitone;
+  return 440 * Math.pow(2, (midi-69)/12);
+}
 
-// 8分音符単位のメロディ(nullは休符)。E long/C#minor寄り
-const BGM_MELODY = [
-  76,null,78,80, 83,null,80,78,
-  76,null,73,71, 73,null,76,null,
-  78,null,80,83, 85,null,83,80,
-  78,null,76,73, 71,null,73,null,
-  76,null,78,80, 83,null,85,83,
-  80,null,78,76, 73,null,71,null,
-  73,null,76,78, 80,null,78,76,
-  73,null,71,68, 71,null,73,null
-];
-// 4拍ごとのコード(E, C#m, A, B)
-const BGM_CHORDS = [
-  [64,68,71], [61,64,68], [57,61,64], [59,63,66],
-  [64,68,71], [61,64,68], [57,61,64], [59,63,66]
-];
-const BGM_BASS_ROOTS = [40,37,45,47,40,37,45,47];
+// 8分音符64個ぶんのメロディ(Rは休符)。もとはE長調/C#短調寄りの自作メロディ。
+const BGM_MELODY_STEPS = parseCompactScore(
+  'E5:.5 R:.5 F#5:.5 G#5:.5 B5:.5 R:.5 G#5:.5 F#5:.5 ' +
+  'E5:.5 R:.5 C#5:.5 B4:.5 C#5:.5 R:.5 E5:.5 R:.5 ' +
+  'F#5:.5 R:.5 G#5:.5 B5:.5 C#6:.5 R:.5 B5:.5 G#5:.5 ' +
+  'F#5:.5 R:.5 E5:.5 C#5:.5 B4:.5 R:.5 C#5:.5 R:.5 ' +
+  'E5:.5 R:.5 F#5:.5 G#5:.5 B5:.5 R:.5 C#6:.5 B5:.5 ' +
+  'G#5:.5 R:.5 F#5:.5 E5:.5 C#5:.5 R:.5 B4:.5 R:.5 ' +
+  'C#5:.5 R:.5 E5:.5 F#5:.5 G#5:.5 R:.5 F#5:.5 E5:.5 ' +
+  'C#5:.5 R:.5 B4:.5 G#4:.5 B4:.5 R:.5 C#5:.5 R:.5'
+);
+// 4拍ごとのコード(E, C#m, A, B)。2周ぶん。
+const BGM_CHORD_STEPS = parseCompactScore(
+  '[E4,G#4,B4]:4 [C#4,E4,G#4]:4 [A3,C#4,E4]:4 [B3,D#4,F#4]:4 ' +
+  '[E4,G#4,B4]:4 [C#4,E4,G#4]:4 [A3,C#4,E4]:4 [B3,D#4,F#4]:4'
+);
+const BGM_BASS_STEPS = parseCompactScore('E2:4 C#2:4 A2:4 B2:4 E2:4 C#2:4 A2:4 B2:4');
 
 function bgmEnvGain(time, attack, peak, decay){
   const ctx = getAudioCtx();
@@ -1995,12 +2022,11 @@ function bgmPluck(freq, time, vol){
   o2.connect(g2);
   o2.start(time); o2.stop(time+0.16);
 }
-function bgmPad(notes, time){
+function bgmPad(freqs, time){
   const ctx = getAudioCtx();
-  notes.forEach((n,i)=>{
+  freqs.forEach((f,i)=>{
     const o = ctx.createOscillator();
     const g = ctx.createGain();
-    const f = bgmHz(n);
     o.type = i===0 ? 'sine' : 'triangle';
     o.frequency.setValueAtTime(f, time);
     g.gain.setValueAtTime(0.0001, time);
@@ -2011,12 +2037,12 @@ function bgmPad(notes, time){
     o.start(time); o.stop(time+BGM_BEAT*2+0.05);
   });
 }
-function bgmBass(n, time){
+function bgmBass(freq, time){
   const ctx = getAudioCtx();
   const o = ctx.createOscillator();
   const g = bgmEnvGain(time, 0.01, 0.025, 0.35);
   o.type = 'sine';
-  o.frequency.setValueAtTime(bgmHz(n), time);
+  o.frequency.setValueAtTime(freq, time);
   o.connect(g);
   o.start(time); o.stop(time+0.42);
 }
@@ -2036,16 +2062,16 @@ function bgmTick(time, strong){
   src.start(time); src.stop(time+0.05);
 }
 function bgmScheduleStep(s, t){
-  const note = BGM_MELODY[s];
-  if(note !== null) bgmPluck(bgmHz(note), t);
+  const step = BGM_MELODY_STEPS[s];
+  if(step && !step.rest) bgmPluck(noteNameToFreq(step.names[0]), t);
   if(s%8 === 0){
-    const c = Math.floor(s/8) % BGM_CHORDS.length;
-    bgmPad(BGM_CHORDS[c], t);
-    bgmBass(BGM_BASS_ROOTS[c], t);
+    const c = Math.floor(s/8) % BGM_CHORD_STEPS.length;
+    bgmPad(BGM_CHORD_STEPS[c].names.map(noteNameToFreq), t);
+    bgmBass(noteNameToFreq(BGM_BASS_STEPS[c].names[0]), t);
   }
   if(s%8 === 4){
-    const c = Math.floor(s/8) % BGM_BASS_ROOTS.length;
-    bgmBass(BGM_BASS_ROOTS[c]+7, t);
+    const c = Math.floor(s/8) % BGM_BASS_STEPS.length;
+    bgmBass(noteNameToFreq(BGM_BASS_STEPS[c].names[0])*Math.pow(2,7/12), t); // 完全5度上
   }
   if(s%2 === 0) bgmTick(t, s%8===0);
 }
@@ -5120,29 +5146,31 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="piano-target-line" id="pianoLineRight" style="background:#7FE0E8;"></div>
       <div class="piano-hand-marker" id="pianoMarkerLeft" style="background:#FF8FC7;"></div>
       <div class="piano-hand-marker" id="pianoMarkerRight" style="background:#7FE0E8;"></div>
-      <div class="piano-toolbar-left piano-pending" id="pianoToolbarLeft">
-        <button class="piano-autoplay-btn" id="pianoAutoplayBtn"><span class="btn-dwell-fill" id="pianoAutoplayFill"></span><span id="pianoAutoplayLabel">⛪ 聖者の行進 で合奏する</span></button>
-        <button class="piano-song-switch-btn" id="pianoSongSwitchBtn" title="曲を変える"><span class="btn-dwell-fill" id="pianoSongSwitchFill"></span>🔀</button>
-        <div class="piano-octave-ctrl" id="pianoOctaveCtrl">
-          <button class="piano-octave-btn" id="pianoOctaveDown" aria-label="1オクターブ下げる"><span class="btn-dwell-fill" id="pianoOctaveDownFill"></span>🔽</button>
-          <span class="piano-octave-label" id="pianoOctaveLabel">ふつう</span>
-          <button class="piano-octave-btn" id="pianoOctaveUp" aria-label="1オクターブ上げる"><span class="btn-dwell-fill" id="pianoOctaveUpFill"></span>🔼</button>
+      <div class="piano-controls-panel piano-pending" id="pianoControlsPanel">
+        <div class="piano-toolbar-left" id="pianoToolbarLeft">
+          <button class="piano-autoplay-btn" id="pianoAutoplayBtn"><span class="btn-dwell-fill" id="pianoAutoplayFill"></span><span id="pianoAutoplayLabel">⛪ 聖者の行進 で合奏する</span></button>
+          <button class="piano-song-switch-btn" id="pianoSongSwitchBtn" title="曲を変える"><span class="btn-dwell-fill" id="pianoSongSwitchFill"></span>🔀</button>
+          <div class="piano-octave-ctrl" id="pianoOctaveCtrl">
+            <button class="piano-octave-btn" id="pianoOctaveDown" aria-label="1オクターブ下げる"><span class="btn-dwell-fill" id="pianoOctaveDownFill"></span>🔽</button>
+            <span class="piano-octave-label" id="pianoOctaveLabel">ふつう</span>
+            <button class="piano-octave-btn" id="pianoOctaveUp" aria-label="1オクターブ上げる"><span class="btn-dwell-fill" id="pianoOctaveUpFill"></span>🔼</button>
+          </div>
         </div>
-      </div>
-      <div class="piano-toolbar-secondary piano-pending" id="pianoToolbarSecondary">
-        <button class="piano-song-switch-btn" id="pianoXmlLoadBtn" title="MusicXMLを読み込む"><span class="btn-dwell-fill" id="pianoXmlLoadFill"></span>📂</button>
-        <button class="piano-song-switch-btn" id="pianoScoreToggleBtn" title="楽譜を表示"><span class="btn-dwell-fill" id="pianoScoreToggleFill"></span>🎼</button>
-      </div>
-      <div class="piano-score-wrap hidden" id="pianoScoreWrap">
-        <svg id="pianoScoreSvg" class="piano-score-svg"></svg>
-      </div>
-      <div class="piano-xml-panel hidden" id="pianoXmlPanel">
-        <input type="file" id="pianoXmlFileInput" accept=".xml,.musicxml">
-        <div id="pianoXmlStatus" class="piano-xml-status"></div>
-        <div id="pianoXmlTrackRow" class="piano-xml-track-row hidden">
-          <select id="pianoXmlTrackSelect"></select>
-          <button id="pianoXmlUseBtn" type="button">使う</button>
-          <button id="pianoXmlCloseBtn" type="button">閉じる</button>
+        <div class="piano-toolbar-secondary" id="pianoToolbarSecondary">
+          <button class="piano-song-switch-btn" id="pianoXmlLoadBtn" title="MusicXMLを読み込む"><span class="btn-dwell-fill" id="pianoXmlLoadFill"></span>📂</button>
+          <button class="piano-song-switch-btn" id="pianoScoreToggleBtn" title="楽譜を表示"><span class="btn-dwell-fill" id="pianoScoreToggleFill"></span>🎼</button>
+        </div>
+        <div class="piano-score-wrap hidden" id="pianoScoreWrap">
+          <svg id="pianoScoreSvg" class="piano-score-svg"></svg>
+        </div>
+        <div class="piano-xml-panel hidden" id="pianoXmlPanel">
+          <input type="file" id="pianoXmlFileInput" accept=".xml,.musicxml">
+          <div id="pianoXmlStatus" class="piano-xml-status"></div>
+          <div id="pianoXmlTrackRow" class="piano-xml-track-row hidden">
+            <select id="pianoXmlTrackSelect"></select>
+            <button id="pianoXmlUseBtn" type="button">使う</button>
+            <button id="pianoXmlCloseBtn" type="button">閉じる</button>
+          </div>
         </div>
       </div>
       <div class="piano-keys" id="pianoKeys"></div>
@@ -5275,10 +5303,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       setOctaveShift(0); // オクターブ表示も標準に戻す
       [markerLeftEl, markerRightEl, lineLeftEl, lineRightEl].forEach(el=>{ if(el) el.style.opacity = '0'; });
       // 「はじめる」を押していよいよ演奏開始、というタイミングで、合奏・オクターブ等のボタンを表示する
-      const toolbarLeftEl = document.getElementById('pianoToolbarLeft');
-      const toolbarSecondaryEl = document.getElementById('pianoToolbarSecondary');
-      if(toolbarLeftEl) toolbarLeftEl.classList.remove('piano-pending');
-      if(toolbarSecondaryEl) toolbarSecondaryEl.classList.remove('piano-pending');
+      const controlsPanelEl = document.getElementById('pianoControlsPanel');
+      if(controlsPanelEl) controlsPanelEl.classList.remove('piano-pending');
     },
     reset(){ this.start(); },
     onLeave(){ stopAutoPlay(); }, // 一覧に戻る時、自動演奏のループが鳴り続けないよう確実に止める
