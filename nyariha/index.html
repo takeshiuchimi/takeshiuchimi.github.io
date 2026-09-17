@@ -114,6 +114,7 @@
   video{
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
     transform:scaleX(-1); filter:brightness(.28) saturate(.5);
+    pointer-events:none; /* タッチ操作がこの下に隠れて反応しなくなるのを防ぐ */
   }
   canvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 
@@ -203,7 +204,7 @@
     position:absolute; left:0; right:0; bottom:6%; display:flex; justify-content:space-around;
     pointer-events:none;
   }
-  .mogi-touch-layer{ position:absolute; inset:0; z-index:3; touch-action:none; }
+  .mogi-touch-layer{ position:absolute; inset:0; z-index:4; touch-action:none; }
   .basket{
     width:28%; aspect-ratio:6/5; max-width:120px;
     position:relative; border-radius:8px;
@@ -711,7 +712,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0917-1135"
+    "buildDate": "0917-1147"
   },
   "about": {
     "paragraphs": [
@@ -3249,9 +3250,12 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   // タッチ/クリックでもプレイできるように: 落ちてきている実の近くをタップすればキャッチ、
   // 実が無い場所をタップすれば木を揺らす操作として扱う(手を振る動きの代わり)。
   function handleYurashiTouch(x, y){
+    // タップは一瞬しか位置を指定できない(手のように連続で追従できない)ため、
+    // キャッチの当たり判定はカメラの手より広めにして、タップでも取りやすくする。
+    const TOUCH_CATCH_RADIUS = 20;
     for(let i=fallingFruits.length-1;i>=0;i--){
       const ff = fallingFruits[i];
-      if(distPct(x, y, ff.x, ff.y) < CATCH_RADIUS){
+      if(distPct(x, y, ff.x, ff.y) < TOUCH_CATCH_RADIUS){
         onSuccess();
         statusEl.textContent = 'キャッチ成功!';
         ff.el.remove();
@@ -3462,16 +3466,24 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   // タッチ/クリックでもプレイできるように: 画面をタップするたびに一漕ぎ(パドルを振る)、
   // 押したまま左右にドラッグするとカヌーがその位置に追従して操縦できる。
+  // パドルの見た目も、手でグーを握った時と同じ位置・表示にする。
   let canoeTouchDragging = false;
+  function showCanoePaddleAtCanoe(){
+    paddleEl.classList.add('show');
+    paddleEl.style.left = canoeX + '%';
+    paddleEl.style.top = (CANOE_Y - 3) + '%';
+  }
   function handleCanoeTouchDown(x){
     canoeX = Math.max(8, Math.min(92, x));
     canoeEl.style.left = canoeX+'%';
+    showCanoePaddleAtCanoe();
     showPaddleSplash();
   }
   function handleCanoeTouchMove(x){
     const targetX = Math.max(8, Math.min(92, x));
     canoeX = canoeX + (targetX - canoeX) * STEER_SMOOTH;
     canoeEl.style.left = canoeX+'%';
+    showCanoePaddleAtCanoe();
   }
   function setupCanoeTouch(layerEl){
     if(!layerEl) return;
@@ -3488,7 +3500,10 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       const x = (e.clientX-rect.left)/rect.width*100;
       handleCanoeTouchMove(x);
     });
-    const endDrag = ()=>{ canoeTouchDragging = false; };
+    const endDrag = ()=>{
+      canoeTouchDragging = false;
+      paddleEl.classList.remove('show'); // 指を離したら、手を離した(グーをやめた)ときと同じくパドルを隠す
+    };
     layerEl.addEventListener('pointerup', endDrag);
     layerEl.addEventListener('pointercancel', endDrag);
     layerEl.addEventListener('pointerleave', endDrag);
