@@ -203,6 +203,7 @@
     position:absolute; left:0; right:0; bottom:6%; display:flex; justify-content:space-around;
     pointer-events:none;
   }
+  .mogi-touch-layer{ position:absolute; inset:0; z-index:3; touch-action:none; }
   .basket{
     width:28%; aspect-ratio:6/5; max-width:120px;
     position:relative; border-radius:8px;
@@ -710,7 +711,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0917-0522"
+    "buildDate": "0917-1135"
   },
   "about": {
     "paragraphs": [
@@ -3063,6 +3064,49 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     hel.textContent = '';
   }
 
+  // タッチ/クリックでもプレイできるように: 指で実をタップして掴み(=グーに相当)、
+  // そのまま指を動かしてかごの上まで運び、指を離すと開いて実を落とす(=パーに相当)。
+  // 手(handedness)の代わりに、画面に触れた指1本ごとにLeft/Rightいずれかを割り当てて使う。
+  let mogiTouchByPointer = {}; // pointerId -> 'Left'|'Right'
+  function assignMogiHandedness(){
+    const used = Object.values(mogiTouchByPointer);
+    if(!used.includes('Left')) return 'Left';
+    if(!used.includes('Right')) return 'Right';
+    return null;
+  }
+  function mogiPointerToPct(e){
+    const rect = stageEl.getBoundingClientRect();
+    return { x:(e.clientX-rect.left)/rect.width*100, y:(e.clientY-rect.top)/rect.height*100 };
+  }
+  function setupMogiTouch(layerEl){
+    if(!layerEl) return;
+    mogiTouchByPointer = {};
+    layerEl.addEventListener('pointerdown', (e)=>{
+      const handedness = assignMogiHandedness();
+      if(!handedness) return;
+      mogiTouchByPointer[e.pointerId] = handedness;
+      const { x, y } = mogiPointerToPct(e);
+      tryGrab(handedness, x, y);
+    });
+    layerEl.addEventListener('pointermove', (e)=>{
+      const handedness = mogiTouchByPointer[e.pointerId];
+      if(!handedness || !holdingByHand[handedness]) return;
+      const { x, y } = mogiPointerToPct(e);
+      const hel = handedness==='Left' ? heldFruitEl : heldFruitEl2;
+      hel.style.left = x+'%'; hel.style.top = y+'%';
+    });
+    function endTouch(e){
+      const handedness = mogiTouchByPointer[e.pointerId];
+      if(!handedness) return;
+      delete mogiTouchByPointer[e.pointerId];
+      const { x, y } = mogiPointerToPct(e);
+      tryRelease(handedness, x, y);
+    }
+    layerEl.addEventListener('pointerup', endTouch);
+    layerEl.addEventListener('pointercancel', endTouch);
+    layerEl.addEventListener('pointerleave', endTouch);
+  }
+
   function updateFallingMogi(){
     // 現在狙っているかご(ハイライト)を一度クリアしてから、落下中の実の位置で判定し直す
     FRUIT_KEYS.forEach(type=> baskets[type].el.classList.remove('aiming'));
@@ -3117,12 +3161,14 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="basket-row" id="mogiBasketRow"></div>
       <div class="held-fruit-mogi" id="mogiHeldFruit" style="position:absolute;font-size:26px;transform:translate(-50%,-120%);pointer-events:none;z-index:4;"></div>
       <div class="held-fruit-mogi" id="mogiHeldFruit2" style="position:absolute;font-size:26px;transform:translate(-50%,-120%);pointer-events:none;z-index:4;"></div>
+      <div class="mogi-touch-layer" id="mogiTouchLayer"></div>
     `,
     setup(){
       fruitsLayerEl = document.getElementById('mogiFruitsLayer');
       basketRowEl = document.getElementById('mogiBasketRow');
       heldFruitEl = document.getElementById('mogiHeldFruit');
       heldFruitEl2 = document.getElementById('mogiHeldFruit2');
+      setupMogiTouch(document.getElementById('mogiTouchLayer'));
     },
     start(){
       holdingByHand = { Left:null, Right:null };
@@ -3200,6 +3246,32 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     }
   }
 
+  // タッチ/クリックでもプレイできるように: 落ちてきている実の近くをタップすればキャッチ、
+  // 実が無い場所をタップすれば木を揺らす操作として扱う(手を振る動きの代わり)。
+  function handleYurashiTouch(x, y){
+    for(let i=fallingFruits.length-1;i>=0;i--){
+      const ff = fallingFruits[i];
+      if(distPct(x, y, ff.x, ff.y) < CATCH_RADIUS){
+        onSuccess();
+        statusEl.textContent = 'キャッチ成功!';
+        ff.el.remove();
+        fallingFruits.splice(i,1);
+        if(fruits.filter(f=>!f.collected).length === 0) setTimeout(respawnAllFruits, 500);
+        return;
+      }
+    }
+    triggerShake();
+  }
+  function setupYurashiTouch(layerEl){
+    if(!layerEl) return;
+    layerEl.addEventListener('pointerdown', (e)=>{
+      const rect = stageEl.getBoundingClientRect();
+      const x = (e.clientX-rect.left)/rect.width*100;
+      const y = (e.clientY-rect.top)/rect.height*100;
+      handleYurashiTouch(x, y);
+    });
+  }
+
   registerProgram('yurashi', {
     title: '🌳 にゃーゆらし',
     durationSec: 60,
@@ -3210,11 +3282,13 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div id="yurashiFruitsLayer"></div>
       <div class="net-area">🧺</div>
       <div class="shake-gauge"><div class="shake-gauge-fill" id="yurashiShakeGaugeFill"></div></div>
+      <div class="mogi-touch-layer" id="yurashiTouchLayer"></div>
     `,
     setup(){
       fruitsLayerEl = document.getElementById('yurashiFruitsLayer');
       shakeGaugeFillEl = document.getElementById('yurashiShakeGaugeFill');
       triggered_shakeGaugeFill = shakeGaugeFillEl;
+      setupYurashiTouch(document.getElementById('yurashiTouchLayer'));
     },
     start(){
       triggered_shakeGaugeFill = shakeGaugeFillEl;
@@ -3386,6 +3460,40 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     if(Math.random() < SPAWN_CHANCE) spawnObject();
   }
 
+  // タッチ/クリックでもプレイできるように: 画面をタップするたびに一漕ぎ(パドルを振る)、
+  // 押したまま左右にドラッグするとカヌーがその位置に追従して操縦できる。
+  let canoeTouchDragging = false;
+  function handleCanoeTouchDown(x){
+    canoeX = Math.max(8, Math.min(92, x));
+    canoeEl.style.left = canoeX+'%';
+    showPaddleSplash();
+  }
+  function handleCanoeTouchMove(x){
+    const targetX = Math.max(8, Math.min(92, x));
+    canoeX = canoeX + (targetX - canoeX) * STEER_SMOOTH;
+    canoeEl.style.left = canoeX+'%';
+  }
+  function setupCanoeTouch(layerEl){
+    if(!layerEl) return;
+    canoeTouchDragging = false;
+    layerEl.addEventListener('pointerdown', (e)=>{
+      canoeTouchDragging = true;
+      const rect = stageEl.getBoundingClientRect();
+      const x = (e.clientX-rect.left)/rect.width*100;
+      handleCanoeTouchDown(x);
+    });
+    layerEl.addEventListener('pointermove', (e)=>{
+      if(!canoeTouchDragging) return;
+      const rect = stageEl.getBoundingClientRect();
+      const x = (e.clientX-rect.left)/rect.width*100;
+      handleCanoeTouchMove(x);
+    });
+    const endDrag = ()=>{ canoeTouchDragging = false; };
+    layerEl.addEventListener('pointerup', endDrag);
+    layerEl.addEventListener('pointercancel', endDrag);
+    layerEl.addEventListener('pointerleave', endDrag);
+  }
+
   registerProgram('canoe', {
     title: '🛶 にゃーカヌー',
     durationSec: 60,
@@ -3404,6 +3512,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="canoe-el" id="canoeEl"></div>
       <div class="paddle-el" id="paddleEl"></div>
       <div class="paddle-splash" id="paddleSplash"></div>
+      <div class="mogi-touch-layer" id="canoeTouchLayer"></div>
     `,
     setup(){
       canoeEl = document.getElementById('canoeEl');
@@ -3412,6 +3521,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       paddleEl.innerHTML = PADDLE_SVG;
       riverLayerEl = document.getElementById('canoeRiverLayer');
       splashEl = document.getElementById('paddleSplash');
+      setupCanoeTouch(document.getElementById('canoeTouchLayer'));
     },
     start(){
       canoeX = 50;
@@ -3548,6 +3658,40 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     spawnBurst(x, y, type, 22, 40, 90, [3,6], 220);
   }
 
+  function fireCurrentStar(){
+    const t = FIREWORK_TYPES[starType];
+    onSuccess(t.points, ()=>feedbackFirework(t.points));
+    statusEl.textContent = t.label + 'の花火が上がった!';
+    launchFirework(starX, starY, starType);
+    starEl.classList.add('hidden');
+    holdStartAt = null;
+    setTimeout(spawnStar, 500);
+  }
+
+  // タッチ/クリックでもプレイできるように: 星を約0.7秒(STAR_HOLD_MSと同じ)タップ&ホールドすると花火が上がる。
+  let hanabiTouchHoldTimer = null;
+  function handleHanabiTouchDown(x, y){
+    if(distPct(x, y, starX, starY) >= CATCH_RADIUS) return;
+    clearTimeout(hanabiTouchHoldTimer);
+    hanabiTouchHoldTimer = setTimeout(fireCurrentStar, STAR_HOLD_MS);
+  }
+  function cancelHanabiTouchHold(){
+    clearTimeout(hanabiTouchHoldTimer);
+    hanabiTouchHoldTimer = null;
+  }
+  function setupHanabiTouch(layerEl){
+    if(!layerEl) return;
+    layerEl.addEventListener('pointerdown', (e)=>{
+      const rect = stageEl.getBoundingClientRect();
+      const x = (e.clientX-rect.left)/rect.width*100;
+      const y = (e.clientY-rect.top)/rect.height*100;
+      handleHanabiTouchDown(x, y);
+    });
+    layerEl.addEventListener('pointerup', cancelHanabiTouchHold);
+    layerEl.addEventListener('pointercancel', cancelHanabiTouchHold);
+    layerEl.addEventListener('pointerleave', cancelHanabiTouchHold);
+  }
+
   registerProgram('hanabi', {
     title: '🎆 にゃー花火',
     durationSec: 60,
@@ -3651,10 +3795,12 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       </div>
       <div id="hanabiSparkLayer"></div>
       <div class="hanabi-star" id="hanabiStar">⭐</div>
+      <div class="mogi-touch-layer" id="hanabiTouchLayer"></div>
     `,
     setup(){
       starEl = document.getElementById('hanabiStar');
       sparkLayerEl = document.getElementById('hanabiSparkLayer');
+      setupHanabiTouch(document.getElementById('hanabiTouchLayer'));
     },
     start(){
       spawnStar();
@@ -3667,19 +3813,14 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         if(holdStartAt === null) holdStartAt = Date.now();
         const elapsed = Date.now() - holdStartAt;
         if(elapsed >= STAR_HOLD_MS){
-          const t = FIREWORK_TYPES[starType];
-          onSuccess(t.points, ()=>feedbackFirework(t.points));
-          statusEl.textContent = t.label + 'の花火が上がった!';
-          launchFirework(starX, starY, starType);
-          starEl.classList.add('hidden');
-          holdStartAt = null;
-          setTimeout(spawnStar, 500);
+          fireCurrentStar();
         }
       }else{
         holdStartAt = null;
       }
     },
     onTick(){},
+    onLeave(){ cancelHanabiTouchHold(); },
   });
 })();
 
@@ -3786,6 +3927,13 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     notes = notes.filter(n=>n!==best);
   }
 
+  // タッチ/クリックでもプレイできるように: マイクの拍手検知(checkClap)の代わりに、
+  // 画面をタップした瞬間を「1回叩いた」ことにして、そのままtryJudgeClap()で判定する。
+  function setupTehyoushiTouch(layerEl){
+    if(!layerEl) return;
+    layerEl.addEventListener('pointerdown', ()=>{ tryJudgeClap(); });
+  }
+
   registerProgram('tehyoushi', {
     title: '👏 にゃー手拍子',
     durationSec: 60,
@@ -3795,9 +3943,11 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="clap-track"></div>
       <div id="clapNoteLayer"></div>
       <div class="clap-judge-line"></div>
+      <div class="mogi-touch-layer" id="tehyoushiTouchLayer"></div>
     `,
     setup(){
       noteLayerEl = document.getElementById('clapNoteLayer');
+      setupTehyoushiTouch(document.getElementById('tehyoushiTouchLayer'));
     },
     start(){
       notes.forEach(n=>n.el.remove());
@@ -4232,6 +4382,77 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     return HARMONY_RATIOS.some(r => Math.abs(ratio - r) < HARMONY_TOLERANCE);
   }
 
+  // タッチ/クリックでもプレイできるように: 指で触れている間、その位置に応じた連続音を鳴らし続ける
+  // (カメラの「パー」と同じ動作)。2本指まで、それぞれ独立してLeft/Right役を割り当てる。
+  let instTouchByPointer = {};
+  function assignInstHandedness(){
+    const used = Object.values(instTouchByPointer);
+    if(!used.includes('Left')) return 'Left';
+    if(!used.includes('Right')) return 'Right';
+    return null;
+  }
+  function updateInstTouchTone(hd, x, y){
+    const chain = ensureChain(hd);
+    if(!chain) return;
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    smoothX[hd] = x; smoothY[hd] = y;
+    const freq = yToFreq(y);
+    const pan = xToPan(x);
+    const c = instChains[hd];
+    c.osc.frequency.setTargetAtTime(freq, now, 0.05);
+    if(c.panner) c.panner.pan.setTargetAtTime(pan, now, 0.08);
+    c.gain.gain.setTargetAtTime(0.16, now, 0.08);
+    lastFreq[hd] = freq;
+    const ringEl = hd === 'Left' ? ringLeftEl : ringRightEl;
+    if(ringEl){
+      ringEl.style.left = x+'%'; ringEl.style.top = y+'%';
+      ringEl.style.width = '80px'; ringEl.style.height = '80px';
+      ringEl.style.opacity = '0.85';
+      const hue = freqToHue(freq);
+      ringEl.style.background = `radial-gradient(circle, hsla(${hue},85%,75%,.9), hsla(${hue},85%,55%,.2))`;
+    }
+    if(labelEl) labelEl.textContent = '好きな音を探そう';
+  }
+  function stopInstTouchTone(hd){
+    const ctx = getAudioCtx();
+    const now = ctx ? ctx.currentTime : 0;
+    if(instChains[hd]) instChains[hd].gain.gain.setTargetAtTime(0, now, 0.05);
+    const ringEl = hd === 'Left' ? ringLeftEl : ringRightEl;
+    if(ringEl) ringEl.style.opacity = '0.3';
+    lastFreq[hd] = null;
+  }
+  function setupInstrumentTouch(layerEl){
+    if(!layerEl) return;
+    instTouchByPointer = {};
+    layerEl.addEventListener('pointerdown', (e)=>{
+      const hd = assignInstHandedness();
+      if(!hd) return;
+      instTouchByPointer[e.pointerId] = hd;
+      const rect = stageEl.getBoundingClientRect();
+      const x = (e.clientX-rect.left)/rect.width*100;
+      const y = (e.clientY-rect.top)/rect.height*100;
+      updateInstTouchTone(hd, x, y);
+    });
+    layerEl.addEventListener('pointermove', (e)=>{
+      const hd = instTouchByPointer[e.pointerId];
+      if(!hd) return;
+      const rect = stageEl.getBoundingClientRect();
+      const x = (e.clientX-rect.left)/rect.width*100;
+      const y = (e.clientY-rect.top)/rect.height*100;
+      updateInstTouchTone(hd, x, y);
+    });
+    function endTouch(e){
+      const hd = instTouchByPointer[e.pointerId];
+      if(!hd) return;
+      delete instTouchByPointer[e.pointerId];
+      stopInstTouchTone(hd);
+    }
+    layerEl.addEventListener('pointerup', endTouch);
+    layerEl.addEventListener('pointercancel', endTouch);
+    layerEl.addEventListener('pointerleave', endTouch);
+  }
+
   registerProgram('instrument', {
     title: '🎻 にゃーテルミン',
     durationSec: 90,
@@ -4273,6 +4494,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="instrument-ring" id="instrumentRingLeft"></div>
       <div class="instrument-ring" id="instrumentRingRight"></div>
       <div class="instrument-label" id="instrumentLabel">両手を開いて、好きな音を探そう</div>
+      <div class="mogi-touch-layer" id="instrumentTouchLayer"></div>
     `,
     setup(){
       ringLeftEl = document.getElementById('instrumentRingLeft');
@@ -4280,6 +4502,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       lineEl = document.getElementById('instrumentLine');
       labelEl = document.getElementById('instrumentLabel');
       crashEl = document.getElementById('instrumentCrash');
+      setupInstrumentTouch(document.getElementById('instrumentTouchLayer'));
     },
     start(){
       ensureChain('Left'); ensureChain('Right');
