@@ -712,7 +712,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0917-1227"
+    "buildDate": "0918-1556"
   },
   "about": {
     "paragraphs": [
@@ -3684,9 +3684,11 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   }
 
   // タッチ/クリックでもプレイできるように: 星を約0.7秒(STAR_HOLD_MSと同じ)タップ&ホールドすると花火が上がる。
+  // マウスクリックは一発勝負で微調整が効かないため、当たり判定はカメラの手より広めにする。
+  const HANABI_TOUCH_CATCH_RADIUS = 16;
   let hanabiTouchHoldTimer = null;
   function handleHanabiTouchDown(x, y){
-    if(distPct(x, y, starX, starY) >= CATCH_RADIUS) return;
+    if(distPct(x, y, starX, starY) >= HANABI_TOUCH_CATCH_RADIUS) return;
     clearTimeout(hanabiTouchHoldTimer);
     hanabiTouchHoldTimer = setTimeout(fireCurrentStar, STAR_HOLD_MS);
   }
