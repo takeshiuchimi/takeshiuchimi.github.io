@@ -204,7 +204,24 @@
     position:absolute; left:0; right:0; bottom:6%; display:flex; justify-content:space-around;
     pointer-events:none;
   }
-  .mogi-touch-layer{ position:absolute; inset:0; z-index:7; touch-action:none; }
+  .touch-catch-layer{ position:absolute; inset:0; z-index:7; touch-action:none; }
+  .touch-ripple{
+    position:absolute; width:36px; height:36px; margin-left:-18px; margin-top:-18px;
+    border-radius:50%; pointer-events:none; z-index:8;
+    background:radial-gradient(circle, rgba(255,255,255,.9), rgba(212,175,55,.55) 55%, transparent 72%);
+    animation: touchRippleAnim .5s ease-out forwards;
+  }
+  @keyframes touchRippleAnim{
+    0%{ transform:scale(0.3); opacity:1; }
+    100%{ transform:scale(2.3); opacity:0; }
+  }
+  .touch-hint{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:rgba(74,59,42,.55); color:#fff; font-size:13px; font-weight:bold;
+    padding:8px 16px; border-radius:20px; pointer-events:none; z-index:8;
+    white-space:nowrap; transition:opacity .6s ease; opacity:1;
+  }
+  .touch-hint.fade{ opacity:0; }
   .basket{
     width:28%; aspect-ratio:6/5; max-width:120px;
     position:relative; border-radius:8px;
@@ -369,8 +386,9 @@
   .piano-autoplay-btn{
     position:relative; top:auto; left:auto; z-index:6; overflow:hidden;
     display:flex; align-items:center; gap:4px; max-width:100%;
-    background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47); border-radius:20px;
-    padding:5px 12px; font-size:12px; font-weight:bold; color:var(--brown-deep,#8B6F47);
+    background:var(--card-bg,#fff); border:2px solid var(--gold,#D4AF37); border-radius:22px;
+    box-shadow:0 3px 0 rgba(139,111,71,.2);
+    padding:7px 14px; font-size:12px; font-weight:bold; color:var(--brown-deep,#6B5335);
     cursor:pointer; touch-action:manipulation;
   }
   #pianoAutoplayLabel{
@@ -388,12 +406,14 @@
   }
   .piano-song-switch-btn{
     position:relative; overflow:hidden;
-    width:30px; height:30px; border-radius:50%; z-index:6;
-    background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47);
-    color:var(--brown-deep,#8B6F47); font-size:14px; cursor:pointer; touch-action:manipulation;
+    width:34px; height:34px; border-radius:50%; z-index:6;
+    background:var(--card-bg,#fff); border:2px solid var(--gold,#D4AF37);
+    box-shadow:0 3px 0 rgba(139,111,71,.2);
+    color:var(--brown-deep,#6B5335); font-size:15px; cursor:pointer; touch-action:manipulation;
     display:flex; align-items:center; justify-content:center;
   }
-  html.dark-mode .piano-song-switch-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
+  .piano-song-switch-btn:active{ box-shadow:0 1px 0 rgba(139,111,71,.2); transform:translateY(2px); }
+  html.dark-mode .piano-song-switch-btn{ background:rgba(30,25,15,.9); color:#D8C9A8; }
   .piano-score-wrap{
     width:100%; z-index:6;
     background:rgba(255,255,255,.92); border-radius:8px; padding:4px;
@@ -408,9 +428,9 @@
   .piano-score-svg .score-item.current rect{ fill:#D4534A !important; }
   html.dark-mode .piano-score-wrap{ background:rgba(30,25,15,.92); color:#D8C9A8; }
   .piano-pending{ display:none !important; } /* はじめる前は、これらの操作ボタンを隠して押せなくする */
-  .piano-autoplay-btn.on{ background:#FFD98A; }
-  html.dark-mode .piano-autoplay-btn{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
-  html.dark-mode .piano-autoplay-btn.on{ background:#8B6F47; color:#fff; }
+  .piano-autoplay-btn.on{ background:var(--gold,#FFD98A); }
+  html.dark-mode .piano-autoplay-btn{ background:rgba(30,25,15,.9); color:#D8C9A8; }
+  html.dark-mode .piano-autoplay-btn.on{ background:var(--brown,#8C6C48); color:#fff; }
   .btn-dwell-fill{ position:absolute; inset:0; z-index:-1; width:0%; background:rgba(212,175,55,.55); pointer-events:none; }
   .piano-song-credit{ font-size:9px; color:#a8967a; text-align:center; margin-top:2px; }
   .piano-xml-panel{
@@ -429,18 +449,19 @@
   .piano-octave-ctrl{
     position:relative; z-index:7;
     display:flex; align-items:center; gap:2px;
-    background:rgba(255,255,255,.85); border:2px solid var(--brown-deep,#8B6F47); border-radius:20px;
-    padding:3px; font-size:12px; font-weight:bold; color:var(--brown-deep,#8B6F47);
+    background:var(--card-bg,#fff); border:2px solid var(--gold,#D4AF37); border-radius:22px;
+    box-shadow:0 3px 0 rgba(139,111,71,.2);
+    padding:3px; font-size:12px; font-weight:bold; color:var(--brown-deep,#6B5335);
   }
   .piano-octave-btn{
     position:relative; overflow:hidden;
-    width:28px; height:28px; border-radius:50%; border:none; background:transparent;
-    color:inherit; font-size:15px; cursor:pointer; touch-action:manipulation;
+    width:32px; height:32px; border-radius:50%; border:none; background:transparent;
+    color:inherit; font-size:16px; cursor:pointer; touch-action:manipulation;
     display:flex; align-items:center; justify-content:center;
   }
-  .piano-octave-btn:active{ background:rgba(139,111,71,.2); }
-  .piano-octave-label{ min-width:44px; text-align:center; font-size:11px; }
-  html.dark-mode .piano-octave-ctrl{ background:rgba(30,25,15,.85); color:#D8C9A8; border-color:#5A4E30; }
+  .piano-octave-btn:active{ background:rgba(139,111,71,.25); }
+  .piano-octave-label{ min-width:46px; text-align:center; font-size:11px; }
+  html.dark-mode .piano-octave-ctrl{ background:rgba(30,25,15,.9); color:#D8C9A8; }
   #pianoLabel.instrument-label{ top:230px; } /* 上のボタン列・楽譜パネルと重ならないよう、この楽器だけメッセージ表示位置を下にずらす */
   .piano-hand-marker{
     position:absolute; width:34px; height:34px; border-radius:50%; transform:translate(-50%,-50%);
@@ -712,7 +733,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0918-1556"
+    "buildDate": "0918-1648"
   },
   "about": {
     "paragraphs": [
@@ -740,6 +761,14 @@
       { "heading": null, "body": "<b>グーチョキパー判定</b>：4本の指(人差し指・中指・薬指・小指)それぞれの指先と、その一つ手前の関節(PIP)の、手首からの距離を比較し、伸びているか曲がっているかを判定します。人差し指・中指だけが伸びていれば「チョキ」、3本以上伸びていれば「パー」、それ以外は「グー」としています。" },
       { "heading": null, "body": "<b>左右の判定</b>：MediaPipeが手ごとに「左手か右手か」を判定する機能(handedness)を使い、位置ではなく手そのものを追跡しています。これにより、両手を交差させても、それぞれの手が持っている物が入れ替わったりしません。なお、MediaPipeは入力画像が鏡映し済みであることを前提に左右判定するため、実際には鏡映しでない映像を渡している当アプリでは、判定結果をアプリ内で反転させて補正しています。" },
       { "heading": null, "body": "<b>片手の方への配慮</b>：全てのプログラムは、検出できた手の本数に自動で合わせる設計にしています。片手しか映っていない・使えない場合は、その1本で全ての操作を兼用します。もぎは両手それぞれで別々のフルーツを持てますが、片手だけでも問題なく遊べます。カヌーは片手の場合、利き手側に応じて位置を少しずらし、自然な持ち方に近づけています。" },
+      { "heading": "👆 タッチ/クリックでの操作", "body": "体操以外の8プログラムは、カメラの手が使えなくても、タッチ(スマホ)・マウスクリック(PC)だけで遊べます。どのゲームも、カメラの手の動きを検知する既存の判定関数をタッチからもそのまま呼び出しているだけなので、判定ロジック自体は手でもタッチでも同じです。" },
+      { "heading": null, "body": "<b>もぎ</b>：実をタップで掴み、指を動かしてかごまで運んで離すと落とせます。" },
+      { "heading": null, "body": "<b>ゆらし</b>：落下中の実の近くをタップでキャッチ、外れた場所のタップで木を揺らします。タップは手のように連続で位置を追えないため、キャッチの当たり判定は手より広めにしています。" },
+      { "heading": null, "body": "<b>カヌー</b>：タップした位置へ移動しつつ一漕ぎ、押したままのドラッグで操縦できます。パドルの見た目も、手でグーを握った時と同じ位置に表示されます。" },
+      { "heading": null, "body": "<b>花火</b>：星を約0.7秒タップ&ホールドすると打ち上がります。グーパーの形は問わない、カメラ版と同じ判定です。" },
+      { "heading": null, "body": "<b>手拍子</b>：画面タップが、そのまま「1回叩いた」判定になります。" },
+      { "heading": null, "body": "<b>テルミン</b>：指で触れている位置に応じた連続音が鳴ります。2本指まで、それぞれ独立して操作できます。" },
+      { "heading": null, "body": "<b>ピアノ・クイズ</b>：この2つは、タッチ対応の追加より前から鍵盤・選択肢を直接タップ/クリックできる作りでした。" },
       { "heading": null, "body": "<b>木を揺らす判定</b>：手の位置(x座標・y座標)の変化を0.9秒分さかのぼって記録し、方向が反転した回数を数えています。左右に振っても、上下に振っても、どちらでも木は揺れます。ジッター(細かい震え)を無視するため、2.5%未満の変化は無視しています。4回反転(=2往復)で「揺れた」と判定します。" },
       { "heading": "🍎 落下の物理演算", "body": "もいだ・落ちた果物は、単純な重力加速度シミュレーション(1tickごとに速度が加算されていく)で落下させています。特別なライブラリは使っていません。" },
       { "heading": null, "body": "<b>花火のホールド判定</b>：夜空の星は、グーパーのような手の形は問わず、位置が合っているかだけを見ています。星の位置に手を約0.7秒乗せ続けると花火が上がる、シンプルな判定です。握る動作が難しい方でも遊べるよう、あえてこの方式にしています。" },
@@ -761,18 +790,18 @@
       { "heading": null, "body": "<b>にゃークイズ</b>：県庁所在地・車種→メーカー・国旗・ことわざの続き・都道府県の名産品、5つのジャンルから毎回ランダムに出題する3択クイズです。画面を左・中央・右の3つのゾーンに分け、手をその方向に動かすと選択肢が浮き上がり、握ると決定します。鍵盤と同じく、選択肢を直接タップ/クリックしても答えられます。決定すると、ドラムロール音(Web Audio APIでノイズ音を連打し、だんだん大きくする自作の音)が鳴って少し間を置いてから、正解なら⭕と紙吹雪、不正解なら❌と画面の小さな揺れで結果を発表します。クイズ番組のような緊張感を演出していますが、特定の番組を再現したものではありません。全8問固定で、何問正解できたかで評価が決まります。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
-    "capacityNote": "このファイル1本で約279KB(共通エンジン+全9プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+    "capacityNote": "このファイル1本で約292KB(共通エンジン+全9プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
     "capacityBreakdown": [
-      { "name":"共通エンジン(カメラ・マイク・音・UI・BGM等)", "kb":148.3, "pct":53.1 },
-      { "name":"にゃーピアノ", "kb":46.9, "pct":16.8 },
-      { "name":"にゃー花火", "kb":19.5, "pct":7.0 },
-      { "name":"にゃーテルミン", "kb":18.4, "pct":6.6 },
-      { "name":"にゃークイズ", "kb":15.7, "pct":5.6 },
-      { "name":"にゃーカヌー", "kb":8.5, "pct":3.0 },
-      { "name":"にゃー体操", "kb":8.1, "pct":2.9 },
-      { "name":"にゃーもぎ", "kb":6.2, "pct":2.2 },
-      { "name":"にゃー手拍子", "kb":4.7, "pct":1.7 },
-      { "name":"にゃーゆらし", "kb":2.9, "pct":1.0 }
+      { "name":"共通エンジン(カメラ・マイク・音・UI・BGM等)", "kb":150.5, "pct":51.6 },
+      { "name":"にゃーピアノ", "kb":46.9, "pct":16.1 },
+      { "name":"にゃーテルミン", "kb":21.4, "pct":7.3 },
+      { "name":"にゃー花火", "kb":21.2, "pct":7.3 },
+      { "name":"にゃークイズ", "kb":15.7, "pct":5.4 },
+      { "name":"にゃーカヌー", "kb":10.4, "pct":3.6 },
+      { "name":"にゃー体操", "kb":8.1, "pct":2.8 },
+      { "name":"にゃーもぎ", "kb":8.2, "pct":2.8 },
+      { "name":"にゃー手拍子", "kb":5.2, "pct":1.8 },
+      { "name":"にゃーゆらし", "kb":4.3, "pct":1.5 }
     ]
   },
   "programs": [
@@ -1803,6 +1832,28 @@ let handXHistoryByHand = [[], []], shakeReversals = 0, lastShakeAt = 0;
 const SHAKE_REQUIRED = 4, SHAKE_WINDOW_MS = 900, SHAKE_COOLDOWN_MS = 900, SHAKE_NOISE_THRESHOLD = 2.5;
 
 function distPct(x1,y1,x2,y2){ const dx=x1-x2, dy=y1-y2; return Math.sqrt(dx*dx+dy*dy); }
+// タッチ/クリック対応の全ゲーム共通: 押した瞬間、その場所に小さな波紋を広げて消す。
+// 押せたことが視覚的に分かるようにするための、軽いフィードバック演出。
+function spawnTouchRipple(layerEl, xPct, yPct){
+  if(!layerEl) return;
+  const ripple = document.createElement('div');
+  ripple.className = 'touch-ripple';
+  ripple.style.left = xPct + '%';
+  ripple.style.top = yPct + '%';
+  layerEl.appendChild(ripple);
+  setTimeout(()=>{ ripple.remove(); }, 550);
+}
+// タッチ/クリック対応ゲーム共通: ゲーム開始直後だけ、画面のどこでも操作できることを
+// 控えめに知らせる。数秒でふわっと消える。
+function showTouchHint(layerEl){
+  if(!layerEl) return;
+  const hint = document.createElement('div');
+  hint.className = 'touch-hint';
+  hint.textContent = '👆 画面をタップして操作';
+  layerEl.appendChild(hint);
+  setTimeout(()=>{ hint.classList.add('fade'); }, 1400);
+  setTimeout(()=>{ hint.remove(); }, 2000);
+}
 
 function showCallout(text){
   clearTimeout(calloutTimer);
@@ -3087,6 +3138,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       if(!handedness) return;
       mogiTouchByPointer[e.pointerId] = handedness;
       const { x, y } = mogiPointerToPct(e);
+      spawnTouchRipple(layerEl, x, y);
       tryGrab(handedness, x, y);
     });
     layerEl.addEventListener('pointermove', (e)=>{
@@ -3162,7 +3214,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="basket-row" id="mogiBasketRow"></div>
       <div class="held-fruit-mogi" id="mogiHeldFruit" style="position:absolute;font-size:26px;transform:translate(-50%,-120%);pointer-events:none;z-index:4;"></div>
       <div class="held-fruit-mogi" id="mogiHeldFruit2" style="position:absolute;font-size:26px;transform:translate(-50%,-120%);pointer-events:none;z-index:4;"></div>
-      <div class="mogi-touch-layer" id="mogiTouchLayer"></div>
+      <div class="touch-catch-layer" id="mogiTouchLayer"></div>
     `,
     setup(){
       fruitsLayerEl = document.getElementById('mogiFruitsLayer');
@@ -3175,6 +3227,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       holdingByHand = { Left:null, Right:null };
       buildBaskets();
       respawnAllFruits();
+      showTouchHint(document.getElementById('mogiTouchLayer'));
     },
     reset(){
       holdingByHand = { Left:null, Right:null };
@@ -3249,10 +3302,10 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   // タッチ/クリックでもプレイできるように: 落ちてきている実の近くをタップすればキャッチ、
   // 実が無い場所をタップすれば木を揺らす操作として扱う(手を振る動きの代わり)。
+  // タップは一瞬しか位置を指定できない(手のように連続で追従できない)ため、
+  // キャッチの当たり判定はカメラの手より広めにして、タップでも取りやすくする。
+  const TOUCH_CATCH_RADIUS = 20;
   function handleYurashiTouch(x, y){
-    // タップは一瞬しか位置を指定できない(手のように連続で追従できない)ため、
-    // キャッチの当たり判定はカメラの手より広めにして、タップでも取りやすくする。
-    const TOUCH_CATCH_RADIUS = 20;
     for(let i=fallingFruits.length-1;i>=0;i--){
       const ff = fallingFruits[i];
       if(distPct(x, y, ff.x, ff.y) < TOUCH_CATCH_RADIUS){
@@ -3272,6 +3325,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       const rect = stageEl.getBoundingClientRect();
       const x = (e.clientX-rect.left)/rect.width*100;
       const y = (e.clientY-rect.top)/rect.height*100;
+      spawnTouchRipple(layerEl, x, y);
       handleYurashiTouch(x, y);
     });
   }
@@ -3286,7 +3340,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div id="yurashiFruitsLayer"></div>
       <div class="net-area">🧺</div>
       <div class="shake-gauge"><div class="shake-gauge-fill" id="yurashiShakeGaugeFill"></div></div>
-      <div class="mogi-touch-layer" id="yurashiTouchLayer"></div>
+      <div class="touch-catch-layer" id="yurashiTouchLayer"></div>
     `,
     setup(){
       fruitsLayerEl = document.getElementById('yurashiFruitsLayer');
@@ -3297,6 +3351,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     start(){
       triggered_shakeGaugeFill = shakeGaugeFillEl;
       respawnAllFruits();
+      showTouchHint(document.getElementById('yurashiTouchLayer'));
     },
     reset(){ this.start(); },
     onHand(){
@@ -3492,6 +3547,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       canoeTouchDragging = true;
       const rect = stageEl.getBoundingClientRect();
       const x = (e.clientX-rect.left)/rect.width*100;
+      const y = (e.clientY-rect.top)/rect.height*100;
+      spawnTouchRipple(layerEl, x, y);
       handleCanoeTouchDown(x);
     });
     layerEl.addEventListener('pointermove', (e)=>{
@@ -3527,7 +3584,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="canoe-el" id="canoeEl"></div>
       <div class="paddle-el" id="paddleEl"></div>
       <div class="paddle-splash" id="paddleSplash"></div>
-      <div class="mogi-touch-layer" id="canoeTouchLayer"></div>
+      <div class="touch-catch-layer" id="canoeTouchLayer"></div>
     `,
     setup(){
       canoeEl = document.getElementById('canoeEl');
@@ -3548,6 +3605,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       objects = [];
       paddleYHistoryByHand = [[], []];
       lastPaddleAtByHand = [0, 0];
+      showTouchHint(document.getElementById('canoeTouchLayer'));
     },
     reset(){ this.start(); },
     onHand(){
@@ -3685,10 +3743,12 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
 
   // タッチ/クリックでもプレイできるように: 星を約0.7秒(STAR_HOLD_MSと同じ)タップ&ホールドすると花火が上がる。
   // マウスクリックは一発勝負で微調整が効かないため、当たり判定はカメラの手より広めにする。
-  const HANABI_TOUCH_CATCH_RADIUS = 16;
+  const TOUCH_CATCH_RADIUS = 16;
   let hanabiTouchHoldTimer = null;
   function handleHanabiTouchDown(x, y){
-    if(distPct(x, y, starX, starY) >= HANABI_TOUCH_CATCH_RADIUS) return;
+    const d = distPct(x, y, starX, starY);
+    console.log('[花火デバッグ] クリック座標(%)=', x.toFixed(1), y.toFixed(1), ' 星の座標(%)=', starX.toFixed(1), starY.toFixed(1), ' 距離=', d.toFixed(1), ' 判定半径=', TOUCH_CATCH_RADIUS, ' 発火する?', d < TOUCH_CATCH_RADIUS);
+    if(d >= TOUCH_CATCH_RADIUS) return;
     clearTimeout(hanabiTouchHoldTimer);
     hanabiTouchHoldTimer = setTimeout(fireCurrentStar, STAR_HOLD_MS);
   }
@@ -3702,6 +3762,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       const rect = stageEl.getBoundingClientRect();
       const x = (e.clientX-rect.left)/rect.width*100;
       const y = (e.clientY-rect.top)/rect.height*100;
+      spawnTouchRipple(layerEl, x, y);
       handleHanabiTouchDown(x, y);
     });
     layerEl.addEventListener('pointerup', cancelHanabiTouchHold);
@@ -3812,7 +3873,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       </div>
       <div id="hanabiSparkLayer"></div>
       <div class="hanabi-star" id="hanabiStar">⭐</div>
-      <div class="mogi-touch-layer" id="hanabiTouchLayer"></div>
+      <div class="touch-catch-layer" id="hanabiTouchLayer"></div>
     `,
     setup(){
       starEl = document.getElementById('hanabiStar');
@@ -3821,6 +3882,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     },
     start(){
       spawnStar();
+      showTouchHint(document.getElementById('hanabiTouchLayer'));
     },
     reset(){ this.start(); },
     onHand(){
@@ -3948,7 +4010,13 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   // 画面をタップした瞬間を「1回叩いた」ことにして、そのままtryJudgeClap()で判定する。
   function setupTehyoushiTouch(layerEl){
     if(!layerEl) return;
-    layerEl.addEventListener('pointerdown', ()=>{ tryJudgeClap(); });
+    layerEl.addEventListener('pointerdown', (e)=>{
+      const rect = stageEl.getBoundingClientRect();
+      const x = (e.clientX-rect.left)/rect.width*100;
+      const y = (e.clientY-rect.top)/rect.height*100;
+      spawnTouchRipple(layerEl, x, y);
+      tryJudgeClap();
+    });
   }
 
   registerProgram('tehyoushi', {
@@ -3960,7 +4028,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="clap-track"></div>
       <div id="clapNoteLayer"></div>
       <div class="clap-judge-line"></div>
-      <div class="mogi-touch-layer" id="tehyoushiTouchLayer"></div>
+      <div class="touch-catch-layer" id="tehyoushiTouchLayer"></div>
     `,
     setup(){
       noteLayerEl = document.getElementById('clapNoteLayer');
@@ -3972,6 +4040,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       spawnQueue = [];
       gameStartAt = Date.now();
       nextSpawnAt = Date.now() + 500;
+      showTouchHint(document.getElementById('tehyoushiTouchLayer'));
     },
     reset(){ this.start(); },
     onHand(){},
@@ -4449,6 +4518,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       const rect = stageEl.getBoundingClientRect();
       const x = (e.clientX-rect.left)/rect.width*100;
       const y = (e.clientY-rect.top)/rect.height*100;
+      spawnTouchRipple(layerEl, x, y);
       updateInstTouchTone(hd, x, y);
     });
     layerEl.addEventListener('pointermove', (e)=>{
@@ -4511,7 +4581,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       <div class="instrument-ring" id="instrumentRingLeft"></div>
       <div class="instrument-ring" id="instrumentRingRight"></div>
       <div class="instrument-label" id="instrumentLabel">両手を開いて、好きな音を探そう</div>
-      <div class="mogi-touch-layer" id="instrumentTouchLayer"></div>
+      <div class="touch-catch-layer" id="instrumentTouchLayer"></div>
     `,
     setup(){
       ringLeftEl = document.getElementById('instrumentRingLeft');
@@ -4531,6 +4601,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       shapeHistory = { Left:[], Right:[] };
       smoothY = { Left:null, Right:null };
       smoothX = { Left:null, Right:null };
+      showTouchHint(document.getElementById('instrumentTouchLayer'));
     },
     reset(){ this.start(); },
     onLeave(){ stopChain('Left'); stopChain('Right'); },
