@@ -339,24 +339,10 @@
 
   /* ---- にゃーピアノ用 ---- */
   .piano-bg{
-    position:absolute; inset:0; pointer-events:none; overflow:hidden;
+    position:absolute; inset:0; pointer-events:none;
     background:linear-gradient(180deg, #FDF6E8 0%, #F0E2C8 55%, #E8D7B8 100%);
   }
   html.dark-mode .piano-bg{ background:linear-gradient(180deg, #2A2418 0%, #1A160E 100%); }
-  .piano-staff{ position:absolute; left:8%; right:8%; top:8%; height:16%; opacity:.4; }
-  .piano-staff svg{ width:100%; height:100%; display:block; }
-  .piano-staff svg line{ stroke:#8B6F47; }
-  html.dark-mode .piano-staff svg line{ stroke:#D8C9A8; }
-  .piano-note{
-    position:absolute; font-size:22px; color:#8B6F47; opacity:.5;
-    animation:pianoNoteFloat 9s ease-in-out infinite;
-  }
-  html.dark-mode .piano-note{ color:#D8C9A8; }
-  @keyframes pianoNoteFloat{
-    0%{ transform:translateY(0) rotate(0deg); opacity:.45; }
-    50%{ transform:translateY(-16px) rotate(8deg); opacity:.7; }
-    100%{ transform:translateY(0) rotate(0deg); opacity:.45; }
-  }
   .piano-keys{ position:absolute; left:0; right:0; bottom:6%; height:32%; display:flex; pointer-events:none; touch-action:none; }
   .piano-key{
     pointer-events:auto; cursor:pointer; touch-action:none;
@@ -404,6 +390,27 @@
   .piano-toolbar-secondary{
     display:flex; align-items:center; gap:6px;
   }
+  .song-wheel{
+    display:flex; flex-direction:column; overflow-y:auto; scroll-snap-type:y mandatory;
+    width:130px; height:34px; -webkit-overflow-scrolling:touch;
+    scrollbar-width:none; touch-action:pan-y;
+  }
+  .song-wheel::-webkit-scrollbar{ display:none; }
+  .song-wheel-item{
+    scroll-snap-align:start; flex:0 0 34px; height:34px; width:130px; box-sizing:border-box;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 10px; border-radius:16px; font-size:11px; font-weight:bold;
+    background:rgba(255,255,255,.55); color:var(--brown-deep,#6B5335);
+    opacity:.5; transition:opacity .15s ease;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; cursor:pointer;
+  }
+  .song-wheel-item.active{
+    opacity:1;
+    background:var(--card-bg,#fff); border:2px solid var(--gold,#D4AF37);
+    box-shadow:0 2px 0 rgba(139,111,71,.2);
+  }
+  html.dark-mode .song-wheel-item{ background:rgba(30,25,15,.6); }
+  html.dark-mode .song-wheel-item.active{ background:rgba(30,25,15,.9); }
   .piano-song-switch-btn{
     position:relative; overflow:hidden;
     width:34px; height:34px; border-radius:50%; z-index:6;
@@ -415,18 +422,15 @@
   .piano-song-switch-btn:active{ box-shadow:0 1px 0 rgba(139,111,71,.2); transform:translateY(2px); }
   html.dark-mode .piano-song-switch-btn{ background:rgba(30,25,15,.9); color:#D8C9A8; }
   .piano-score-wrap{
-    width:100%; z-index:6;
-    background:rgba(255,255,255,.92); border-radius:8px; padding:4px;
-    height:104px; overflow-x:auto; overflow-y:hidden; color:#3A2C1E;
-    scrollbar-width:thin; /* Firefox: スクロールバーを細くして高さを圧迫しないようにする */
+    width:100%; z-index:6; background:transparent;
+    height:104px; overflow-x:auto; overflow-y:hidden; color:#6B5335;
+    scrollbar-width:none; /* 常時表示の飾りなので、スクロールバー自体を見せない */
   }
-  .piano-score-wrap::-webkit-scrollbar{ height:6px; }
-  .piano-score-wrap::-webkit-scrollbar-thumb{ background:rgba(139,111,71,.4); border-radius:3px; }
-  .piano-score-wrap.hidden{ display:none; }
-  .piano-score-svg{ height:90px; display:block; }
-  .piano-score-svg .score-item.current ellipse{ fill:#D4534A !important; stroke:#D4534A !important; }
-  .piano-score-svg .score-item.current rect{ fill:#D4534A !important; }
-  html.dark-mode .piano-score-wrap{ background:rgba(30,25,15,.92); color:#D8C9A8; }
+  .piano-score-wrap::-webkit-scrollbar{ display:none; }
+  .piano-score-svg{ height:90px; display:block; opacity:.55; }
+  .piano-score-svg .score-item.current ellipse{ fill:#D9622B !important; stroke:#D9622B !important; }
+  .piano-score-svg .score-item.current rect{ fill:#D9622B !important; }
+  html.dark-mode .piano-score-wrap{ color:#D8C9A8; }
   .piano-pending{ display:none !important; } /* はじめる前は、これらの操作ボタンを隠して押せなくする */
   .piano-autoplay-btn.on{ background:var(--gold,#FFD98A); }
   html.dark-mode .piano-autoplay-btn{ background:rgba(30,25,15,.9); color:#D8C9A8; }
@@ -733,7 +737,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0918-1648"
+    "buildDate": "0919-0943"
   },
   "about": {
     "paragraphs": [
@@ -5232,6 +5236,9 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     // いったん「ふるさと」のみ。MusicXML埋め込み方式のデータが揃い次第、同じ形で追加していく予定。
     { key:'furusato', label:'🏞️ ふるさと', bpm:72, get melody(){ return getFurusatoMelody(); },
       credit:'岡野貞一作曲(1941年没・パブリックドメイン)。メロディは五重奏編曲(Hideo Kamioka, CC BY-NC 4.0)を参考に抽出。' },
+    { key:'dummy', label:'🧪 テスト用ダミー', bpm:100, melody:[
+      W(0,1),W(1,1),W(2,1),W(3,1),W(4,1),W(5,1),W(6,1),W(7,2),
+    ], credit:'ホイールピッカー動作確認用の仮データ(あとで削除)' },
   ];
   let currentSongIdx = 0;
   let autoPlayOn = false;
@@ -5288,12 +5295,11 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   function updateAutoplayBtnLabel(){
     const labelEl = document.getElementById('pianoAutoplayLabel');
     if(!labelEl) return;
+    labelEl.textContent = autoPlayOn ? '■ 停止' : '▶ 演奏する';
     const song = SONGS[currentSongIdx];
-    labelEl.textContent = autoPlayOn ? `${song.label} 演奏中` : `${song.label}で合奏`;
     const creditEl = document.getElementById('pianoSongCredit');
     if(creditEl) creditEl.textContent = song.credit || '';
-    const scoreWrap = document.getElementById('pianoScoreWrap');
-    if(scoreWrap && !scoreWrap.classList.contains('hidden')) renderCurrentScore();
+    renderCurrentScore(); // 楽譜は常時表示(飾り)なので、曲が変わるたびに描き直す
   }
   let currentScoreItems = null;
   function renderCurrentScore(){
@@ -5340,10 +5346,39 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     if(btn) btn.classList.remove('on');
     updateAutoplayBtnLabel();
   }
-  function switchToNextSong(){
-    if(autoPlayOn) return; // 演奏中は曲を切り替えない(停止してから選ぶ)
-    currentSongIdx = (currentSongIdx + 1) % SONGS.length;
+  function selectSong(idx){
+    if(autoPlayOn) return; // 演奏中は選び直せない(止めてから選ぶ)
+    currentSongIdx = Math.max(0, Math.min(SONGS.length-1, idx));
+    renderCurrentScore();
     updateAutoplayBtnLabel();
+  }
+  function setupSongWheel(wheelEl){
+    if(!wheelEl) return;
+    wheelEl.innerHTML = SONGS.map((s,i)=>`<div class="song-wheel-item" data-idx="${i}">${s.label}</div>`).join('');
+    const items = Array.from(wheelEl.querySelectorAll('.song-wheel-item'));
+    function centerIndex(){
+      const center = wheelEl.scrollTop + wheelEl.clientHeight/2;
+      let closest = 0, closestDist = Infinity;
+      items.forEach((it,i)=>{
+        const mid = it.offsetTop + it.offsetHeight/2;
+        const d = Math.abs(mid-center);
+        if(d < closestDist){ closestDist = d; closest = i; }
+        it.classList.toggle('active', d < it.offsetHeight/2);
+      });
+      return closest;
+    }
+    let scrollSettleTimer = null;
+    wheelEl.addEventListener('scroll', ()=>{
+      centerIndex();
+      clearTimeout(scrollSettleTimer);
+      scrollSettleTimer = setTimeout(()=>{ selectSong(centerIndex()); }, 120);
+    });
+    items.forEach((it,i)=>{
+      it.addEventListener('click', ()=>{
+        it.scrollIntoView({ behavior:'smooth', inline:'nearest', block:'center' });
+      });
+    });
+    centerIndex();
   }
 
   // ---- 任意のMusicXMLファイルをその場で読み込む ----
@@ -5438,30 +5473,15 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     noTimeLimit: true,
     introHtml: '手の位置で鍵盤を選び、握ると音が鳴ります(タップも可)。<br>両手で和音も!右上でオクターブ切替、左上で自動演奏と合奏もできます。<br>カメラへのアクセスを許可してください。',
     layerHtml: `
-      <div class="piano-bg">
-        <div class="piano-staff">
-          <svg viewBox="0 0 300 60" xmlns="http://www.w3.org/2000/svg">
-            <line x1="0" y1="10" x2="300" y2="10" stroke-width="1.5"/>
-            <line x1="0" y1="20" x2="300" y2="20" stroke-width="1.5"/>
-            <line x1="0" y1="30" x2="300" y2="30" stroke-width="1.5"/>
-            <line x1="0" y1="40" x2="300" y2="40" stroke-width="1.5"/>
-            <line x1="0" y1="50" x2="300" y2="50" stroke-width="1.5"/>
-          </svg>
-        </div>
-        <div class="piano-note" style="left:15%; top:14%; animation-delay:0s;">♪</div>
-        <div class="piano-note" style="left:33%; top:24%; animation-delay:1.6s;">♫</div>
-        <div class="piano-note" style="left:58%; top:12%; animation-delay:3.2s;">♪</div>
-        <div class="piano-note" style="left:76%; top:26%; animation-delay:4.8s;">♫</div>
-        <div class="piano-note" style="left:46%; top:38%; animation-delay:6.4s;">♪</div>
-      </div>
+      <div class="piano-bg"></div>
       <div class="piano-target-line" id="pianoLineLeft" style="background:#FF8FC7;"></div>
       <div class="piano-target-line" id="pianoLineRight" style="background:#7FE0E8;"></div>
       <div class="piano-hand-marker" id="pianoMarkerLeft" style="background:#FF8FC7;"></div>
       <div class="piano-hand-marker" id="pianoMarkerRight" style="background:#7FE0E8;"></div>
       <div class="piano-controls-panel piano-pending" id="pianoControlsPanel">
+        <div class="song-wheel" id="pianoSongWheel"></div>
         <div class="piano-toolbar-left" id="pianoToolbarLeft">
-          <button class="piano-autoplay-btn" id="pianoAutoplayBtn"><span class="btn-dwell-fill" id="pianoAutoplayFill"></span><span id="pianoAutoplayLabel">⛪ 聖者の行進 で合奏する</span></button>
-          <button class="piano-song-switch-btn" id="pianoSongSwitchBtn" title="曲を変える"><span class="btn-dwell-fill" id="pianoSongSwitchFill"></span>🔀</button>
+          <button class="piano-autoplay-btn" id="pianoAutoplayBtn"><span class="btn-dwell-fill" id="pianoAutoplayFill"></span><span id="pianoAutoplayLabel">▶ 演奏する</span></button>
           <div class="piano-octave-ctrl" id="pianoOctaveCtrl">
             <button class="piano-octave-btn" id="pianoOctaveDown" aria-label="1オクターブ下げる"><span class="btn-dwell-fill" id="pianoOctaveDownFill"></span>🔽</button>
             <span class="piano-octave-label" id="pianoOctaveLabel">ふつう</span>
@@ -5470,9 +5490,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         </div>
         <div class="piano-toolbar-secondary" id="pianoToolbarSecondary">
           <button class="piano-song-switch-btn" id="pianoXmlLoadBtn" title="MusicXMLを読み込む"><span class="btn-dwell-fill" id="pianoXmlLoadFill"></span>📂</button>
-          <button class="piano-song-switch-btn" id="pianoScoreToggleBtn" title="楽譜を表示"><span class="btn-dwell-fill" id="pianoScoreToggleFill"></span>🎼</button>
         </div>
-        <div class="piano-score-wrap hidden" id="pianoScoreWrap">
+        <div class="piano-score-wrap" id="pianoScoreWrap">
           <svg id="pianoScoreSvg" class="piano-score-svg"></svg>
         </div>
         <div class="piano-xml-panel hidden" id="pianoXmlPanel">
@@ -5518,19 +5537,9 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
           if(autoPlayOn) stopAutoPlay(); else startAutoPlay();
         });
       }
-      const songSwitchBtn = document.getElementById('pianoSongSwitchBtn');
-      if(songSwitchBtn) songSwitchBtn.addEventListener('click', switchToNextSong);
+      setupSongWheel(document.getElementById('pianoSongWheel'));
       updateAutoplayBtnLabel();
-
-      // 楽譜表示の切替
-      const scoreToggleBtn = document.getElementById('pianoScoreToggleBtn');
-      const scoreWrap = document.getElementById('pianoScoreWrap');
-      if(scoreToggleBtn && scoreWrap){
-        scoreToggleBtn.addEventListener('click', ()=>{
-          scoreWrap.classList.toggle('hidden');
-          if(!scoreWrap.classList.contains('hidden')) renderCurrentScore();
-        });
-      }
+      renderCurrentScore(); // 楽譜は常時表示の飾りとして、画面を開いた時点で描いておく
 
       // MusicXMLファイルの読み込みUI
       const xmlLoadBtn = document.getElementById('pianoXmlLoadBtn');
@@ -5603,7 +5612,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       if(octUpBtn) octUpBtn.addEventListener('click', ()=> setOctaveShift(octaveShift+1));
       updateOctaveLabel();
       // タップだけでなく、手をかざして少し待つ(ドウェル)操作でも押せるようにする
-      uiDwellButtons = [autoplayBtn, songSwitchBtn, octDownBtn, octUpBtn].filter(Boolean);
+      uiDwellButtons = [autoplayBtn, octDownBtn, octUpBtn].filter(Boolean);
       dwellHoverEl = null; dwellHoverSince = 0;
     },
     start(){
