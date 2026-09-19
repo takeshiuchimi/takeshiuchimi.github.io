@@ -390,27 +390,44 @@
   .piano-toolbar-secondary{
     display:flex; align-items:center; gap:6px;
   }
-  .song-wheel{
-    display:flex; flex-direction:column; overflow-y:auto; scroll-snap-type:y mandatory;
-    width:130px; height:34px; -webkit-overflow-scrolling:touch;
-    scrollbar-width:none; touch-action:pan-y;
-  }
-  .song-wheel::-webkit-scrollbar{ display:none; }
-  .song-wheel-item{
-    scroll-snap-align:start; flex:0 0 34px; height:34px; width:130px; box-sizing:border-box;
-    display:flex; align-items:center; justify-content:center;
-    padding:0 10px; border-radius:16px; font-size:11px; font-weight:bold;
-    background:rgba(255,255,255,.55); color:var(--brown-deep,#6B5335);
-    opacity:.5; transition:opacity .15s ease;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; cursor:pointer;
-  }
-  .song-wheel-item.active{
-    opacity:1;
+  /* 縦型の無限ループ・ホイールピッカー(自作のWheelPickerクラスで駆動。ドラッグ・慣性・スナップ付き) */
+  .wp{
+    height:47px; width:130px; position:relative; overflow:hidden;
+    touch-action:none; user-select:none; border-radius:10px;
     background:var(--card-bg,#fff); border:2px solid var(--gold,#D4AF37);
-    box-shadow:0 2px 0 rgba(139,111,71,.2);
+    box-shadow:0 3px 0 rgba(139,111,71,.2);
   }
-  html.dark-mode .song-wheel-item{ background:rgba(30,25,15,.6); }
-  html.dark-mode .song-wheel-item.active{ background:rgba(30,25,15,.9); }
+  .wp-track{ position:absolute; inset:0; }
+  .wp-item{
+    position:absolute; left:0; right:0; height:22px; box-sizing:border-box;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    transition:opacity .08s; cursor:pointer; padding:0 8px;
+    color:var(--brown-deep,#6B5335); pointer-events:auto;
+  }
+  .wp-item > span{
+    min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis;
+    white-space:nowrap; font-size:11px;
+  }
+  .wp-item.is-center{ font-weight:bold; }
+  .wp-item.is-center > span{ font-size:12px; }
+  .wp-target{
+    position:absolute; left:2px; right:2px; top:12.5px; height:22px; border-radius:7px;
+    border:2px solid var(--gold,#D4AF37); pointer-events:none; background:transparent;
+  }
+  .wp-fade-top,.wp-fade-bottom{
+    position:absolute; left:0; right:0; height:13px; pointer-events:none; z-index:2;
+  }
+  .wp-fade-top{ top:0; background:linear-gradient(var(--card-bg,#fff),transparent); }
+  .wp-fade-bottom{ bottom:0; background:linear-gradient(transparent,var(--card-bg,#fff)); }
+  .wp.selection-pulse .wp-target{ animation:wheelSelectionPulse .22s ease-out; }
+  @keyframes wheelSelectionPulse{
+    0%{ box-shadow:0 0 0 0 rgba(212,175,55,.5); transform:scale(.97); }
+    65%{ box-shadow:0 0 0 5px transparent; transform:scale(1.02); }
+    100%{ box-shadow:none; transform:scale(1); }
+  }
+  html.dark-mode .wp{ background:rgba(30,25,15,.9); }
+  html.dark-mode .wp-fade-top{ background:linear-gradient(rgba(30,25,15,.9),transparent); }
+  html.dark-mode .wp-fade-bottom{ background:linear-gradient(transparent,rgba(30,25,15,.9)); }
   .piano-song-switch-btn{
     position:relative; overflow:hidden;
     width:34px; height:34px; border-radius:50%; z-index:6;
@@ -737,7 +754,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0919-0943"
+    "buildDate": "0920-0533"
   },
   "about": {
     "paragraphs": [
@@ -5352,33 +5369,149 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     renderCurrentScore();
     updateAutoplayBtnLabel();
   }
+
+  // 縦型・無限ループの選曲ホイール。ドラッグ/フリック/マウスホイールで回し、
+  // 慣性のあと中央にスナップする。曲数が少なくても輪のようにぐるぐる回る。
+  class SongWheelPicker{
+    constructor(el, items, onChange){
+      this.el = el;
+      this.items = items;
+      this.onChange = onChange;
+      this.itemHeight = 22;
+      this.position = 0;
+      this.velocity = 0; this.dragging = false; this.samples = []; this.raf = 0;
+      this.deferChange = false; this.fastFlickThreshold = .012;
+      this.build(); this.bind(); this.draw(); this.emit(true);
+    }
+    build(){
+      this.el.innerHTML = '<div class="wp-track"></div><div class="wp-target"></div><div class="wp-fade-top"></div><div class="wp-fade-bottom"></div>';
+      this.track = this.el.querySelector('.wp-track');
+      this.nodes = [];
+      for(let i=0;i<5;i++){
+        const n = document.createElement('div');
+        n.className = 'wp-item';
+        n.innerHTML = '<span></span>';
+        this.track.appendChild(n);
+        this.nodes.push(n);
+      }
+    }
+    mod(n){ const l = this.items.length; return l ? ((n%l)+l)%l : 0; }
+    draw(){
+      if(!this.items.length) return;
+      const center = Math.round(this.position), frac = this.position - center;
+      this.nodes.forEach((n,i)=>{
+        const offset = i-2, raw = center+offset, idx = this.mod(raw);
+        const y = (offset-frac)*this.itemHeight + (this.el.clientHeight-this.itemHeight)/2;
+        const d = Math.abs(offset-frac);
+        n.querySelector('span').textContent = this.items[idx].label;
+        n.dataset.rawIndex = String(raw);
+        n.style.transform = `translateY(${y}px)`;
+        n.style.opacity = String(Math.max(.18, 1-d*.35));
+        n.classList.toggle('is-center', d < .5);
+        n.onclick = ()=> this.scrollTo(Number(n.dataset.rawIndex));
+      });
+    }
+    emit(force=false){
+      if(!this.items.length) return;
+      const idx = this.mod(Math.round(this.position));
+      if(this.deferChange && !force) return;
+      if(force || idx !== this.lastIndex){
+        this.lastIndex = idx;
+        this.el.classList.remove('selection-pulse');
+        void this.el.offsetWidth;
+        this.el.classList.add('selection-pulse');
+        clearTimeout(this.pulseTimer);
+        this.pulseTimer = setTimeout(()=> this.el.classList.remove('selection-pulse'), 220);
+        this.onChange(idx);
+      }
+    }
+    stop(){ if(this.raf) cancelAnimationFrame(this.raf); this.raf = 0; }
+    momentum(){
+      this.stop(); let last = performance.now();
+      const tick = (now)=>{
+        const dt = Math.min(32, now-last); last = now;
+        this.position += this.velocity*dt;
+        this.velocity *= Math.pow(.993, dt);
+        this.draw();
+        if(!this.deferChange) this.emit();
+        if(Math.abs(this.velocity) < .0012) this.snap(this.deferChange);
+        else this.raf = requestAnimationFrame(tick);
+      };
+      this.raf = requestAnimationFrame(tick);
+    }
+    snap(commitOnly=false){
+      this.stop();
+      const from = this.position, to = Math.round(from), start = performance.now(), dur = 190;
+      const tick = (now)=>{
+        const t = Math.min(1,(now-start)/dur), e = 1-Math.pow(1-t,3);
+        this.position = from+(to-from)*e; this.draw();
+        if(!commitOnly) this.emit();
+        if(t<1) this.raf = requestAnimationFrame(tick);
+        else { this.position = to; this.draw(); this.deferChange = false; this.emit(true); }
+      };
+      this.raf = requestAnimationFrame(tick);
+    }
+    scrollTo(target){
+      this.stop(); this.deferChange = false;
+      const from = this.position, start = performance.now(), dur = 210;
+      const tick = (now)=>{
+        const t = Math.min(1,(now-start)/dur), e = 1-Math.pow(1-t,3);
+        this.position = from+(target-from)*e; this.draw(); this.emit();
+        if(t<1) this.raf = requestAnimationFrame(tick);
+        else { this.position = target; this.draw(); this.emit(true); }
+      };
+      this.raf = requestAnimationFrame(tick);
+    }
+    setItems(items, index){
+      this.stop(); this.items = items; this.lastIndex = null;
+      if(index != null) this.position = index;
+      this.draw(); this.emit(true);
+    }
+    bind(){
+      this.down = (e)=>{
+        this.stop(); this.dragging = true; this.deferChange = false; this.pointer = e.pointerId;
+        this.lastY = e.clientY; this.samples = [[performance.now(), e.clientY]];
+        this.el.setPointerCapture?.(e.pointerId);
+      };
+      this.move = (e)=>{
+        if(!this.dragging || e.pointerId !== this.pointer) return;
+        const y = e.clientY, dy = y-this.lastY; this.lastY = y;
+        this.position -= dy/this.itemHeight;
+        const now = performance.now();
+        this.samples.push([now,y]);
+        this.samples = this.samples.filter(s=> now-s[0] < 110);
+        const a = this.samples[0], b = this.samples[this.samples.length-1];
+        const liveVelocity = a&&b&&b[0]>a[0] ? -((b[1]-a[1])/(b[0]-a[0]))/this.itemHeight : 0;
+        if(Math.abs(liveVelocity) >= this.fastFlickThreshold) this.deferChange = true;
+        this.draw(); this.emit();
+      };
+      this.up = (e)=>{
+        if(!this.dragging || e.pointerId !== this.pointer) return;
+        this.dragging = false;
+        const a = this.samples[0], b = this.samples[this.samples.length-1];
+        if(a&&b&&b[0]>a[0]) this.velocity = -((b[1]-a[1])/(b[0]-a[0]))/this.itemHeight;
+        this.velocity = Math.max(-.035, Math.min(.035, this.velocity));
+        if(Math.abs(this.velocity) >= this.fastFlickThreshold) this.deferChange = true;
+        Math.abs(this.velocity) > .002 ? this.momentum() : this.snap(this.deferChange);
+      };
+      this.wheelEvt = (e)=>{
+        e.preventDefault(); this.stop(); this.deferChange = false;
+        this.position += Math.sign(e.deltaY)*.32;
+        this.draw(); this.emit();
+        clearTimeout(this.wheelTimer);
+        this.wheelTimer = setTimeout(()=> this.snap(), 90);
+      };
+      this.el.addEventListener('pointerdown', this.down);
+      this.el.addEventListener('pointermove', this.move);
+      this.el.addEventListener('pointerup', this.up);
+      this.el.addEventListener('pointercancel', this.up);
+      this.el.addEventListener('wheel', this.wheelEvt, { passive:false });
+    }
+  }
+  let songWheelPicker = null;
   function setupSongWheel(wheelEl){
     if(!wheelEl) return;
-    wheelEl.innerHTML = SONGS.map((s,i)=>`<div class="song-wheel-item" data-idx="${i}">${s.label}</div>`).join('');
-    const items = Array.from(wheelEl.querySelectorAll('.song-wheel-item'));
-    function centerIndex(){
-      const center = wheelEl.scrollTop + wheelEl.clientHeight/2;
-      let closest = 0, closestDist = Infinity;
-      items.forEach((it,i)=>{
-        const mid = it.offsetTop + it.offsetHeight/2;
-        const d = Math.abs(mid-center);
-        if(d < closestDist){ closestDist = d; closest = i; }
-        it.classList.toggle('active', d < it.offsetHeight/2);
-      });
-      return closest;
-    }
-    let scrollSettleTimer = null;
-    wheelEl.addEventListener('scroll', ()=>{
-      centerIndex();
-      clearTimeout(scrollSettleTimer);
-      scrollSettleTimer = setTimeout(()=>{ selectSong(centerIndex()); }, 120);
-    });
-    items.forEach((it,i)=>{
-      it.addEventListener('click', ()=>{
-        it.scrollIntoView({ behavior:'smooth', inline:'nearest', block:'center' });
-      });
-    });
-    centerIndex();
+    songWheelPicker = new SongWheelPicker(wheelEl, SONGS, (idx)=> selectSong(idx));
   }
 
   // ---- 任意のMusicXMLファイルをその場で読み込む ----
@@ -5594,6 +5727,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
           const existingIdx = SONGS.findIndex(s=>s.key==='custom');
           if(existingIdx>=0) SONGS[existingIdx] = customSong; else SONGS.push(customSong);
           currentSongIdx = SONGS.findIndex(s=>s.key==='custom');
+          if(songWheelPicker) songWheelPicker.setItems(SONGS, currentSongIdx); // 読み込んだ曲もホイールに反映
           updateAutoplayBtnLabel();
           xmlStatus.textContent = 'この曲を読み込みました。「合奏する」ボタンで再生できます。';
           xmlPanel.classList.add('hidden');
