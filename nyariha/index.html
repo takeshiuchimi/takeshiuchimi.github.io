@@ -772,7 +772,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "1001-0000"
+    "buildDate": "1001-0026"
   },
   "about": {
     "paragraphs": [
@@ -3119,6 +3119,18 @@ const TREE_SVG = `<svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
   <ellipse cx="150" cy="34" rx="62" ry="34" fill="#7CAA6C"/>
 </svg>`;
 
+// にゃー黒板用: チョークで描いたような、シンプルな線画の猫(横向き・歩いている構図)。右向き基準。
+const CHALK_CAT_SVG = `<svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 18 L10 4 M14 20 L20 6"/>
+    <path d="M74 20 L83 6 M78 22 L88 10"/>
+    <path d="M12 24 Q10 10 26 10 Q46 6 62 12 Q80 14 84 26 Q86 38 74 44 L70 50 Q60 46 50 48 Q38 50 28 46 L22 50 Q12 44 12 32 Q10 28 12 24 Z"/>
+    <circle cx="30" cy="22" r="2.2" fill="currentColor" stroke="none"/>
+    <path d="M28 34 Q32 37 36 34"/>
+    <path d="M14 26 L2 24 M14 30 L2 32"/>
+    <path d="M30 50 L28 58 M42 50 L40 58 M58 49 L58 58 M70 47 L72 57"/>
+    <path d="M78 30 Q94 26 92 12 Q90 4 82 8"/>
+  </svg>`;
+
 // ---- かごのビジュアル(編みかご) ----
 function basketSvg(){
   return `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;">
@@ -4757,17 +4769,6 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     <path d="M50 6 Q76 32 79 50 Q76 68 50 94 Q24 68 21 50 Q24 32 50 6 Z" fill="#A9744F" stroke="#6B5335" stroke-width="3"/>
     <path d="M32 40 L68 40 M30 50 L70 50 M32 60 L68 60" stroke="#6B5335" stroke-width="2" opacity=".5"/>
     <circle cx="50" cy="50" r="9" fill="var(--player-body)"/>
-  </svg>`;
-  // にゃー黒板用: チョークで描いたような、シンプルな線画の猫(横向き・歩いている構図)。右向き基準。
-  const CHALK_CAT_SVG = `<svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M18 18 L10 4 M14 20 L20 6"/>
-    <path d="M74 20 L83 6 M78 22 L88 10"/>
-    <path d="M12 24 Q10 10 26 10 Q46 6 62 12 Q80 14 84 26 Q86 38 74 44 L70 50 Q60 46 50 48 Q38 50 28 46 L22 50 Q12 44 12 32 Q10 28 12 24 Z"/>
-    <circle cx="30" cy="22" r="2.2" fill="currentColor" stroke="none"/>
-    <path d="M28 34 Q32 37 36 34"/>
-    <path d="M14 26 L2 24 M14 30 L2 32"/>
-    <path d="M30 50 L28 58 M42 50 L40 58 M58 49 L58 58 M70 47 L72 57"/>
-    <path d="M78 30 Q94 26 92 12 Q90 4 82 8"/>
   </svg>`;
   // パドル(カヌーパドル、両端に水かきがある1本のオール)。真上から見た構図で、体の前に横向きで持つ
   const PADDLE_SVG = `<svg viewBox="0 0 140 34" xmlns="http://www.w3.org/2000/svg">
