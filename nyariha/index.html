@@ -454,6 +454,24 @@
   html.dark-mode .piano-autoplay-btn.on{ background:var(--brown,#8C6C48); color:#fff; }
   .btn-dwell-fill{ position:absolute; inset:0; z-index:-1; width:0%; background:rgba(212,175,55,.55); pointer-events:none; }
   .piano-song-credit{ font-size:9px; color:#a8967a; text-align:center; margin-top:2px; }
+  /* にゃー黒板: 黒板背景・チョーク線・線画猫のスタイル */
+  .kokuban-bg{
+    position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 0%, #3B4A3C 0%, #26332A 70%, #1D2721 100%);
+  }
+  .kokuban-frame{
+    position:absolute; inset:4%; border:10px solid #7A5A3A; border-radius:4px; pointer-events:none;
+    box-shadow:inset 0 0 18px rgba(0,0,0,.5);
+  }
+  .kokuban-draw-layer{ position:absolute; inset:0; touch-action:none; }
+  .kokuban-cat{
+    position:absolute; width:70px; height:42px; color:#EDEADF; opacity:.92;
+    transform:translate(-50%,-50%); filter:drop-shadow(0 0 2px rgba(255,255,255,.25));
+    transition:opacity .2s;
+  }
+  .kokuban-cat.flip{ transform:translate(-50%,-50%) scaleX(-1); }
+  .kokuban-hint{ color:#EDEADF; }
+  html.dark-mode .kokuban-bg{ background:radial-gradient(ellipse at 50% 0%, #2A362B 0%, #1A241C 70%, #131A15 100%); }
   .piano-xml-panel{
     width:100%; z-index:7; box-sizing:border-box;
     background:rgba(255,255,255,.95); border:2px solid var(--brown-deep,#8B6F47); border-radius:10px;
@@ -754,7 +772,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "0920-0541"
+    "buildDate": "1001-0000"
   },
   "about": {
     "paragraphs": [
@@ -807,22 +825,22 @@
       { "heading": null, "body": "<b>カメラ・マイクの解放</b>：カメラを再接続する時や、ページを閉じる時は、それまで使っていたカメラの映像を必ず止めてから次の処理に進むようにしています。これを怠ると、特にWindows端末で、ブラウザを閉じてもカメラデバイスが掴まれたままになり、他のアプリでカメラが使えなくなったりOSの再起動が必要になったりすることがあるための対策です。マイクも同様に、手拍子プログラムから一覧に戻る時に確実に解放しています。" },
       { "heading": null, "body": "<b>共通の自然背景パーツ</b>：森(もぎ・ゆらし)と川(カヌー)は、同じ丘の稜線のSVG(数行の曲線パスだけの軽量なもの)を、森では手前の地面に、川では対岸の遠景として使い回しています。同じ形が形を変えて両方に現れることで、「ひと続きの世界の、別の場所」という繋がりを感じられるようにしています。太陽のやわらかい光暈や、水面のきらめきも、絵文字やCSSのグラデーションだけで表現していて、画像ファイルは一切使っていません。今後の新しい背景でも、この丘・光暈のパーツをそのまま使い回せます。" },
       { "heading": null, "body": "<b>にゃーピアノ</b>：にゃーテルミン(連続的に音程が変わる)とは対照的に、画面を鍵盤ゾーンに分け、手の位置でどの音か選び、握った瞬間にその音を鳴らす、はっきりした音階で弾ける楽器です。白鍵8つ(ドレミファソラシド、1オクターブ)に加えて、本物のピアノと同じ配置(ミとファ・シとドの間には無い)で黒鍵5つ(半音)も弾けます。左右の手をそれぞれ追跡していて、両手同時に握れば和音にもなります。カメラでの手の操作に加えて、画面上の鍵盤を直接タップ/クリックしても弾けます(狙った音を正確に鳴らしたい時に使えます)。カメラで操作している時は、手の位置から、今その位置で握った時に鳴る鍵盤まで、細い線を引いて示しています。手と鍵盤が離れていても、どの音を狙っているか一目で分かるようにするための工夫です。音色は、三角波にオクターブ上のサイン波を重ね、鳴り始めが強く、時間とともに減衰していくピアノらしい音の変化(ADSR風のエンベロープ)を、Web Audio APIでその場で合成しています。また、鍵盤を押さえたまま指(または握った手)を滑らせると、通り過ぎた鍵盤を連続で鳴らせます(グリッサンド)。カメラでも「握ったまま別の鍵盤に動いた瞬間」を追加で鳴らす形で、同じ弾き方ができます。黒鍵は鍵盤の上部にしか無い見た目に合わせて、手(指)が高い位置にある時だけ黒鍵も含めて判定し、低い位置では黒鍵のあたりを通っても下に伸びる白鍵の方が鳴るようにしています。採点や失敗の概念はなく、時間制限もありません。自分で「一覧に戻る」を選ぶまで自由に演奏を続けられます。背景は、テルミンのステージ照明(夜のライブ)とは対照的に、五線譜と漂う音符(♪♫)を配置した、練習室・楽譜のような温かみのある雰囲気にしています。画像は使わず、5本の横線(SVG)とテキスト記号だけの軽量な作りです。" },
-      { "heading": null, "body": "<b>にゃーピアノ：自動演奏との「合奏」</b>：左上のボタンで、著作権の切れた曲(パブリックドメイン曲)の自動演奏に合わせて一緒に弾く「合奏」ができます。演奏中は今鳴っている鍵盤がその都度光り、自分で弾く音と自動演奏の音が同時に重なって鳴ります。右上のボタンで表示中のオクターブを1つ上下でき、鍵盤の見た目は変えずに実質2オクターブ以上の音域をカバーしています(自動演奏側も、曲の音の高さに応じて表示オクターブが自動で追従します)。曲データは、実在の曲のMusicXMLファイル(音楽用の標準データ形式)をこのHTML内に直接埋め込んでおき、ブラウザのDOMParserでその場で解析して使っています(外部の音声ファイルは一切使いません)。📂ボタンからは、埋め込み済みの曲以外にも、手元の任意のMusicXMLファイルをその場で読み込んで演奏できます(ファイル内の全パート・全ボイスを自動検出し、どれをメロディとして使うか選べます)。🎼ボタンでは、今演奏している曲の楽譜(五線譜・臨時記号・符尾・連桁つき)を表示でき、既存の楽譜画像等はコピーせず、音符データ(音の高さ・長さ)から毎回SVGとして自前で描画しています。自動演奏中は、今鳴っている音符が楽譜上でハイライトされます。" },
+      { "heading": null, "body": "<b>にゃーピアノ：自動演奏との「合奏」</b>：曲名は左上のホイールピッカー(上下にドラッグ/フリック/マウスホイールで回せる、無限にループする選曲UI)で選び、専用の演奏ボタンで再生します。演奏中は今鳴っている鍵盤がその都度光り、自分で弾く音と自動演奏の音が同時に重なって鳴ります。右上のボタンで表示中のオクターブを1つ上下でき、鍵盤の見た目は変えずに実質2オクターブ以上の音域をカバーしています(自動演奏側も、曲の音の高さに応じて表示オクターブが自動で追従します)。曲データは、実在の曲のMusicXMLファイル(音楽用の標準データ形式)をこのHTML内に直接埋め込んでおき、ブラウザのDOMParserでその場で解析して使っています(外部の音声ファイルは一切使いません)。📂ボタンからは、埋め込み済みの曲以外にも、手元の任意のMusicXMLファイルをその場で読み込んで演奏でき、読み込んだ曲もそのままホイールに加わります(ファイル内の全パート・全ボイスを自動検出し、どれをメロディとして使うか選べます)。選んだ曲の楽譜(五線譜・臨時記号・符尾・連桁つき)は常時、鍵盤の上に薄い飾りとして表示されていて、既存の楽譜画像等はコピーせず、音符データ(音の高さ・長さ)から毎回SVGとして自前で描画しています。自動演奏中は、今鳴っている音符が楽譜上でハイライトされます。" },
       { "heading": null, "body": "<b>にゃークイズ</b>：県庁所在地・車種→メーカー・国旗・ことわざの続き・都道府県の名産品、5つのジャンルから毎回ランダムに出題する3択クイズです。画面を左・中央・右の3つのゾーンに分け、手をその方向に動かすと選択肢が浮き上がり、握ると決定します。鍵盤と同じく、選択肢を直接タップ/クリックしても答えられます。決定すると、ドラムロール音(Web Audio APIでノイズ音を連打し、だんだん大きくする自作の音)が鳴って少し間を置いてから、正解なら⭕と紙吹雪、不正解なら❌と画面の小さな揺れで結果を発表します。クイズ番組のような緊張感を演出していますが、特定の番組を再現したものではありません。全8問固定で、何問正解できたかで評価が決まります。" },
       { "heading": null, "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。" }
     ],
-    "capacityNote": "このファイル1本で約292KB(共通エンジン+全9プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+    "capacityNote": "このファイル1本で約303KB(共通エンジン+全9プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
     "capacityBreakdown": [
-      { "name":"共通エンジン(カメラ・マイク・音・UI・BGM等)", "kb":150.5, "pct":51.6 },
-      { "name":"にゃーピアノ", "kb":46.9, "pct":16.1 },
-      { "name":"にゃーテルミン", "kb":21.4, "pct":7.3 },
-      { "name":"にゃー花火", "kb":21.2, "pct":7.3 },
-      { "name":"にゃークイズ", "kb":15.7, "pct":5.4 },
-      { "name":"にゃーカヌー", "kb":10.4, "pct":3.6 },
-      { "name":"にゃー体操", "kb":8.1, "pct":2.8 },
-      { "name":"にゃーもぎ", "kb":8.2, "pct":2.8 },
-      { "name":"にゃー手拍子", "kb":5.2, "pct":1.8 },
-      { "name":"にゃーゆらし", "kb":4.3, "pct":1.5 }
+      { "name":"共通エンジン(カメラ・マイク・音・UI・BGM等)", "kb":155.4, "pct":51.4 },
+      { "name":"にゃーピアノ", "kb":51.9, "pct":17.2 },
+      { "name":"にゃーテルミン", "kb":21.5, "pct":7.1 },
+      { "name":"にゃー花火", "kb":21.3, "pct":7.0 },
+      { "name":"にゃークイズ", "kb":15.7, "pct":5.2 },
+      { "name":"にゃーカヌー", "kb":10.5, "pct":3.5 },
+      { "name":"にゃー体操", "kb":8.1, "pct":2.7 },
+      { "name":"にゃーもぎ", "kb":8.3, "pct":2.7 },
+      { "name":"にゃー手拍子", "kb":5.5, "pct":1.8 },
+      { "name":"にゃーゆらし", "kb":4.4, "pct":1.5 }
     ]
   },
   "programs": [
@@ -834,6 +852,7 @@
     { "key":"taisou", "icon":"🐾", "name":"にゃー体操", "desc":"画面の猫と同じポーズをキープしよう", "disabled": false, "purpose":"画面に出る猫のポーズを見て、腕を伸ばしたり体を左右に曲げたりして真似します。手だけでなく体全体を使うプログラムで、腕の伸展や体幹のストレッチを引き出します。" },
     { "key":"instrument", "icon":"🎻", "name":"にゃーテルミン", "desc":"両手の位置で音を鳴らして、好きな音を探そう", "disabled": false, "purpose":"両手を開く・握るだけで音の高さや左右の位置が変わる、採点のない自由演奏プログラムです。両手を協調させる動き・独立して動かす動きを引き出します。" },
     { "key":"piano", "icon":"🎹", "name":"にゃーピアノ", "desc":"鍵盤を選んで握り、ドレミを弾こう(自動演奏との合奏もできます)", "disabled": false, "purpose":"手の位置で鍵盤(ドレミファソラシド+半音の黒鍵)を選び、握ると音が鳴る、採点のない自由演奏プログラムです。鍵盤は直接タップしても弾けます。狙った位置に手を運んで握る動きや、両手を使った和音を引き出します。猫の曲の自動演奏に鍵盤を光らせながら合わせて弾く「合奏」モードもあります。" },
+    { "key":"kokuban", "icon":"🖍️", "name":"にゃー黒板", "desc":"グー(またはタップ)で線を描き、猫の通り道を作ろう", "disabled": false, "purpose":"手をグーにして動かすと、その軌跡が黒板に線として残る、採点も時間制限もない自由なお絵かきプログラムです。線を描く動きに加え、黒板の中を自由に歩き回る猫たちが、描いた線に近づくとその線に沿って歩くようになるので、狙った場所まで手を伸ばして線を引く動きを楽しみながら引き出します。タップ操作でも線を描けます。" },
     { "key":"quiz", "icon":"❓", "name":"にゃークイズ", "desc":"3択クイズに手で答えよう(全8問)", "disabled": false, "purpose":"県庁所在地・車のメーカー・国旗・ことわざ・名産品の3択クイズを、手を左右に動かして選び、握って答える、頭を使う脳トレプログラムです。狙った方向に手を動かして握る動きを引き出しつつ、考える力も刺激します。" }
   ]
 }
@@ -1517,6 +1536,1339 @@
         <type>half</type>
         <dot />
         <stem>up</stem>
+      </note>
+    </measure>
+  </part>
+</score-partwise>
+</script>
+
+<!-- にゃーピアノ用: 「大きな古時計」(Henry Clay Work作曲, 1884年没・パブリックドメイン)の
+     メロディラインのみをMusicXML形式で埋め込み。実行時にJSでパースして使用する。 -->
+<script type="application/xml" id="clock-melody-xml">
+<score-partwise version="4.0">
+  <part-list>
+    <score-part id="P1">
+      <part-name>Melody</part-name>
+    </score-part>
+  </part-list>
+  <part id="P1">
+    <measure implicit="no" number="1">
+      <attributes>
+        <divisions>10080</divisions>
+        <key>
+          <fifths>-2</fifths>
+        </key>
+        <time>
+          <beats>4</beats>
+          <beat-type>4</beat-type>
+        </time>
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+      </attributes>
+      <note>
+        <rest measure="yes" />
+        <duration>40320</duration>
+      </note>
+    </measure>
+    <measure implicit="no" number="2">
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+        <beam number="1">end</beam>
+      </note>
+    </measure>
+    <measure implicit="no" number="3">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <alter>-1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>7560</duration>
+        <type>eighth</type>
+        <dot />
+        <stem>down</stem>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>down</stem>
+        <beam number="1">end</beam>
+        <beam number="2">backward hook</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="4">
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>up</stem>
+        <beam number="1">continue</beam>
+        <beam number="2">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>up</stem>
+        <beam number="1">continue</beam>
+        <beam number="2">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">continue</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>up</stem>
+        <beam number="1">continue</beam>
+        <beam number="2">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>up</stem>
+        <beam number="1">continue</beam>
+        <beam number="2">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">continue</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">end</beam>
+      </note>
+    </measure>
+    <measure implicit="no" number="5">
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>up</stem>
+        <beam number="1">continue</beam>
+        <beam number="2">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>up</stem>
+        <beam number="1">continue</beam>
+        <beam number="2">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">continue</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+        <beam number="1">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="6">
+      <attributes>
+        <key>
+          <fifths>-2</fifths>
+        </key>
+      </attributes>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note print-object="no" print-spacing="yes">
+        <rest />
+        <duration>30240</duration>
+        <type>half</type>
+        <dot />
+      </note>
+    </measure>
+    <measure implicit="no" number="7">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="8">
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>7560</duration>
+        <type>eighth</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="9">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="10">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>20160</duration>
+        <type>half</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note print-object="no" print-spacing="yes">
+        <rest />
+        <duration>10080</duration>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure implicit="no" number="11">
+      <attributes>
+        <key>
+          <fifths>-2</fifths>
+        </key>
+      </attributes>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <rest />
+        <duration>5040</duration>
+        <type>eighth</type>
+      </note>
+      <note>
+        <rest />
+        <duration>10080</duration>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <rest />
+        <duration>5040</duration>
+        <type>eighth</type>
+      </note>
+      <note>
+        <rest />
+        <duration>10080</duration>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure implicit="no" number="12">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>3780</duration>
+        <type>16th</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <alter>-1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>7560</duration>
+        <type>eighth</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>3780</duration>
+        <tie type="start" />
+        <type>16th</type>
+        <dot />
+        <stem>down</stem>
+        <notations>
+          <tied type="start" />
+        </notations>
+      </note>
+    </measure>
+    <measure implicit="no" number="13">
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>20160</duration>
+        <type>half</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>1260</duration>
+        <tie type="stop" />
+        <type>32nd</type>
+        <stem>down</stem>
+        <notations>
+          <tied type="stop" />
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>20160</duration>
+        <type>half</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="14">
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>20160</duration>
+        <type>half</type>
+        <stem>up</stem>
+      </note>
+      <note print-object="no" print-spacing="yes">
+        <rest />
+        <duration>20160</duration>
+        <type>half</type>
+      </note>
+    </measure>
+    <measure implicit="no" number="15">
+      <attributes>
+        <key>
+          <fifths>-2</fifths>
+        </key>
+      </attributes>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="16">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <alter>-1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>7560</duration>
+        <type>eighth</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="17">
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="18">
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>30240</duration>
+        <type>half</type>
+        <dot />
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="19">
+      <attributes>
+        <key>
+          <fifths>-2</fifths>
+        </key>
+      </attributes>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>7560</duration>
+        <type>eighth</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="20">
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="21">
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>7560</duration>
+        <type>eighth</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="22">
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>30240</duration>
+        <type>half</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="23">
+      <attributes>
+        <key>
+          <fifths>-2</fifths>
+        </key>
+      </attributes>
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notations>
+          <articulations>
+            <strong-accent type="up" />
+          </articulations>
+        </notations>
+      </note>
+      <note>
+        <rest />
+        <duration>5040</duration>
+        <type>eighth</type>
+      </note>
+      <note>
+        <rest />
+        <duration>10080</duration>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notations>
+          <articulations>
+            <strong-accent type="up" />
+          </articulations>
+        </notations>
+      </note>
+      <note>
+        <rest />
+        <duration>5040</duration>
+        <type>eighth</type>
+      </note>
+      <note>
+        <rest />
+        <duration>10080</duration>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure implicit="no" number="24">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <alter>-1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>7560</duration>
+        <type>eighth</type>
+        <dot />
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>2520</duration>
+        <type>16th</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>10080</duration>
+        <type>quarter</type>
+        <stem>up</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>5040</duration>
+        <type>eighth</type>
+        <stem>down</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="25">
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>20160</duration>
+        <type>half</type>
+        <stem>down</stem>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>20160</duration>
+        <type>half</type>
+        <stem>up</stem>
+      </note>
+    </measure>
+    <measure implicit="no" number="26">
+      <note>
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>20160</duration>
+        <type>half</type>
+        <stem>up</stem>
+      </note>
+      <note print-object="no" print-spacing="yes">
+        <rest />
+        <duration>20160</duration>
+        <type>half</type>
       </note>
     </measure>
   </part>
@@ -3406,6 +4758,17 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     <path d="M32 40 L68 40 M30 50 L70 50 M32 60 L68 60" stroke="#6B5335" stroke-width="2" opacity=".5"/>
     <circle cx="50" cy="50" r="9" fill="var(--player-body)"/>
   </svg>`;
+  // にゃー黒板用: チョークで描いたような、シンプルな線画の猫(横向き・歩いている構図)。右向き基準。
+  const CHALK_CAT_SVG = `<svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 18 L10 4 M14 20 L20 6"/>
+    <path d="M74 20 L83 6 M78 22 L88 10"/>
+    <path d="M12 24 Q10 10 26 10 Q46 6 62 12 Q80 14 84 26 Q86 38 74 44 L70 50 Q60 46 50 48 Q38 50 28 46 L22 50 Q12 44 12 32 Q10 28 12 24 Z"/>
+    <circle cx="30" cy="22" r="2.2" fill="currentColor" stroke="none"/>
+    <path d="M28 34 Q32 37 36 34"/>
+    <path d="M14 26 L2 24 M14 30 L2 32"/>
+    <path d="M30 50 L28 58 M42 50 L40 58 M58 49 L58 58 M70 47 L72 57"/>
+    <path d="M78 30 Q94 26 92 12 Q90 4 82 8"/>
+  </svg>`;
   // パドル(カヌーパドル、両端に水かきがある1本のオール)。真上から見た構図で、体の前に横向きで持つ
   const PADDLE_SVG = `<svg viewBox="0 0 140 34" xmlns="http://www.w3.org/2000/svg">
     <rect x="20" y="14" width="100" height="6" rx="3" fill="#8B6F47" stroke="#6B5335" stroke-width="1.5"/>
@@ -5248,14 +6611,22 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     }
     return furusatoMelodyCache;
   }
+  let clockMelodyCache = null;
+  function getClockMelody(){
+    if(!clockMelodyCache){
+      clockMelodyCache = parseEmbeddedMusicXmlMelody('clock-melody-xml');
+      if(clockMelodyCache.length === 0){
+        clockMelodyCache = makePhrase([4,4,4,4,5,4,3,4,2,1,0], 1); // 保険の代替メロディ
+      }
+    }
+    return clockMelodyCache;
+  }
 
   const SONGS = [
-    // いったん「ふるさと」のみ。MusicXML埋め込み方式のデータが揃い次第、同じ形で追加していく予定。
     { key:'furusato', label:'🏞️ ふるさと', bpm:72, get melody(){ return getFurusatoMelody(); },
       credit:'岡野貞一作曲(1941年没・パブリックドメイン)。メロディは五重奏編曲(Hideo Kamioka, CC BY-NC 4.0)を参考に抽出。' },
-    { key:'dummy', label:'🧪 テスト用ダミー', bpm:100, melody:[
-      W(0,1),W(1,1),W(2,1),W(3,1),W(4,1),W(5,1),W(6,1),W(7,2),
-    ], credit:'ホイールピッカー動作確認用の仮データ(あとで削除)' },
+    { key:'clock', label:'🕰️ 大きな古時計', bpm:108, get melody(){ return getClockMelody(); },
+      credit:'Henry Clay Work作曲(1884年没・パブリックドメイン)。IMSLP掲載譜のメロディラインを抽出。' },
   ];
   let currentSongIdx = 0;
   let autoPlayOn = false;
@@ -5797,6 +7168,191 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       if(!anyHit && labelEl && !states.Left && !states.Right) labelEl.textContent = '好きな鍵盤を選んで、握って(またはタップして)弾いてみよう';
     },
     onTick(){},
+  });
+})();
+
+/* ============================================================
+   プログラム: にゃー黒板
+   黒板の上をチョーク色の猫が2〜3匹自由に歩き回る。グー(またはタッチ)で
+   指をなぞった軌跡が線として残り、その線に近づいた猫は線に沿って歩くように
+   なる。採点・時間制限なしの、自由にお絵かきして猫と遊ぶプログラム。
+   ============================================================ */
+(function(){
+  const CAT_COUNT = 3;
+  const WALK_SPEED = 0.10; // 1フレームあたりの移動量(%)
+  const FOLLOW_SPEED = 0.16; // 線に沿っている時は少し速く歩く
+  const LINE_CATCH_RADIUS = 6; // 猫がこの距離まで線に近づくと、線に沿って歩き始める(%)
+  const TURN_INTERVAL_MS = [1400, 3200]; // 自由に歩く時、この間隔でランダムに方向転換する
+
+  let cats = []; // {x,y,angle,turnAt,el,following:{strokeIdx,pointIdx,dir}|null}
+  let strokes = []; // 描いた線。各要素は{points:[{x,y},...]}
+  let drawLayerEl = null, drawSvgEl = null;
+  let currentStroke = null;
+
+  function randRange(a,b){ return a + Math.random()*(b-a); }
+
+  function spawnCats(){
+    cats.forEach(c=>{ if(c.el) c.el.remove(); });
+    cats = [];
+    for(let i=0;i<CAT_COUNT;i++){
+      const el = document.createElement('div');
+      el.className = 'kokuban-cat';
+      el.innerHTML = CHALK_CAT_SVG;
+      drawLayerEl.parentElement.appendChild(el);
+      cats.push({
+        x: randRange(20,80), y: randRange(20,80),
+        angle: randRange(0, Math.PI*2),
+        turnAt: Date.now() + randRange(...TURN_INTERVAL_MS),
+        el, following: null,
+      });
+    }
+  }
+
+  function nearestLinePoint(x, y){
+    // 全ての線(strokes)の中から、(x,y)に一番近い点を探す。線が無ければnullを返す。
+    let best = null, bestDist = Infinity;
+    strokes.forEach((s, si)=>{
+      s.points.forEach((p, pi)=>{
+        const d = distPct(x, y, p.x, p.y);
+        if(d < bestDist){ bestDist = d; best = { strokeIdx:si, pointIdx:pi, dist:d }; }
+      });
+    });
+    return best;
+  }
+
+  function updateCat(c){
+    const now = Date.now();
+    if(c.following){
+      const s = strokes[c.following.strokeIdx];
+      if(!s){ c.following = null; }
+      else{
+        const nextIdx = c.following.pointIdx + c.following.dir;
+        const target = s.points[nextIdx];
+        if(!target){
+          c.following.dir *= -1; // 線の端まで来たら、折り返してまた線の上を歩き続ける
+        }else{
+          const dx = target.x-c.x, dy = target.y-c.y;
+          const dist = Math.hypot(dx,dy);
+          if(dist < FOLLOW_SPEED){
+            c.x = target.x; c.y = target.y;
+            c.following.pointIdx = nextIdx;
+          }else{
+            c.angle = Math.atan2(dy,dx);
+            c.x += Math.cos(c.angle)*FOLLOW_SPEED;
+            c.y += Math.sin(c.angle)*FOLLOW_SPEED;
+          }
+        }
+      }
+    }
+    if(!c.following){
+      // 自由に歩く: 時々ランダムに方向を変え、画面の端では跳ね返る
+      if(now >= c.turnAt){
+        c.angle += randRange(-1.2, 1.2);
+        c.turnAt = now + randRange(...TURN_INTERVAL_MS);
+      }
+      if(c.x < 8 || c.x > 92) c.angle = Math.PI - c.angle;
+      if(c.y < 12 || c.y > 88) c.angle = -c.angle;
+      c.x += Math.cos(c.angle)*WALK_SPEED;
+      c.y += Math.sin(c.angle)*WALK_SPEED;
+      c.x = Math.max(4, Math.min(96, c.x));
+      c.y = Math.max(8, Math.min(92, c.y));
+
+      // 近くに線があれば、その線に沿って歩くモードに切り替える
+      const near = nearestLinePoint(c.x, c.y);
+      if(near && near.dist < LINE_CATCH_RADIUS){
+        c.following = { strokeIdx: near.strokeIdx, pointIdx: near.pointIdx, dir: 1 };
+      }
+    }
+    c.el.style.left = c.x+'%'; c.el.style.top = c.y+'%';
+    c.el.classList.toggle('flip', Math.cos(c.angle) < 0);
+  }
+
+  function renderStrokes(){
+    if(!drawSvgEl) return;
+    drawSvgEl.innerHTML = strokes.map(s=>{
+      const d = s.points.map((p,i)=> (i===0?'M':'L') + p.x + ',' + p.y).join(' ');
+      return `<path d="${d}" fill="none" stroke="#F2EFD8" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>`;
+    }).join('');
+  }
+
+  function beginStroke(x, y){
+    currentStroke = { points:[{x,y}] };
+    strokes.push(currentStroke);
+  }
+  function extendStroke(x, y){
+    if(!currentStroke) return;
+    const last = currentStroke.points[currentStroke.points.length-1];
+    if(distPct(x,y,last.x,last.y) < 0.6) return; // 近すぎる点は間引いて、データ量を抑える
+    currentStroke.points.push({x,y});
+  }
+  function endStroke(){ currentStroke = null; }
+
+  // タッチ/クリックでも描けるように
+  function setupKokubanTouch(layerEl){
+    if(!layerEl) return;
+    let drawing = false;
+    layerEl.addEventListener('pointerdown', (e)=>{
+      drawing = true;
+      const rect = stageEl.getBoundingClientRect();
+      const x = (e.clientX-rect.left)/rect.width*100, y = (e.clientY-rect.top)/rect.height*100;
+      beginStroke(x, y); renderStrokes();
+    });
+    layerEl.addEventListener('pointermove', (e)=>{
+      if(!drawing) return;
+      const rect = stageEl.getBoundingClientRect();
+      const x = (e.clientX-rect.left)/rect.width*100, y = (e.clientY-rect.top)/rect.height*100;
+      extendStroke(x, y); renderStrokes();
+    });
+    const stop = ()=>{ drawing = false; endStroke(); };
+    layerEl.addEventListener('pointerup', stop);
+    layerEl.addEventListener('pointercancel', stop);
+    layerEl.addEventListener('pointerleave', stop);
+  }
+
+  registerProgram('kokuban', {
+    title: '🖍️ にゃー黒板',
+    durationSec: 90,
+    noScoring: true,
+    noTimeLimit: true,
+    introHtml: '黒板の上を、チョークの線でできた猫たちが自由に歩き回っています。<br>手をグーにして動かすと、その軌跡が線になって残ります(タップ操作でも描けます)。<br>猫は、線に近づくとその線に沿って歩くようになります。線を描いて、猫の通り道を作ってあげよう。<br>カメラへのアクセスを許可してください。',
+    layerHtml: `
+      <div class="kokuban-bg"></div>
+      <svg class="kokuban-draw-layer" id="kokubanDrawSvg" style="pointer-events:none;"></svg>
+      <div class="touch-catch-layer" id="kokubanTouchLayer"></div>
+      <div class="kokuban-frame"></div>
+      <div class="instrument-label kokuban-hint" id="kokubanLabel">グー(またはタップ)で線を描こう</div>
+    `,
+    setup(){
+      drawSvgEl = document.getElementById('kokubanDrawSvg');
+      drawLayerEl = document.getElementById('kokubanTouchLayer');
+      setupKokubanTouch(drawLayerEl);
+    },
+    start(){
+      strokes = []; currentStroke = null;
+      renderStrokes();
+      spawnCats();
+      showTouchHint(drawLayerEl);
+    },
+    reset(){ this.start(); },
+    onLeave(){
+      cats.forEach(c=>{ if(c.el) c.el.remove(); });
+      cats = [];
+    },
+    onHand(){
+      handsList.forEach((h, i)=>{
+        const gripping = h.shape === 'guu';
+        if(gripping){
+          if(!h._kokubanDrawing){ beginStroke(h.x, h.y); h._kokubanDrawing = true; }
+          else{ extendStroke(h.x, h.y); }
+        }else if(h._kokubanDrawing){
+          h._kokubanDrawing = false; endStroke();
+        }
+      });
+      renderStrokes();
+    },
+    onTick(){
+      cats.forEach(updateCat);
+    },
   });
 })();
 
