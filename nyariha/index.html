@@ -779,7 +779,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "1008-0707"
+    "buildDate": "1008-0713"
   },
   "about": {
     "paragraphs": [
@@ -4202,12 +4202,11 @@ function onResults(results){
         hubCameraStatus.textContent = '手が見つかりません。カメラに手をかざしてください';
         resetHubDwell();
       }else{
+        // 手を見失ったら、最後の位置にカーソルが残り続けないよう、どのプログラムでも隠す
+        handCursorEl.classList.add('hidden');
+        handCursor2El.classList.add('hidden');
         const curDef = PROGRAMS[currentProgramKey];
-        if(curDef && curDef.requiresMic && running){
-          // マイクだけで遊ぶプログラムは、手が消えた後もカーソルが最後の位置に残らないよう隠す
-          handCursorEl.classList.add('hidden');
-          handCursor2El.classList.add('hidden');
-        }else{
+        if(!(curDef && curDef.requiresMic && running)){
           statusEl.textContent = '手が見つかりません。カメラに手をかざしてください';
         }
         resetDwell();
