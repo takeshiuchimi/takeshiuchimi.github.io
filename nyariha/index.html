@@ -467,9 +467,16 @@
   .kokuban-cat{
     position:absolute; width:70px; height:42px; color:#EDEADF; opacity:.92;
     transform:translate(-50%,-50%); filter:drop-shadow(0 0 2px rgba(255,255,255,.25));
-    transition:opacity .2s;
+    transition:opacity .2s; cursor:pointer;
   }
-  .kokuban-cat.flip{ transform:translate(-50%,-50%) scaleX(-1); }
+  /* 脚を交互に上下させて、歩いているように見せる */
+  .kokuban-cat .cat-leg{ transform-box:fill-box; transform-origin:50% 0%; }
+  .kokuban-cat .leg-a{ animation: catWalkLegA .36s ease-in-out infinite; }
+  .kokuban-cat .leg-b{ animation: catWalkLegA .36s ease-in-out infinite; animation-delay:.18s; }
+  @keyframes catWalkLegA{
+    0%, 100%{ transform:translateY(0) scaleY(1); }
+    50%{ transform:translateY(-3px) scaleY(.85); }
+  }
   .kokuban-hint{ color:#EDEADF; }
   html.dark-mode .kokuban-bg{ background:radial-gradient(ellipse at 50% 0%, #2A362B 0%, #1A241C 70%, #131A15 100%); }
   .piano-xml-panel{
@@ -772,7 +779,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "1002-0656"
+    "buildDate": "1006-0714"
   },
   "about": {
     "paragraphs": [
@@ -3125,10 +3132,10 @@ function chalkCatSvg(color){
   const dark = '#4A3826';
   return `<svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
     <path d="M14 34 Q6 26 10 14" fill="none" stroke="${color}" stroke-width="8" stroke-linecap="round"/>
-    <ellipse cx="22" cy="52" rx="6" ry="7" fill="${color}" stroke="${dark}" stroke-width="2"/>
-    <ellipse cx="36" cy="54" rx="6" ry="7" fill="${color}" stroke="${dark}" stroke-width="2"/>
-    <ellipse cx="58" cy="54" rx="6" ry="7" fill="${color}" stroke="${dark}" stroke-width="2"/>
-    <ellipse cx="72" cy="52" rx="6" ry="7" fill="${color}" stroke="${dark}" stroke-width="2"/>
+    <ellipse class="cat-leg leg-a" cx="22" cy="52" rx="6" ry="7" fill="${color}" stroke="${dark}" stroke-width="2"/>
+    <ellipse class="cat-leg leg-b" cx="36" cy="54" rx="6" ry="7" fill="${color}" stroke="${dark}" stroke-width="2"/>
+    <ellipse class="cat-leg leg-a" cx="58" cy="54" rx="6" ry="7" fill="${color}" stroke="${dark}" stroke-width="2"/>
+    <ellipse class="cat-leg leg-b" cx="72" cy="52" rx="6" ry="7" fill="${color}" stroke="${dark}" stroke-width="2"/>
     <ellipse cx="48" cy="38" rx="34" ry="19" fill="${color}" stroke="${dark}" stroke-width="2.6"/>
     <circle cx="76" cy="20" r="16" fill="${color}" stroke="${dark}" stroke-width="2.6"/>
     <path d="M65 8 L70 -4 L79 7 Z" fill="${color}" stroke="${dark}" stroke-width="2.6" stroke-linejoin="round"/>
@@ -7195,15 +7202,16 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
    なる。採点・時間制限なしの、自由にお絵かきして猫と遊ぶプログラム。
    ============================================================ */
 (function(){
-  const CAT_COUNT_INITIAL = 2; // 最初はこの数からスタートし、少しずつ増えていく
-  const CAT_COUNT_MAX = 8; // これ以上は増やさない
-  const CAT_SPAWN_INTERVAL_MS = [9000, 15000]; // この間隔で、色違いの新しい猫が1匹ずつ増える
-  const WALK_SPEED = 0.10; // 1フレームあたりの移動量(%)
+  const CAT_COUNT_INITIAL = 3; // 最初から、この数だけ一列に並んで登場する
+  const CAT_COUNT_MAX = 8; // 画面上に同時に居る数の上限(安全のため)
+  const CAT_SPAWN_INTERVAL_MS = [4000, 7000]; // この間隔で、色違いの新しい猫が列の後ろに1匹ずつ増える
+  const WALK_SPEED = 0.12; // 1フレームあたりの移動量(%)
   const FOLLOW_SPEED = 0.16; // 線に沿っている時は少し速く歩く
   const LINE_CATCH_RADIUS = 6; // 猫がこの距離まで線に近づくと、線に沿って歩き始める(%)
-  const TURN_INTERVAL_MS = [1400, 3200]; // 自由に歩く時、この間隔でランダムに方向転換する
+  const ROW_Y = 85; // 猫が歩く、画面一番下の固定の列(%)
+  const QUEUE_GAP = 12; // 一列に並んで登場する時の、猫同士の間隔(%)
 
-  let cats = []; // {x,y,angle,turnAt,el,following:{strokeIdx,pointIdx,dir}|null}
+  let cats = []; // {x,y,dir,el,following:{strokeIdx,pointIdx,dir}|null,walkDist}
   let strokes = []; // 描いた線。各要素は{points:[{x,y},...]}
   let drawLayerEl = null, drawSvgEl = null;
   let currentStroke = null;
@@ -7221,24 +7229,38 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     return color;
   }
 
-  function addCat(){
+  function addCat(queueIdx){
     const el = document.createElement('div');
     el.className = 'kokuban-cat';
     el.innerHTML = chalkCatSvg(pickCatColor());
     drawLayerEl.parentElement.appendChild(el);
-    cats.push({
-      x: randRange(20,80), y: randRange(20,80),
-      angle: randRange(0, Math.PI*2),
-      turnAt: Date.now() + randRange(...TURN_INTERVAL_MS),
-      el, following: null,
-    });
+    // 一番下の列に、他の猫と間隔を空けて一列に並ぶ形で、画面外の左から登場する
+    const x = -4 - (queueIdx||0)*QUEUE_GAP;
+    const cat = {
+      x, y: ROW_Y, dir: 1, // dir: 1=右向きに歩く, -1=左向きに歩く
+      el, following: null, walkDist: 0,
+    };
+    el.addEventListener('pointerdown', ()=> turnCatAround(cat));
+    cats.push(cat);
+  }
+
+  function turnCatAround(c){
+    // 方向転換(クリック/グータッチ/他の猫との衝突、共通で使う)。線を辿っている途中なら、それもやめて向き直す。
+    c.dir *= -1;
+    c.following = null;
+  }
+
+  function removeCat(c){
+    if(c.el) c.el.remove();
+    cats = cats.filter(x=>x!==c);
   }
 
   function spawnCats(){
     cats.forEach(c=>{ if(c.el) c.el.remove(); });
     cats = [];
     usedColors = [];
-    for(let i=0;i<CAT_COUNT_INITIAL;i++) addCat();
+    crossings = [];
+    for(let i=0;i<CAT_COUNT_INITIAL;i++) addCat(i); // 一列に並んだ状態でスタート
     nextCatSpawnAt = Date.now() + randRange(...CAT_SPAWN_INTERVAL_MS);
   }
 
@@ -7255,7 +7277,6 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   }
 
   function updateCat(c){
-    const now = Date.now();
     if(c.following){
       const s = strokes[c.following.strokeIdx];
       if(!s){ c.following = null; }
@@ -7263,42 +7284,52 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         const nextIdx = c.following.pointIdx + c.following.dir;
         const target = s.points[nextIdx];
         if(!target){
-          c.following.dir *= -1; // 線の端まで来たら、折り返してまた線の上を歩き続ける
+          // 線の端まで来たら、そこで線を離れて普段の左右移動に戻る(同じ線にずっと乗ったまま往復させない)。
+          // 直前に線の上でどちらに進んでいたかに向きを合わせてから離す(急に反転したように見えないように)。
+          c.dir = c._facingLeft ? -1 : 1;
+          c.x += WALK_SPEED * c.dir * 3;
+          c.following = null;
         }else{
           const dx = target.x-c.x, dy = target.y-c.y;
           const dist = Math.hypot(dx,dy);
           if(dist < FOLLOW_SPEED){
             c.x = target.x; c.y = target.y;
             c.following.pointIdx = nextIdx;
+            // あみだくじ方式: ちょうど他の線と交わる場所に来たら、必ずそちらの線に乗り換える
+            const crossing = crossings.find(cr=>
+              (cr.strokeA===c.following.strokeIdx && cr.idxA===nextIdx) ||
+              (cr.strokeB===c.following.strokeIdx && cr.idxB===nextIdx)
+            );
+            if(crossing){
+              const toStroke = crossing.strokeA===c.following.strokeIdx ? crossing.strokeB : crossing.strokeA;
+              const toIdx = crossing.strokeA===c.following.strokeIdx ? crossing.idxB : crossing.idxA;
+              c.following = { strokeIdx: toStroke, pointIdx: toIdx, dir: 1 };
+            }
           }else{
-            c.angle = Math.atan2(dy,dx);
-            c.x += Math.cos(c.angle)*FOLLOW_SPEED;
-            c.y += Math.sin(c.angle)*FOLLOW_SPEED;
+            c._facingLeft = dx < 0;
+            c.x += (dx/dist)*FOLLOW_SPEED;
+            c.y += (dy/dist)*FOLLOW_SPEED;
+            c.walkDist += FOLLOW_SPEED;
           }
         }
       }
     }
     if(!c.following){
-      // 自由に歩く: 時々ランダムに方向を変え、画面の端では跳ね返る
-      if(now >= c.turnAt){
-        c.angle += randRange(-1.2, 1.2);
-        c.turnAt = now + randRange(...TURN_INTERVAL_MS);
-      }
-      if(c.x < 8 || c.x > 92) c.angle = Math.PI - c.angle;
-      if(c.y < 12 || c.y > 88) c.angle = -c.angle;
-      c.x += Math.cos(c.angle)*WALK_SPEED;
-      c.y += Math.sin(c.angle)*WALK_SPEED;
-      c.x = Math.max(4, Math.min(96, c.x));
-      c.y = Math.max(8, Math.min(92, c.y));
+      // 一番下の列を、まっすぐ横に歩く(右向きor左向き)
+      c.x += WALK_SPEED * c.dir;
+      c.walkDist += WALK_SPEED;
+      c._facingLeft = c.dir < 0;
 
-      // 近くに線があれば、その線に沿って歩くモードに切り替える
+      // 近くに線があれば、その線に沿って歩くモードに切り替える(線なら、坂でも壁でも登っていく)
       const near = nearestLinePoint(c.x, c.y);
       if(near && near.dist < LINE_CATCH_RADIUS){
         c.following = { strokeIdx: near.strokeIdx, pointIdx: near.pointIdx, dir: 1 };
       }
     }
+    // 歩いた距離に応じて、少し上下にバウンドさせる(重力のある「歩き」の感じを出す)
+    const bob = Math.abs(Math.sin(c.walkDist*9)) * 2.2;
     c.el.style.left = c.x+'%'; c.el.style.top = c.y+'%';
-    c.el.classList.toggle('flip', Math.cos(c.angle) < 0);
+    c.el.style.transform = `translate(-50%, calc(-50% - ${bob.toFixed(1)}px))` + (c._facingLeft ? ' scaleX(-1)' : '');
   }
 
   function renderStrokes(){
@@ -7319,7 +7350,46 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     if(distPct(x,y,last.x,last.y) < 0.6) return; // 近すぎる点は間引いて、データ量を抑える
     currentStroke.points.push({x,y});
   }
-  function endStroke(){ currentStroke = null; }
+  function endStroke(){
+    if(currentStroke){
+      findCrossingsForStroke(currentStroke);
+      // 今まさに別の線の上を歩いている猫が、この新しい線のすぐ近くにいたら、
+      // (その猫がすでに交差点を通り過ぎていたとしても)その場で新しい線に乗り換えさせる。
+      const newIdx = strokes.indexOf(currentStroke);
+      cats.forEach(c=>{
+        if(!c.following || c.following.strokeIdx === newIdx) return;
+        let best = null, bestDist = CROSSING_RADIUS;
+        currentStroke.points.forEach((q, j)=>{
+          const d = distPct(c.x, c.y, q.x, q.y);
+          if(d < bestDist){ bestDist = d; best = j; }
+        });
+        if(best !== null) c.following = { strokeIdx:newIdx, pointIdx:best, dir:1 };
+      });
+    }
+    currentStroke = null;
+  }
+
+  // あみだくじ方式: 線同士が交わっている場所を見つけておき、
+  // 猫がそこを通りかかったら、必ずもう片方の線に乗り換えるようにする。
+  const CROSSING_RADIUS = 5; // この距離まで近ければ「交わっている」とみなす(%)。手描きの線のズレを許容するため、やや広め。
+  let crossings = []; // {strokeA,idxA,strokeB,idxB}
+
+  function findCrossingsForStroke(newStroke){
+    const newIdx = strokes.indexOf(newStroke);
+    strokes.forEach((other, otherIdx)=>{
+      if(other === newStroke) return;
+      newStroke.points.forEach((p, i)=>{
+        let best = null, bestDist = CROSSING_RADIUS;
+        other.points.forEach((q, j)=>{
+          const d = distPct(p.x,p.y,q.x,q.y);
+          if(d < bestDist){ bestDist = d; best = j; }
+        });
+        if(best !== null){
+          crossings.push({ strokeA:newIdx, idxA:i, strokeB:otherIdx, idxB:best });
+        }
+      });
+    });
+  }
 
   // タッチ/クリックでも描けるように
   function setupKokubanTouch(layerEl){
@@ -7378,6 +7448,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         if(gripping){
           if(!h._kokubanDrawing){ beginStroke(h.x, h.y); h._kokubanDrawing = true; }
           else{ extendStroke(h.x, h.y); }
+          // グーが猫に触れたら、その猫は向きを変える
+          cats.forEach(c=>{ if(distPct(h.x, h.y, c.x, c.y) < 6) turnCatAround(c); });
         }else if(h._kokubanDrawing){
           h._kokubanDrawing = false; endStroke();
         }
@@ -7386,6 +7458,17 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     },
     onTick(){
       cats.forEach(updateCat);
+      // 猫同士がぶつかったら、お互い向きを変える(線を辿っている最中の猫は衝突判定から除く)
+      for(let i=0;i<cats.length;i++){
+        for(let j=i+1;j<cats.length;j++){
+          if(!cats[i].following && !cats[j].following && distPct(cats[i].x, cats[i].y, cats[j].x, cats[j].y) < 7){
+            turnCatAround(cats[i]); turnCatAround(cats[j]);
+          }
+        }
+      }
+      // 画面の外(上下左右どれでも)まで出た猫は、そのまま消える。
+      // 線を辿っている猫も対象にすることで、線の上で永遠に往復して渋滞するのを防ぐ。
+      cats.filter(c=>c.x > 106 || c.x < -8 || c.y < -8 || c.y > 108).forEach(removeCat);
       if(cats.length < CAT_COUNT_MAX && Date.now() >= nextCatSpawnAt){
         addCat();
         nextCatSpawnAt = Date.now() + randRange(...CAT_SPAWN_INTERVAL_MS);
