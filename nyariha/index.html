@@ -779,7 +779,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "1006-0714"
+    "buildDate": "1007-1346"
   },
   "about": {
     "paragraphs": [
@@ -7239,6 +7239,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     const cat = {
       x, y: ROW_Y, dir: 1, // dir: 1=右向きに歩く, -1=左向きに歩く
       el, following: null, walkDist: 0,
+      speed: WALK_SPEED * randRange(0.8, 1.2), // 1匹ごとに歩く速さを少し変えて、団子状態になりにくくする
+      stuckSince: Date.now(), lastX: x, lastY: ROW_Y, // 長時間動けていないかを見るためのセーフティ用
     };
     el.addEventListener('pointerdown', ()=> turnCatAround(cat));
     cats.push(cat);
@@ -7316,7 +7318,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     }
     if(!c.following){
       // 一番下の列を、まっすぐ横に歩く(右向きor左向き)
-      c.x += WALK_SPEED * c.dir;
+      c.x += c.speed * c.dir;
       c.walkDist += WALK_SPEED;
       c._facingLeft = c.dir < 0;
 
@@ -7458,20 +7460,30 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     },
     onTick(){
       cats.forEach(updateCat);
-      // 猫同士がぶつかったら、お互い向きを変える(線を辿っている最中の猫は衝突判定から除く)
+      const now = Date.now();
+      // 猫同士がぶつかったら、お互い向きを変える。ただし正面衝突(向かい合って歩いている時)だけを対象にし、
+      // 同じ向きに歩いている猫同士はすれ違わせる(すり抜けさせる)。線を辿っている最中の猫も対象外。
       for(let i=0;i<cats.length;i++){
         for(let j=i+1;j<cats.length;j++){
-          if(!cats[i].following && !cats[j].following && distPct(cats[i].x, cats[i].y, cats[j].x, cats[j].y) < 7){
-            turnCatAround(cats[i]); turnCatAround(cats[j]);
+          const a = cats[i], b = cats[j];
+          if(!a.following && !b.following && a.dir !== b.dir && distPct(a.x,a.y,b.x,b.y) < 7){
+            turnCatAround(a); turnCatAround(b);
           }
         }
       }
+      // セーフティ: 何らかの理由で長い間(5秒)ほとんど位置が変わっていない猫は、自動的に退場させる
+      cats.forEach(c=>{
+        if(distPct(c.x,c.y,c.lastX,c.lastY) > 0.5){ c.lastX=c.x; c.lastY=c.y; c.stuckSince=now; }
+      });
+      cats.filter(c=> now - c.stuckSince > 5000).forEach(removeCat);
       // 画面の外(上下左右どれでも)まで出た猫は、そのまま消える。
       // 線を辿っている猫も対象にすることで、線の上で永遠に往復して渋滞するのを防ぐ。
       cats.filter(c=>c.x > 106 || c.x < -8 || c.y < -8 || c.y > 108).forEach(removeCat);
-      if(cats.length < CAT_COUNT_MAX && Date.now() >= nextCatSpawnAt){
+      // 入り口付近(左端)がすでに混んでいる時は、新しい猫の登場を少し待たせる
+      const entranceCrowded = cats.some(c=> c.x < 10 && c.x > -10);
+      if(cats.length < CAT_COUNT_MAX && now >= nextCatSpawnAt && !entranceCrowded){
         addCat();
-        nextCatSpawnAt = Date.now() + randRange(...CAT_SPAWN_INTERVAL_MS);
+        nextCatSpawnAt = now + randRange(...CAT_SPAWN_INTERVAL_MS);
       }
     },
   });
