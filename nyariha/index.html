@@ -7445,8 +7445,10 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       cats = [];
     },
     onHand(){
+      // ↓デバッグ用: 検出されている手の形を画面に表示する(あとで消す)
+      if(statusEl) statusEl.textContent = '手の数=' + handsList.length + ' 形=' + handsList.map(h=>h.shape).join(',');
       handsList.forEach((h, i)=>{
-        const gripping = h.lm ? classifyHandShape(h.lm) === 'guu' : false;
+        const gripping = h.shape === 'guu';
         if(gripping){
           if(!h._kokubanDrawing){ beginStroke(h.x, h.y); h._kokubanDrawing = true; }
           else{ extendStroke(h.x, h.y); }
