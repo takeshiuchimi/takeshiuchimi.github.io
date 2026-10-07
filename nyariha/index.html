@@ -779,7 +779,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "1007-1346"
+    "buildDate": "1007-2125"
   },
   "about": {
     "paragraphs": [
@@ -7446,7 +7446,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
     },
     onHand(){
       handsList.forEach((h, i)=>{
-        const gripping = h.shape === 'guu';
+        const gripping = h.lm ? classifyHandShape(h.lm) === 'guu' : false;
         if(gripping){
           if(!h._kokubanDrawing){ beginStroke(h.x, h.y); h._kokubanDrawing = true; }
           else{ extendStroke(h.x, h.y); }
