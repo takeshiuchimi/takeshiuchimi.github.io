@@ -779,7 +779,7 @@
 {
   "meta": {
     "version": "ver0.2",
-    "buildDate": "1007-2125"
+    "buildDate": "1008-0707"
   },
   "about": {
     "paragraphs": [
@@ -7216,6 +7216,7 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   let drawLayerEl = null, drawSvgEl = null;
   let currentStroke = null;
   let nextCatSpawnAt = 0;
+  let drawingByHand = {}; // {Left:bool, Right:bool} 左右それぞれ、今グーで描いている最中かどうか
   let usedColors = [];
 
   function randRange(a,b){ return a + Math.random()*(b-a); }
@@ -7445,18 +7446,25 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
       cats = [];
     },
     onHand(){
-      // ↓デバッグ用: 検出されている手の形を画面に表示する(あとで消す)
-      if(statusEl) statusEl.textContent = '手の数=' + handsList.length + ' 形=' + handsList.map(h=>h.shape).join(',');
+      // handsListは毎フレーム作り直されるので、「描画中かどうか」は手オブジェクト自身ではなく、
+      // 左右(handedness)をキーにしたこちら側の変数で持っておく(他のプログラムと同じやり方)。
+      const seenHandedness = {};
       handsList.forEach((h, i)=>{
+        const hd = h.handedness || i;
+        seenHandedness[hd] = true;
         const gripping = h.shape === 'guu';
         if(gripping){
-          if(!h._kokubanDrawing){ beginStroke(h.x, h.y); h._kokubanDrawing = true; }
+          if(!drawingByHand[hd]){ beginStroke(h.x, h.y); drawingByHand[hd] = true; }
           else{ extendStroke(h.x, h.y); }
           // グーが猫に触れたら、その猫は向きを変える
           cats.forEach(c=>{ if(distPct(h.x, h.y, c.x, c.y) < 6) turnCatAround(c); });
-        }else if(h._kokubanDrawing){
-          h._kokubanDrawing = false; endStroke();
+        }else if(drawingByHand[hd]){
+          drawingByHand[hd] = false; endStroke();
         }
+      });
+      // 手自体が画面から消えた(グーのまま見失った)場合も、描いていた線を確実に終わらせる
+      Object.keys(drawingByHand).forEach(hd=>{
+        if(drawingByHand[hd] && !seenHandedness[hd]){ drawingByHand[hd] = false; endStroke(); }
       });
       renderStrokes();
     },
