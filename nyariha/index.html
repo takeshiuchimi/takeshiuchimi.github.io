@@ -778,7 +778,7 @@
 <script type="application/json" id="siteContentData">{
  "meta": {
   "version": "ver0.2",
-  "buildDate": "1009-0734"
+  "buildDate": "1009-0752"
  },
  "about": {
   "paragraphs": [
@@ -985,12 +985,12 @@
     "body": "サーバーには何も送信されません。全てブラウザの中だけで完結しています。"
    }
   ],
-  "capacityNote": "このファイル1本で約354KB(共通エンジン+全10プログラム分、JSONコンテンツ・トレースしたシルエット画像込み)。下記の内訳は、この版のファイルをプログラム単位に区切って実測した値です(この数値を書き込む変更自体でファイルがわずかに増減するため、次に手を加えた際は再計測が必要です)。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
+  "capacityNote": "このファイル1本で約354KBです(この版のHTMLを直接測った実測値)。下記のプログラム別・共通エンジン別の内訳は、計測時点や数え方によって多少の差が生じるため、あくまで参考内訳です。正確な現在地は、このページを開いた時に上に表示される実測KBを確認してください。ニャーズゲームセンターと同じく、圧縮せず読みやすいコードのまま公開しています。",
   "capacityBreakdown": [
    {
     "name": "共通エンジン(カメラ・マイク・音・UI・BGM等)",
-    "kb": 193.1,
-    "pct": 54.5
+    "kb": 193.2,
+    "pct": 54.6
    },
    {
     "name": "にゃーピアノ",
@@ -3577,7 +3577,7 @@ function buildCapacityBreakdownHtml(breakdown){
   const totalKb = breakdown.reduce((sum,b)=>sum+b.kb, 0);
   const totalPct = breakdown.reduce((sum,b)=>sum+b.pct, 0);
   const totalRow = `<tr class="total"><td>合計</td><td class="num">${totalKb.toFixed(1)}KB</td><td class="num">${totalPct.toFixed(1)}%</td></tr>`;
-  return `<table class="capacity-table"><thead><tr><th>内訳</th><th>容量</th><th>割合</th></tr></thead><tbody>${rows}${totalRow}</tbody></table>`;
+  return `<table class="capacity-table"><thead><tr><th>参考内訳</th><th>容量</th><th>割合</th></tr></thead><tbody>${rows}${totalRow}</tbody></table>`;
 }
 function buildTechInfoHtml(d){
   let html = d.sections.map(s=>{
