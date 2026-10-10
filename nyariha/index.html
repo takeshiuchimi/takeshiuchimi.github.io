@@ -479,6 +479,17 @@
   }
   .kokuban-hint{ color:#EDEADF; }
   html.dark-mode .kokuban-bg{ background:radial-gradient(ellipse at 50% 0%, #2A362B 0%, #1A241C 70%, #131A15 100%); }
+  /* にゃー影絵: 和紙のような柔らかい背景に、切り絵風の黒い猫のシルエット */
+  .kagee-bg{
+    position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(180deg, #F3ECDD 0%, #EDE3CE 100%);
+  }
+  .kagee-cat{
+    position:absolute; left:50%; bottom:10%; width:70%; max-width:280px;
+    transform:translateX(-50%); color:#1a1a1a; overflow:visible;
+  }
+  html.dark-mode .kagee-bg{ background:linear-gradient(180deg, #2A2620 0%, #1E1A16 100%); }
+  html.dark-mode .kagee-cat{ color:#0d0d0d; }
   .piano-xml-panel{
     width:100%; z-index:7; box-sizing:border-box;
     background:rgba(255,255,255,.95); border:2px solid var(--brown-deep,#8B6F47); border-radius:10px;
@@ -778,7 +789,7 @@
 <script type="application/json" id="siteContentData">{
  "meta": {
   "version": "ver0.2",
-  "buildDate": "1009-0752"
+  "buildDate": "1010-0916"
  },
  "about": {
   "paragraphs": [
@@ -1116,6 +1127,14 @@
    "desc": "グー(またはタップ)で線を描き、猫の通り道を作ろう",
    "disabled": false,
    "purpose": "手をグーにして動かすと、その軌跡が線になって残る自由なお絵かきプログラムです。線に近づいた猫は、その線に沿って歩きます。タップでも線を描けます。"
+  },
+  {
+   "key": "kagee",
+   "icon": "🐾",
+   "name": "にゃー影絵",
+   "desc": "切り絵風の猫を、両手の高さと形でポーズさせよう",
+   "disabled": false,
+   "purpose": "切り絵風の座った猫のシルエットを、両手で自由にポーズさせる、採点のないプログラムです。手を上・中・下のどこに置くかで腕の角度が、グー・チョキ・パーで肉球の開き方が変わります。狙った高さに手を運ぶ動きと、手の形を変える指の動きを、両方引き出します。"
   },
   {
    "key": "quiz",
@@ -3416,6 +3435,30 @@ function chalkCatSvg(color){
 }
 // 色違いの猫たちが選ばれるパレット(オレンジ・グレー・こげ茶・クリーム・サビ・ピンク・水色・からし)
 const CAT_COLORS = ['#F2A65A','#9A9A9A','#4A4038','#F2EFE4','#C98B5E','#F0B4C4','#9BC4D8','#E0C868'];
+
+// にゃー影絵用: 切り絵・影絵風の、座った横向き猫のシルエット(体・頭・耳・尻尾は固定、腕は別パーツ)。
+// 右向きに座っている構図。オリジナルのシルエットで、特定の作品の模写ではない。
+const KAGEE_CAT_BODY_SVG = `<g fill="currentColor">
+    <path d="M 40 110 C 15 100 5 70 20 45 C 28 32 42 28 48 35 C 38 38 28 48 26 62 C 24 78 32 95 48 102 Z"/>
+    <ellipse cx="55" cy="130" rx="38" ry="34"/>
+    <ellipse cx="100" cy="105" rx="46" ry="38" transform="rotate(-18 100 105)"/>
+    <ellipse cx="138" cy="95" rx="22" ry="30" transform="rotate(-10 138 95)"/>
+    <circle cx="148" cy="55" r="30"/>
+    <path d="M 128 34 L 122 6 L 144 26 Z"/>
+    <path d="M 152 28 L 160 2 L 172 24 Z"/>
+  </g>`;
+// 腕(前脚)1本ぶんのパーツ。肩の位置を原点として、下向き(角度0)を基準に伸びる。
+// shape: 'guu'(閉じた肉球)|'choki'(爪2本)|'paa'(指を開く)
+function kageeArmSvg(shape){
+  const toes = shape==='choki'
+    ? `<path d="M -4 48 L -7 40 M 4 48 L 7 40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>`
+    : shape==='paa'
+      ? `<path d="M -7 48 L -12 40 M 0 52 L -1 42 M 7 48 L 11 40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>`
+      : '';
+  return `<path d="M -6 0 C -7 20 -6 35 -4 46 L 4 46 C 6 35 7 20 6 0 Z" fill="currentColor"/>
+    <ellipse cx="0" cy="50" rx="9" ry="7" fill="currentColor"/>
+    ${toes}`;
+}
 
 // ---- かごのビジュアル(編みかご) ----
 function basketSvg(){
@@ -7781,6 +7824,81 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
         nextCatSpawnAt = now + randRange(...CAT_SPAWN_INTERVAL_MS);
       }
     },
+  });
+})();
+
+/* ============================================================
+   プログラム: にゃー影絵
+   切り絵・影絵風の座った猫のシルエットを、両手で操作する。手の高さ(上/中/下)で
+   腕の角度、手の形(グー/チョキ/パー)で肉球の開き方が変わる。右手が手前側(大きい方)の
+   腕、左手が奥側の腕に対応する。採点・時間制限なしの、自由なポーズ遊びプログラム。
+   ============================================================ */
+(function(){
+  // 腕の角度(度)。手の高さの3段階にそれぞれ対応する。
+  const ANGLE_BY_ZONE = { upper: -70, middle: -10, lower: 35 };
+  const SMOOTH = 0.18; // 毎フレーム、今の角度から目標角度にどれだけ近づけるか(大きいほど素早く反応)
+  // 腕の付け根(肩)の位置。手前(右手)の方が大きく・前に出ており、奥(左手)はやや後ろ・小さめ。
+  const ARM_DEF = {
+    front: { x:112, y:140, scale:1.0 },
+    back:  { x:95,  y:148, scale:0.8 },
+  };
+  let frontAngle = ANGLE_BY_ZONE.lower, backAngle = ANGLE_BY_ZONE.lower;
+  let frontShape = 'guu', backShape = 'guu';
+  let frontEl = null, backEl = null;
+
+  function zoneForY(y){
+    if(y < 33) return 'upper';
+    if(y > 66) return 'lower';
+    return 'middle';
+  }
+
+  function renderArm(el, def, angle, shape){
+    if(!el) return;
+    el.setAttribute('transform', `translate(${def.x},${def.y}) rotate(${angle.toFixed(1)}) scale(${def.scale})`);
+    el.innerHTML = kageeArmSvg(shape);
+  }
+
+  registerProgram('kagee', {
+    title: '🐾 にゃー影絵',
+    durationSec: 90,
+    noScoring: true,
+    noTimeLimit: true,
+    introHtml: '切り絵風の猫のシルエットを、両手で操作して自由にポーズを付けられます。<br>手を上/中/下のどこに置くかで腕の角度が、グー・チョキ・パーで肉球の開き方が変わります。<br>右手が手前の大きい腕、左手が奥の腕に対応します。<br>カメラへのアクセスを許可してください。',
+    layerHtml: `
+      <div class="kagee-bg"></div>
+      <svg class="kagee-cat" id="kageeCatSvg" viewBox="0 0 220 180">
+        ${KAGEE_CAT_BODY_SVG}
+        <g id="kageeArmBack" color="#1a1a1a"></g>
+        <g id="kageeArmFront" color="#1a1a1a"></g>
+      </svg>
+    `,
+    setup(){
+      frontEl = document.getElementById('kageeArmFront');
+      backEl = document.getElementById('kageeArmBack');
+    },
+    start(){
+      frontAngle = ANGLE_BY_ZONE.lower; backAngle = ANGLE_BY_ZONE.lower;
+      frontShape = 'guu'; backShape = 'guu';
+      renderArm(frontEl, ARM_DEF.front, frontAngle, frontShape);
+      renderArm(backEl, ARM_DEF.back, backAngle, backShape);
+    },
+    reset(){ this.start(); },
+    onHand(){
+      handsList.forEach(h=>{
+        const zone = zoneForY(h.y);
+        const targetAngle = ANGLE_BY_ZONE[zone];
+        if(h.handedness === 'Right'){
+          frontAngle += (targetAngle-frontAngle)*SMOOTH;
+          frontShape = h.shape;
+        }else{
+          backAngle += (targetAngle-backAngle)*SMOOTH;
+          backShape = h.shape;
+        }
+      });
+      renderArm(backEl, ARM_DEF.back, backAngle, backShape); // 奥の腕を先に描き、手前の腕が上に重なるようにする
+      renderArm(frontEl, ARM_DEF.front, frontAngle, frontShape);
+    },
+    onTick(){},
   });
 })();
 
