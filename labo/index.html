@@ -6,7 +6,7 @@
 <title>内海ラボ</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* 親サイト(takeshiuchimi.github.io)と同じ配色トークンを踏襲 */
+/* 親サイト(takeshiuchimi.github.io)と同じ配色トークン・ダークモードを踏襲 */
 :root{
   --bg:#f2e8d5;--bg2:#fbf6eb;--bg3:#f6eedf;--bg4:#eee1ca;
   --gold:#ad8a54;--gold2:#c5a66f;
@@ -14,7 +14,17 @@
   --muted:#8e8375;--muted2:#7c756b;
   --border:#d8c9b0;
   --moss:#7c8b5d;--moss-deep:#5f6e45;
+  --overlay:rgba(59,46,34,.48);
   --radius:12px;
+}
+html.dark-mode{
+  --bg:#181410;--bg2:#3d342a;--bg3:#241e18;--bg4:#2f2821;
+  --gold:#E0BC4A;--gold2:#E8CA68;
+  --text:#EFE6D6;--text2:#D8CCBA;
+  --muted:#8f806d;--muted2:#B8A68E;
+  --border:#4d4034;
+  --moss:#8fb56e;--moss-deep:#a8d488;
+  --overlay:rgba(20,16,12,.80);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{
@@ -24,22 +34,28 @@ body{
     var(--bg);
   color:var(--text);font-family:'Noto Serif JP',serif;
   min-height:100vh;
+  transition:background .3s,color .3s;
 }
 header{
-  padding:24px 18px 18px;
+  padding:16px 16px 12px;
   border-bottom:1px solid var(--border);
   background:linear-gradient(180deg,rgba(251,246,235,.96),rgba(242,232,213,.88));
+  transition:background .3s,border-color .3s;
 }
+html.dark-mode header{ background:linear-gradient(180deg,#181410,#241e18); }
 .head-wrap{max-width:480px;margin:0 auto;}
-.head-top{
-  font-family:'Oswald',sans-serif;
-  font-size:11px;letter-spacing:2.7px;
-  color:var(--moss-deep);
+.head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.head-top{font-family:'Oswald',sans-serif;font-size:10.5px;letter-spacing:2px;color:var(--moss-deep);}
+.head-title{font-size:16px;font-weight:700;margin-top:2px;letter-spacing:.06em;}
+.theme-btn{
+  flex-shrink:0;border:1px solid rgba(124,139,93,.32);background:rgba(124,139,93,.10);
+  color:var(--moss-deep);border-radius:999px;width:30px;height:30px;
+  display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;
 }
-.head-title{font-size:20px;font-weight:700;margin-top:4px;letter-spacing:.06em;}
-.head-back{display:inline-block;margin-top:10px;font-size:11px;color:var(--text2);text-decoration:none;}
+.theme-btn:hover{background:rgba(124,139,93,.18);}
+.head-back{display:inline-block;margin-top:8px;font-size:11px;color:var(--text2);text-decoration:none;}
 .head-back:hover{color:var(--moss-deep);}
-main{max-width:480px;margin:0 auto;width:100%;padding:22px 16px 40px;}
+main{max-width:480px;margin:0 auto;width:100%;padding:22px 16px 8px;}
 .section-label{font-size:10px;letter-spacing:4px;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;padding-left:4px;}
 .entry{
   display:flex;align-items:center;gap:16px;
@@ -48,6 +64,7 @@ main{max-width:480px;margin:0 auto;width:100%;padding:22px 16px 40px;}
   text-decoration:none;color:inherit;
   transition:all 0.2s;position:relative;overflow:hidden;cursor:pointer;
 }
+html.dark-mode .entry{ background:rgba(61,52,42,.6); }
 .entry::before{
   content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
   background:linear-gradient(180deg,var(--moss),var(--gold));
@@ -66,16 +83,50 @@ main{max-width:480px;margin:0 auto;width:100%;padding:22px 16px 40px;}
 .entry-arrow{color:var(--moss-deep);font-size:18px;flex-shrink:0;opacity:0;transition:opacity 0.2s;}
 .entry:hover .entry-arrow{opacity:1;}
 .state-msg{font-size:12px;color:var(--muted2);padding:18px 4px;line-height:1.8;}
-.state-msg a{color:var(--moss-deep);}
-footer{text-align:center;padding:18px 20px 38px;font-size:10px;color:var(--muted);letter-spacing:1px;}
+
+/* FOOTER */
+footer{text-align:center;padding:18px 20px 38px;}
+.bottom-tools{display:flex;justify-content:center;gap:8px;margin:0 0 6px;}
+.util-btn{
+  border:none;background:var(--moss);color:var(--bg2);padding:7px 16px;border-radius:999px;
+  font-family:'Noto Serif JP',serif;font-size:11px;letter-spacing:.04em;cursor:pointer;
+  box-shadow:0 2px 0 var(--moss-deep);
+}
+.util-btn:active{transform:translateY(2px);box-shadow:none;}
+.foot-note{font-size:10px;color:var(--muted);letter-spacing:1px;line-height:1.8;margin-top:10px;}
+
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;z-index:50;
+  display:flex;align-items:center;justify-content:center;padding:22px;
+  background:var(--overlay);opacity:0;pointer-events:none;transition:opacity .22s ease;
+}
+.modal-overlay.open{opacity:1;pointer-events:auto;}
+.modal-card{
+  position:relative;width:min(100%,430px);max-height:78vh;overflow:auto;
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:26px 22px 22px;box-shadow:0 24px 60px -20px rgba(0,0,0,.45);
+  transform:translateY(10px);transition:transform .22s ease,background .3s,color .3s;
+}
+.modal-overlay.open .modal-card{transform:translateY(0);}
+.modal-close{position:absolute;top:8px;right:10px;width:30px;height:30px;border:none;background:transparent;color:var(--text2);font-size:21px;cursor:pointer;}
+.modal-title{font-size:18px;font-weight:700;color:var(--text);text-align:center;margin-bottom:14px;letter-spacing:.08em;}
+.modal-body{font-size:12.5px;line-height:1.9;color:var(--text2);}
+.modal-body p{margin:0 0 11px;}
+.modal-body p:last-child{margin-bottom:0;}
 </style>
 </head>
 <body>
 
 <header>
   <div class="head-wrap">
-    <div class="head-top">TAKESHI UCHIMI LAB</div>
-    <div class="head-title">🧪 内海ラボ</div>
+    <div class="head-row">
+      <div>
+        <div class="head-top">TAKESHI UCHIMI LAB</div>
+        <div class="head-title">🧪 内海ラボ</div>
+      </div>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="ダークモード切替" title="ダークモード切替">◐</button>
+    </div>
     <a class="head-back" href="https://takeshiuchimi.github.io/">← TakeshiUchimi Projects に戻る</a>
   </div>
 </header>
@@ -88,24 +139,46 @@ footer{text-align:center;padding:18px 20px 38px;font-size:10px;color:var(--muted
 </main>
 
 <footer>
-  このフォルダ(labo/)にHTMLを置くだけで、この一覧に自動で並びます。
+  <div class="bottom-tools">
+    <button class="util-btn" type="button" data-modal="aboutModal">内海ラボとは</button>
+    <button class="util-btn" type="button" data-modal="techModal">技術情報</button>
+  </div>
+  <div class="foot-note">このフォルダ(labo/)にHTMLを置くだけで、一覧に自動で並びます。</div>
 </footer>
+
+<div class="modal-overlay" id="aboutModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <button class="modal-close" type="button" aria-label="閉じる">×</button>
+    <div class="modal-title" id="aboutTitle">内海ラボとは</div>
+    <div class="modal-body">
+      <p>ここは、ふと気になったことをすぐ調べて、そのまま形にして残しておく場所です。</p>
+      <p>「スナックのライブ、何が面白かったのか」「トレーラーは実際どこに何台あるのか」「葉っぱの色は洗濯しても残るのか」。仕事にも趣味にも直結しない、小さな好奇心をそのまま置いています。</p>
+      <p>一つひとつを「号」として並べ、気が向いた時に増えていきます。完成度よりも、気になった瞬間を逃さないことを優先しています。</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="techModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="techTitle">
+    <button class="modal-close" type="button" aria-label="閉じる">×</button>
+    <div class="modal-title" id="techTitle">技術情報</div>
+    <div class="modal-body">
+      <p>この一覧ページは、GitHubのリポジトリ内容を取得するAPIを使い、labo/フォルダの中身をその場で読み取って自動的に並べています。記事を1本公開するたびにJSONやHTMLを手で書き換える、という作業そのものをなくすのが目的です。</p>
+      <p>ファイル名に「内海ラボ_第XX号_タイトル_YYYYMMDD.html」という規則を持たせることで、号数・タイトル・日付をJavaScriptだけで読み取っています。この規則に合わないファイル名があっても、一覧から漏らさず素朴に表示します。</p>
+      <p>配色・ダークモード・モーダルの仕組みは、親サイト(TakeshiUchimi Projects)とあえて揃えています。見た目を毎回作り直さず、育ってきた型を使い回す考え方です。</p>
+    </div>
+  </div>
+</div>
 
 <script>
 (async () => {
-  // GitHubのリポジトリ内容取得APIで、このフォルダのファイル一覧をその場で取得する。
-  // 手でJSONに追記する必要がなく、ファイルを置くだけで一覧に反映される(自動化が目的)。
-  // リポジトリ名が違う場合は、ここだけ直せばよい。
   const API_URL = 'https://api.github.com/repos/takeshiuchimi/takeshiuchimi.github.io/contents/labo';
   const listEl = document.getElementById('entryList');
-
-  // ファイル名の規則: 内海ラボ_第XX号_タイトル_YYYYMMDD.html
   const NAME_PATTERN = /^内海ラボ_第(\d+)号_(.+)_(\d{4})(\d{2})(\d{2})\.html$/;
 
   function parseEntry(filename, url){
     const m = filename.match(NAME_PATTERN);
     if(!m){
-      // 規則に合わないファイルも、一覧からは漏らさず素朴に表示する
       return { num:null, title:filename.replace(/\.html$/,''), dateText:'', url };
     }
     const [, numStr, titleRaw, y, mo, d] = m;
@@ -122,11 +195,10 @@ footer{text-align:center;padding:18px 20px 38px;font-size:10px;color:var(--muted
       listEl.innerHTML = '<div class="state-msg">まだ記事がありません。labo/フォルダにHTMLを置くと、ここに並びます。</div>';
       return;
     }
-    // 号数の大きい(新しい)ものから並べる。号数が無いものは末尾へ。
     entries.sort((a,b) => (b.num ?? -1) - (a.num ?? -1));
     listEl.innerHTML = entries.map(e => `
       <a class="entry" href="${e.url}">
-        <div class="entry-num">${e.num !== null ? '第'+String(e.num).padStart(2,'0')+'号' : '—'}</div>
+        <div class="entry-num">${e.num !== null ? '第'+('0'+e.num).slice(-2)+'号' : '—'}</div>
         <div class="entry-info">
           <div class="entry-title">${e.title}</div>
           ${e.dateText ? `<div class="entry-date">${e.dateText}</div>` : ''}
@@ -150,6 +222,45 @@ footer{text-align:center;padding:18px 20px 38px;font-size:10px;color:var(--muted
       時間をおいて再読み込みしてみてください。
     </div>`;
   }
+
+  // ダークモード(親サイトと同じ保存キーを使い、どちらかで切り替えればもう一方にも引き継がれる)
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeBtn');
+  const saved = localStorage.getItem('takeshi_theme');
+  if(saved === 'dark') root.classList.add('dark-mode');
+  const syncThemeLabel = () => {
+    const isDark = root.classList.contains('dark-mode');
+    themeBtn.textContent = isDark ? '☀' : '◐';
+    themeBtn.setAttribute('aria-label', isDark ? 'ライトモードに切替' : 'ダークモードに切替');
+    themeBtn.setAttribute('title', isDark ? 'ライトモードに切替' : 'ダークモードに切替');
+  };
+  syncThemeLabel();
+  themeBtn.addEventListener('click', () => {
+    root.classList.toggle('dark-mode');
+    localStorage.setItem('takeshi_theme', root.classList.contains('dark-mode') ? 'dark' : 'light');
+    syncThemeLabel();
+  });
+
+  // モーダル開閉
+  document.querySelectorAll('[data-modal]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const modal = document.getElementById(btn.dataset.modal);
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+    });
+  });
+  document.querySelectorAll('.modal-overlay').forEach(modal => {
+    const close = () => { modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); };
+    modal.addEventListener('click', e => { if(e.target === modal) close(); });
+    modal.querySelector('.modal-close').addEventListener('click', close);
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      document.querySelectorAll('.modal-overlay.open').forEach(m => {
+        m.classList.remove('open'); m.setAttribute('aria-hidden','true');
+      });
+    }
+  });
 })();
 </script>
 
