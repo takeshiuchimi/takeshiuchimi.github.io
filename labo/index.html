@@ -1,1 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>内海ラボ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* 親サイト(takeshiuchimi.github.io)と同じ配色トークンを踏襲 */
+:root{
+  --bg:#f2e8d5;--bg2:#fbf6eb;--bg3:#f6eedf;--bg4:#eee1ca;
+  --gold:#ad8a54;--gold2:#c5a66f;
+  --text:#3b2e22;--text2:#5c4a38;
+  --muted:#8e8375;--muted2:#7c756b;
+  --border:#d8c9b0;
+  --moss:#7c8b5d;--moss-deep:#5f6e45;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(circle at 12% 8%, rgba(124,139,93,.08), transparent 32%),
+    radial-gradient(circle at 88% 82%, rgba(183,122,114,.08), transparent 34%),
+    var(--bg);
+  color:var(--text);font-family:'Noto Serif JP',serif;
+  min-height:100vh;
+}
+header{
+  padding:24px 18px 18px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(251,246,235,.96),rgba(242,232,213,.88));
+}
+.head-wrap{max-width:480px;margin:0 auto;}
+.head-top{
+  font-family:'Oswald',sans-serif;
+  font-size:11px;letter-spacing:2.7px;
+  color:var(--moss-deep);
+}
+.head-title{font-size:20px;font-weight:700;margin-top:4px;letter-spacing:.06em;}
+.head-back{display:inline-block;margin-top:10px;font-size:11px;color:var(--text2);text-decoration:none;}
+.head-back:hover{color:var(--moss-deep);}
+main{max-width:480px;margin:0 auto;width:100%;padding:22px 16px 40px;}
+.section-label{font-size:10px;letter-spacing:4px;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;padding-left:4px;}
+.entry{
+  display:flex;align-items:center;gap:16px;
+  background:rgba(251,246,235,.92);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:12px;
+  text-decoration:none;color:inherit;
+  transition:all 0.2s;position:relative;overflow:hidden;cursor:pointer;
+}
+.entry::before{
+  content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--moss),var(--gold));
+  border-radius:3px 0 0 3px;opacity:0;transition:opacity 0.2s;
+}
+.entry:hover{border-color:rgba(124,139,93,.45);transform:translateX(4px);background:var(--bg3);}
+.entry:hover::before{opacity:1;}
+.entry-num{
+  flex-shrink:0;width:48px;height:48px;background:var(--bg4);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;border:1px solid var(--border);
+  font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;color:var(--moss-deep);
+}
+.entry-info{flex:1;min-width:0;}
+.entry-title{font-size:15px;font-weight:700;color:var(--text);line-height:1.5;}
+.entry-date{font-size:10px;color:var(--muted2);margin-top:4px;font-family:'Oswald',sans-serif;letter-spacing:1px;}
+.entry-arrow{color:var(--moss-deep);font-size:18px;flex-shrink:0;opacity:0;transition:opacity 0.2s;}
+.entry:hover .entry-arrow{opacity:1;}
+.state-msg{font-size:12px;color:var(--muted2);padding:18px 4px;line-height:1.8;}
+.state-msg a{color:var(--moss-deep);}
+footer{text-align:center;padding:18px 20px 38px;font-size:10px;color:var(--muted);letter-spacing:1px;}
+</style>
+</head>
+<body>
 
+<header>
+  <div class="head-wrap">
+    <div class="head-top">TAKESHI UCHIMI LAB</div>
+    <div class="head-title">🧪 内海ラボ</div>
+    <a class="head-back" href="https://takeshiuchimi.github.io/">← TakeshiUchimi Projects に戻る</a>
+  </div>
+</header>
+
+<main>
+  <div class="section-label">Entries</div>
+  <div id="entryList">
+    <div class="state-msg">読み込み中…</div>
+  </div>
+</main>
+
+<footer>
+  このフォルダ(labo/)にHTMLを置くだけで、この一覧に自動で並びます。
+</footer>
+
+<script>
+(async () => {
+  // GitHubのリポジトリ内容取得APIで、このフォルダのファイル一覧をその場で取得する。
+  // 手でJSONに追記する必要がなく、ファイルを置くだけで一覧に反映される(自動化が目的)。
+  // リポジトリ名が違う場合は、ここだけ直せばよい。
+  const API_URL = 'https://api.github.com/repos/takeshiuchimi/takeshiuchimi.github.io/contents/labo';
+  const listEl = document.getElementById('entryList');
+
+  // ファイル名の規則: 内海ラボ_第XX号_タイトル_YYYYMMDD.html
+  const NAME_PATTERN = /^内海ラボ_第(\d+)号_(.+)_(\d{4})(\d{2})(\d{2})\.html$/;
+
+  function parseEntry(filename, url){
+    const m = filename.match(NAME_PATTERN);
+    if(!m){
+      // 規則に合わないファイルも、一覧からは漏らさず素朴に表示する
+      return { num:null, title:filename.replace(/\.html$/,''), dateText:'', url };
+    }
+    const [, numStr, titleRaw, y, mo, d] = m;
+    return {
+      num: parseInt(numStr,10),
+      title: titleRaw.replace(/_/g,' '),
+      dateText: `${y}.${mo}.${d}`,
+      url,
+    };
+  }
+
+  function render(entries){
+    if(entries.length === 0){
+      listEl.innerHTML = '<div class="state-msg">まだ記事がありません。labo/フォルダにHTMLを置くと、ここに並びます。</div>';
+      return;
+    }
+    // 号数の大きい(新しい)ものから並べる。号数が無いものは末尾へ。
+    entries.sort((a,b) => (b.num ?? -1) - (a.num ?? -1));
+    listEl.innerHTML = entries.map(e => `
+      <a class="entry" href="${e.url}">
+        <div class="entry-num">${e.num !== null ? '第'+String(e.num).padStart(2,'0')+'号' : '—'}</div>
+        <div class="entry-info">
+          <div class="entry-title">${e.title}</div>
+          ${e.dateText ? `<div class="entry-date">${e.dateText}</div>` : ''}
+        </div>
+        <div class="entry-arrow">›</div>
+      </a>
+    `).join('');
+  }
+
+  try{
+    const res = await fetch(API_URL);
+    if(!res.ok) throw new Error('GitHub APIからの取得に失敗しました(status ' + res.status + ')');
+    const files = await res.json();
+    const entries = files
+      .filter(f => f.type === 'file' && f.name.endsWith('.html') && f.name !== 'index.html')
+      .map(f => parseEntry(f.name, f.name));
+    render(entries);
+  }catch(err){
+    listEl.innerHTML = `<div class="state-msg">
+      一覧の自動取得に失敗しました(${err.message})。<br>
+      時間をおいて再読み込みしてみてください。
+    </div>`;
+  }
+})();
+</script>
+
+</body>
+</html>
