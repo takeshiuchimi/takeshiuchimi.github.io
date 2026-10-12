@@ -754,6 +754,12 @@
   .qr-img{ width:180px; height:180px; }
   .qr-img svg{ width:100%; height:100%; display:block; border-radius:6px; overflow:hidden; }
   .qr-box a{ font-size:11px; color:var(--brown-deep); word-break:break-all; text-align:center; }
+  .poster-box{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    margin:10px 0 4px; padding:10px; background:var(--cream-deep); border-radius:12px;
+  }
+  .poster-box img{ width:120px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.15); }
+  .poster-box span{ font-size:11px; color:var(--brown-deep); }
   .util-row{ display:flex; gap:6px; margin:8px 0; }
   .util-row .util-btn{ flex:1; margin:0; font-size:12px; padding:6px 4px; }
   .util-row .util-btn-icon{ flex:none; width:34px; padding:6px 0; }
@@ -789,7 +795,7 @@
 <script type="application/json" id="siteContentData">{
  "meta": {
   "version": "ver0.2",
-  "buildDate": "1010-0916"
+  "buildDate": "1012-1507"
  },
  "about": {
   "paragraphs": [
@@ -803,7 +809,8 @@
    "body": "手を握る・揺らす・漕ぐ・伸ばす…色んな体の動きを引き出すプログラムを、少しずつ増やしていく予定です。今はもぎ・ゆらし・カヌー・花火・手拍子・体操・テルミン・ピアノ・黒板・クイズの10本が動いています。カメラで手や体を見るものだけでなく、マイクで音を聞くものも登場しました。"
   },
   "shareUrl": "https://takeshiuchimi.github.io/nyariha/",
-  "qrSvg": "<svg viewBox=\"0 0 33 33\" xmlns=\"http://www.w3.org/2000/svg\" shape-rendering=\"crispEdges\"><rect width=\"33\" height=\"33\" fill=\"#fff\"/><path d=\"M2,2h7v1h-7zM11,2h2v1h-2zM15,2h3v1h-3zM20,2h2v1h-2zM24,2h7v1h-7zM2,3h1v1h-1zM8,3h1v1h-1zM10,3h1v1h-1zM13,3h3v1h-3zM17,3h1v1h-1zM20,3h2v1h-2zM24,3h1v1h-1zM30,3h1v1h-1zM2,4h1v1h-1zM4,4h3v1h-3zM8,4h1v1h-1zM13,4h2v1h-2zM17,4h2v1h-2zM21,4h1v1h-1zM24,4h1v1h-1zM26,4h3v1h-3zM30,4h1v1h-1zM2,5h1v1h-1zM4,5h3v1h-3zM8,5h1v1h-1zM11,5h2v1h-2zM16,5h3v1h-3zM20,5h1v1h-1zM24,5h1v1h-1zM26,5h3v1h-3zM30,5h1v1h-1zM2,6h1v1h-1zM4,6h3v1h-3zM8,6h1v1h-1zM10,6h3v1h-3zM14,6h4v1h-4zM19,6h4v1h-4zM24,6h1v1h-1zM26,6h3v1h-3zM30,6h1v1h-1zM2,7h1v1h-1zM8,7h1v1h-1zM12,7h4v1h-4zM17,7h3v1h-3zM21,7h2v1h-2zM24,7h1v1h-1zM30,7h1v1h-1zM2,8h7v1h-7zM10,8h1v1h-1zM12,8h1v1h-1zM14,8h1v1h-1zM16,8h1v1h-1zM18,8h1v1h-1zM20,8h1v1h-1zM22,8h1v1h-1zM24,8h7v1h-7zM12,9h1v1h-1zM14,9h2v1h-2zM17,9h1v1h-1zM19,9h3v1h-3zM2,10h1v1h-1zM4,10h1v1h-1zM6,10h1v1h-1zM8,10h1v1h-1zM11,10h2v1h-2zM14,10h2v1h-2zM18,10h2v1h-2zM21,10h2v1h-2zM26,10h1v1h-1zM29,10h1v1h-1zM3,11h2v1h-2zM7,11h1v1h-1zM11,11h1v1h-1zM13,11h1v1h-1zM15,11h1v1h-1zM18,11h3v1h-3zM22,11h1v1h-1zM24,11h1v1h-1zM27,11h1v1h-1zM30,11h1v1h-1zM3,12h1v1h-1zM5,12h1v1h-1zM8,12h2v1h-2zM12,12h3v1h-3zM16,12h1v1h-1zM24,12h3v1h-3zM28,12h3v1h-3zM4,13h1v1h-1zM6,13h2v1h-2zM9,13h9v1h-9zM19,13h1v1h-1zM21,13h2v1h-2zM24,13h1v1h-1zM29,13h1v1h-1zM3,14h1v1h-1zM7,14h2v1h-2zM10,14h8v1h-8zM19,14h1v1h-1zM21,14h4v1h-4zM27,14h1v1h-1zM29,14h2v1h-2zM3,15h1v1h-1zM7,15h1v1h-1zM12,15h2v1h-2zM18,15h1v1h-1zM22,15h3v1h-3zM27,15h1v1h-1zM30,15h1v1h-1zM3,16h2v1h-2zM6,16h5v1h-5zM15,16h1v1h-1zM18,16h1v1h-1zM20,16h1v1h-1zM25,16h1v1h-1zM27,16h1v1h-1zM29,16h2v1h-2zM2,17h1v1h-1zM4,17h1v1h-1zM7,17h1v1h-1zM11,17h1v1h-1zM13,17h4v1h-4zM18,17h2v1h-2zM21,17h1v1h-1zM23,17h1v1h-1zM25,17h3v1h-3zM29,17h1v1h-1zM2,18h3v1h-3zM6,18h1v1h-1zM8,18h1v1h-1zM10,18h1v1h-1zM12,18h3v1h-3zM16,18h4v1h-4zM21,18h4v1h-4zM27,18h1v1h-1zM29,18h2v1h-2zM4,19h3v1h-3zM9,19h1v1h-1zM13,19h2v1h-2zM18,19h3v1h-3zM22,19h3v1h-3zM27,19h2v1h-2zM30,19h1v1h-1zM2,20h1v1h-1zM4,20h1v1h-1zM6,20h5v1h-5zM12,20h1v1h-1zM14,20h2v1h-2zM22,20h1v1h-1zM25,20h2v1h-2zM29,20h2v1h-2zM3,21h1v1h-1zM9,21h1v1h-1zM13,21h1v1h-1zM18,21h4v1h-4zM25,21h1v1h-1zM27,21h1v1h-1zM29,21h1v1h-1zM2,22h1v1h-1zM5,22h2v1h-2zM8,22h1v1h-1zM10,22h2v1h-2zM13,22h2v1h-2zM17,22h3v1h-3zM21,22h6v1h-6zM10,23h2v1h-2zM13,23h1v1h-1zM15,23h1v1h-1zM19,23h1v1h-1zM21,23h2v1h-2zM26,23h1v1h-1zM28,23h3v1h-3zM2,24h7v1h-7zM11,24h1v1h-1zM14,24h1v1h-1zM16,24h1v1h-1zM19,24h4v1h-4zM24,24h1v1h-1zM26,24h2v1h-2zM29,24h2v1h-2zM2,25h1v1h-1zM8,25h1v1h-1zM12,25h1v1h-1zM14,25h3v1h-3zM18,25h2v1h-2zM22,25h1v1h-1zM26,25h2v1h-2zM29,25h1v1h-1zM2,26h1v1h-1zM4,26h3v1h-3zM8,26h1v1h-1zM10,26h1v1h-1zM12,26h1v1h-1zM14,26h1v1h-1zM16,26h5v1h-5zM22,26h5v1h-5zM2,27h1v1h-1zM4,27h3v1h-3zM8,27h1v1h-1zM11,27h1v1h-1zM14,27h3v1h-3zM18,27h1v1h-1zM22,27h1v1h-1zM25,27h2v1h-2zM28,27h3v1h-3zM2,28h1v1h-1zM4,28h3v1h-3zM8,28h1v1h-1zM10,28h1v1h-1zM19,28h1v1h-1zM22,28h2v1h-2zM25,28h3v1h-3zM30,28h1v1h-1zM2,29h1v1h-1zM8,29h1v1h-1zM15,29h1v1h-1zM17,29h1v1h-1zM19,29h1v1h-1zM21,29h2v1h-2zM25,29h1v1h-1zM29,29h1v1h-1zM2,30h7v1h-7zM10,30h3v1h-3zM16,30h4v1h-4zM21,30h7v1h-7zM29,30h2v1h-2z\" fill=\"#3A2E20\"/></svg>"
+  "qrSvg": "<svg viewBox=\"0 0 33 33\" xmlns=\"http://www.w3.org/2000/svg\" shape-rendering=\"crispEdges\"><rect width=\"33\" height=\"33\" fill=\"#fff\"/><path d=\"M2,2h7v1h-7zM11,2h2v1h-2zM15,2h3v1h-3zM20,2h2v1h-2zM24,2h7v1h-7zM2,3h1v1h-1zM8,3h1v1h-1zM10,3h1v1h-1zM13,3h3v1h-3zM17,3h1v1h-1zM20,3h2v1h-2zM24,3h1v1h-1zM30,3h1v1h-1zM2,4h1v1h-1zM4,4h3v1h-3zM8,4h1v1h-1zM13,4h2v1h-2zM17,4h2v1h-2zM21,4h1v1h-1zM24,4h1v1h-1zM26,4h3v1h-3zM30,4h1v1h-1zM2,5h1v1h-1zM4,5h3v1h-3zM8,5h1v1h-1zM11,5h2v1h-2zM16,5h3v1h-3zM20,5h1v1h-1zM24,5h1v1h-1zM26,5h3v1h-3zM30,5h1v1h-1zM2,6h1v1h-1zM4,6h3v1h-3zM8,6h1v1h-1zM10,6h3v1h-3zM14,6h4v1h-4zM19,6h4v1h-4zM24,6h1v1h-1zM26,6h3v1h-3zM30,6h1v1h-1zM2,7h1v1h-1zM8,7h1v1h-1zM12,7h4v1h-4zM17,7h3v1h-3zM21,7h2v1h-2zM24,7h1v1h-1zM30,7h1v1h-1zM2,8h7v1h-7zM10,8h1v1h-1zM12,8h1v1h-1zM14,8h1v1h-1zM16,8h1v1h-1zM18,8h1v1h-1zM20,8h1v1h-1zM22,8h1v1h-1zM24,8h7v1h-7zM12,9h1v1h-1zM14,9h2v1h-2zM17,9h1v1h-1zM19,9h3v1h-3zM2,10h1v1h-1zM4,10h1v1h-1zM6,10h1v1h-1zM8,10h1v1h-1zM11,10h2v1h-2zM14,10h2v1h-2zM18,10h2v1h-2zM21,10h2v1h-2zM26,10h1v1h-1zM29,10h1v1h-1zM3,11h2v1h-2zM7,11h1v1h-1zM11,11h1v1h-1zM13,11h1v1h-1zM15,11h1v1h-1zM18,11h3v1h-3zM22,11h1v1h-1zM24,11h1v1h-1zM27,11h1v1h-1zM30,11h1v1h-1zM3,12h1v1h-1zM5,12h1v1h-1zM8,12h2v1h-2zM12,12h3v1h-3zM16,12h1v1h-1zM24,12h3v1h-3zM28,12h3v1h-3zM4,13h1v1h-1zM6,13h2v1h-2zM9,13h9v1h-9zM19,13h1v1h-1zM21,13h2v1h-2zM24,13h1v1h-1zM29,13h1v1h-1zM3,14h1v1h-1zM7,14h2v1h-2zM10,14h8v1h-8zM19,14h1v1h-1zM21,14h4v1h-4zM27,14h1v1h-1zM29,14h2v1h-2zM3,15h1v1h-1zM7,15h1v1h-1zM12,15h2v1h-2zM18,15h1v1h-1zM22,15h3v1h-3zM27,15h1v1h-1zM30,15h1v1h-1zM3,16h2v1h-2zM6,16h5v1h-5zM15,16h1v1h-1zM18,16h1v1h-1zM20,16h1v1h-1zM25,16h1v1h-1zM27,16h1v1h-1zM29,16h2v1h-2zM2,17h1v1h-1zM4,17h1v1h-1zM7,17h1v1h-1zM11,17h1v1h-1zM13,17h4v1h-4zM18,17h2v1h-2zM21,17h1v1h-1zM23,17h1v1h-1zM25,17h3v1h-3zM29,17h1v1h-1zM2,18h3v1h-3zM6,18h1v1h-1zM8,18h1v1h-1zM10,18h1v1h-1zM12,18h3v1h-3zM16,18h4v1h-4zM21,18h4v1h-4zM27,18h1v1h-1zM29,18h2v1h-2zM4,19h3v1h-3zM9,19h1v1h-1zM13,19h2v1h-2zM18,19h3v1h-3zM22,19h3v1h-3zM27,19h2v1h-2zM30,19h1v1h-1zM2,20h1v1h-1zM4,20h1v1h-1zM6,20h5v1h-5zM12,20h1v1h-1zM14,20h2v1h-2zM22,20h1v1h-1zM25,20h2v1h-2zM29,20h2v1h-2zM3,21h1v1h-1zM9,21h1v1h-1zM13,21h1v1h-1zM18,21h4v1h-4zM25,21h1v1h-1zM27,21h1v1h-1zM29,21h1v1h-1zM2,22h1v1h-1zM5,22h2v1h-2zM8,22h1v1h-1zM10,22h2v1h-2zM13,22h2v1h-2zM17,22h3v1h-3zM21,22h6v1h-6zM10,23h2v1h-2zM13,23h1v1h-1zM15,23h1v1h-1zM19,23h1v1h-1zM21,23h2v1h-2zM26,23h1v1h-1zM28,23h3v1h-3zM2,24h7v1h-7zM11,24h1v1h-1zM14,24h1v1h-1zM16,24h1v1h-1zM19,24h4v1h-4zM24,24h1v1h-1zM26,24h2v1h-2zM29,24h2v1h-2zM2,25h1v1h-1zM8,25h1v1h-1zM12,25h1v1h-1zM14,25h3v1h-3zM18,25h2v1h-2zM22,25h1v1h-1zM26,25h2v1h-2zM29,25h1v1h-1zM2,26h1v1h-1zM4,26h3v1h-3zM8,26h1v1h-1zM10,26h1v1h-1zM12,26h1v1h-1zM14,26h1v1h-1zM16,26h5v1h-5zM22,26h5v1h-5zM2,27h1v1h-1zM4,27h3v1h-3zM8,27h1v1h-1zM11,27h1v1h-1zM14,27h3v1h-3zM18,27h1v1h-1zM22,27h1v1h-1zM25,27h2v1h-2zM28,27h3v1h-3zM2,28h1v1h-1zM4,28h3v1h-3zM8,28h1v1h-1zM10,28h1v1h-1zM19,28h1v1h-1zM22,28h2v1h-2zM25,28h3v1h-3zM30,28h1v1h-1zM2,29h1v1h-1zM8,29h1v1h-1zM15,29h1v1h-1zM17,29h1v1h-1zM19,29h1v1h-1zM21,29h2v1h-2zM25,29h1v1h-1zM29,29h1v1h-1zM2,30h7v1h-7zM10,30h3v1h-3zM16,30h4v1h-4zM21,30h7v1h-7zM29,30h2v1h-2z\" fill=\"#3A2E20\"/></svg>",
+  "posterUrl": "https://takeshiuchimi.github.io/nyariha/poster_nyariha.png"
  },
  "techInfo": {
   "sections": [
@@ -3439,13 +3446,15 @@ const CAT_COLORS = ['#F2A65A','#9A9A9A','#4A4038','#F2EFE4','#C98B5E','#F0B4C4',
 // にゃー影絵用: 切り絵・影絵風の、座った横向き猫のシルエット(体・頭・耳・尻尾は固定、腕は別パーツ)。
 // 右向きに座っている構図。オリジナルのシルエットで、特定の作品の模写ではない。
 const KAGEE_CAT_BODY_SVG = `<g fill="currentColor">
-    <path d="M 40 110 C 15 100 5 70 20 45 C 28 32 42 28 48 35 C 38 38 28 48 26 62 C 24 78 32 95 48 102 Z"/>
-    <ellipse cx="55" cy="130" rx="38" ry="34"/>
-    <ellipse cx="100" cy="105" rx="46" ry="38" transform="rotate(-18 100 105)"/>
-    <ellipse cx="138" cy="95" rx="22" ry="30" transform="rotate(-10 138 95)"/>
-    <circle cx="148" cy="55" r="30"/>
-    <path d="M 128 34 L 122 6 L 144 26 Z"/>
-    <path d="M 152 28 L 160 2 L 172 24 Z"/>
+    <path d="M 55 115 C 20 112 -2 85 2 55 C 4 38 16 26 28 26 C 20 32 14 44 14 56 C 14 74 26 92 50 100 C 54 103 58 108 55 115 Z"/>
+    <ellipse cx="62" cy="128" rx="34" ry="30"/>
+    <ellipse cx="92" cy="112" rx="36" ry="27" transform="rotate(-22 92 112)"/>
+    <ellipse cx="118" cy="92" rx="30" ry="22" transform="rotate(-35 118 92)"/>
+    <ellipse cx="132" cy="68" rx="14" ry="28" transform="rotate(-8 132 68)"/>
+    <circle cx="140" cy="48" r="22"/>
+    <path d="M 124 32 L 120 10 L 137 26 Z"/>
+    <path d="M 146 29 L 153 5 L 163 25 Z"/>
+    <ellipse cx="78" cy="156" rx="16" ry="8"/>
   </g>`;
 // 腕(前脚)1本ぶんのパーツ。肩の位置を原点として、下向き(角度0)を基準に伸びる。
 // shape: 'guu'(閉じた肉球)|'choki'(爪2本)|'paa'(指を開く)
@@ -3600,6 +3609,13 @@ function buildAboutHtml(d){
       <div class="qr-img">${d.qrSvg}</div>
       <a href="${d.shareUrl}" target="_blank" rel="noopener">${d.shareUrl}</a>
     </div>`;
+  }
+  if(d.posterUrl){
+    // 画像データ自体はこのHTMLに含めず、外部URLをそのまま参照するだけ(本体の容量を増やさないため)
+    html += `<a class="poster-box" href="${d.posterUrl}" target="_blank" rel="noopener">
+      <img src="${d.posterUrl}" alt="ニャーリハ 紹介ポスター" loading="lazy">
+      <span>📮 紹介ポスター(クリックで拡大)</span>
+    </a>`;
   }
   return html;
 }
@@ -7839,8 +7855,8 @@ document.getElementById('techInfoToggleFooter').addEventListener('click', ()=>{
   const SMOOTH = 0.18; // 毎フレーム、今の角度から目標角度にどれだけ近づけるか(大きいほど素早く反応)
   // 腕の付け根(肩)の位置。手前(右手)の方が大きく・前に出ており、奥(左手)はやや後ろ・小さめ。
   const ARM_DEF = {
-    front: { x:112, y:140, scale:1.0 },
-    back:  { x:95,  y:148, scale:0.8 },
+    front: { x:90, y:148, scale:1.0 },
+    back:  { x:70, y:154, scale:0.8 },
   };
   let frontAngle = ANGLE_BY_ZONE.lower, backAngle = ANGLE_BY_ZONE.lower;
   let frontShape = 'guu', backShape = 'guu';
