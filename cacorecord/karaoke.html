@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>シャローム | Ca&co RECORDS Karaoke</title>
+<title>ニャーカラオケ｜シャローム｜Ca&co RECORDS</title>
 <style>
 :root{--ink:#fff6df;--gold:#f5d58f;--bg:#0e1e24;--blue:#5faeff;--red:#ff7f95;--purple:#bf91ff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN",sans-serif}
@@ -350,8 +350,60 @@ html[data-theme="light"] .nya-qr-dialog,body[data-theme="light"] .nya-qr-dialog{
 @media(max-width:600px){.stage-share{right:122px;top:8px;padding:7px 9px;font-size:12px}}
 @media(max-width:900px) and (orientation:landscape){.stage-share{top:6px;right:122px;padding:6px 9px;font-size:12px}}
 #karaoke-song-link{display:inline-flex;align-items:center;text-decoration:none}
+
+/* Ca&co レコードのヘッダーを忠実に採用（ヘッダー以外は変更しない） */
+.karaoke-site-header{height:auto;min-height:62px;padding:7px 12px;display:block}
+.karaoke-site-header .header-inner{
+  width:100%;max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:42px minmax(0,1fr) auto;
+  grid-template-rows:17px 27px;column-gap:9px;align-items:center;
+}
+.karaoke-site-header .header-cat{
+  grid-column:1;grid-row:1/3;width:38px;height:44px;
+  display:block;padding:0!important;border:0!important;
+  background:transparent;border-radius:0;
+}
+.karaoke-site-header .header-cat svg{display:block;width:100%;height:100%}
+.karaoke-site-header .header-labels{grid-column:2;grid-row:1/3;min-width:0;display:grid;grid-template-rows:17px 27px;align-items:center}
+.karaoke-site-header .header-eyebrow{
+  font:italic 10px/17px 'Cormorant Garamond',Georgia,serif;
+  letter-spacing:2.3px;white-space:nowrap;color:#a8d488;
+}
+.karaoke-site-header .header-title{
+  font:600 20px/27px 'Cormorant Garamond','Noto Serif JP',serif;
+  letter-spacing:1px;white-space:nowrap;color:#efe6d6;
+}
+.karaoke-site-header .header-actions{
+  grid-column:3;grid-row:1/3;display:flex;align-items:center;gap:8px;
+}
+/* 猫の色は添付のCa&coレコードと一致（モードごとにSVGを描き替えない） */
+body[data-theme="dark"]{
+ --cat-body:#6F4526;--cat-accent:#9B6A34;--cat-eye:#120D09;--cat-line:#2E1B10;
+}
+body[data-theme="light"]{
+ --cat-body:#EAD2B3;--cat-accent:#F6E4B9;--cat-eye:#6B5138;--cat-line:#8A6848;
+}
+body[data-theme="light"] .karaoke-site-header .header-eyebrow{color:#5f6e45}
+body[data-theme="light"] .karaoke-site-header .header-title{color:#3b2e22}
+@media(max-width:600px){
+ .karaoke-site-header{padding:7px 9px}
+ .karaoke-site-header .header-inner{grid-template-columns:38px minmax(0,1fr) auto;column-gap:6px}
+ .karaoke-site-header .header-cat{width:36px;height:43px}
+ .karaoke-site-header .header-eyebrow{font-size:9px;letter-spacing:.55px}
+ .karaoke-site-header .header-title{font-size:17px;letter-spacing:0}
+ .karaoke-site-header .header-actions{gap:4px}
+ .karaoke-site-header .theme-toggle{padding:7px 6px;font-size:11px}
+ .karaoke-site-header .header-actions a{padding:7px 6px;font-size:10px}
+}
+@media(max-width:390px){
+ .karaoke-site-header .header-title{font-size:16px}
+ .karaoke-site-header .header-actions a{font-size:0;padding:7px 6px}
+ .karaoke-site-header .header-actions a::before{content:'♫ 戻る';font-size:11px}
+}
 </style></head><body data-theme="dark"><div class="app">
-<header><div class="brand nya-brand"><a class="nya-cat-link" href="https://takeshiuchimi.github.io/nya/index.html" aria-label="ニャーズを開く" target="_blank" rel="noopener noreferrer"><svg aria-label="ニャーズ" role="img" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+<header class="karaoke-site-header">
+  <div class="header-inner">
+    <a class="header-cat" href="https://takeshiuchimi.github.io/nya/index.html" aria-label="ニャーズを開く" target="_blank" rel="noopener noreferrer"><svg aria-label="ニャーズ" role="img" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
 <ellipse cx="50" cy="88" fill="var(--cat-body)" rx="30" ry="26"></ellipse>
 <path d="M22 92 Q10 100 16 112 Q24 116 28 104 Z" fill="var(--cat-body)"></path>
 <path d="M20 22 L34 46 L14 46 Z" fill="var(--cat-body)"></path><path d="M80 22 L86 46 L66 46 Z" fill="var(--cat-body)"></path>
@@ -360,7 +412,14 @@ html[data-theme="light"] .nya-qr-dialog,body[data-theme="light"] .nya-qr-dialog{
 <path d="M45 60 Q50 64 55 60" fill="none" stroke="var(--cat-line)" stroke-linecap="round" stroke-width="2.2"></path>
 <line stroke="var(--cat-line)" stroke-width="1.4" x1="18" x2="34" y1="55" y2="57"></line><line stroke="var(--cat-line)" stroke-width="1.4" x1="18" x2="34" y1="61" y2="61"></line>
 <line stroke="var(--cat-line)" stroke-width="1.4" x1="82" x2="66" y1="55" y2="57"></line><line stroke="var(--cat-line)" stroke-width="1.4" x1="82" x2="66" y1="61" y2="61"></line>
-</svg></a><span class="nya-brand-text"><span class="nya-title">NYA’S</span><small>ニャープレーヤー · KARAOKE</small></span></div><div class="header-actions"><button type="button" class="theme-toggle" id="themeToggle" aria-label="ライトモードに切替" aria-pressed="false">☀ ライト</button><a href="song.html?track=6">♫ ニャープレーヤーに戻る</a></div></header>
+</svg></a>
+    <div class="header-labels">
+      <span class="header-eyebrow">TakeshiUchimiProject</span>
+      <span class="header-title">ニャーカラオケ</span>
+    </div>
+    <div class="header-actions"><button type="button" class="theme-toggle" id="themeToggle" aria-label="ライトモードに切替" aria-pressed="false">☀ ライト</button><a href="song.html?track=6">♫ ニャープレーヤーに戻る</a></div>
+  </div>
+</header>
 <main class="stage" id="stage" data-scene="light"><div class="scene"></div><button type="button" id="stageThemeToggle" class="stage-theme-toggle" aria-label="ライトモードに切替" aria-pressed="false">☀</button><button type="button" id="karaoke-stage-qr" class="stage-share" aria-label="QRコードを表示">▦ QR</button><button type="button" id="stageFullscreen" class="stage-fullscreen" aria-label="全画面表示">⛶ 全画面</button>
 <div class="topline"><h1>シャローム</h1><p>ジェットストリーム内海</p></div>
 <div class="lyricbox"><button class="lyric" id="current" title="クリックでこの歌詞から再生"></button><button class="lyric next" id="next" title="クリックで次の歌詞から再生"></button></div>
@@ -1793,7 +1852,7 @@ $("stageThemeToggle").addEventListener("click",flipTheme);
 try{setTheme(localStorage.getItem(THEME_KEY)||"dark")}catch(e){setTheme("dark")}
 
 audio.src=SOURCES.original;buildRows();update(true);
-function openKaraokeQR(){NyaShare.open("karaoke.html",6,"シャローム・カラオケ")}
+function openKaraokeQR(){NyaShare.open("karaoke.html",6,"ニャーカラオケ｜シャローム")}
 $("karaoke-qr-open").addEventListener("click",openKaraokeQR);
 $("karaoke-stage-qr").addEventListener("click",openKaraokeQR);
 
