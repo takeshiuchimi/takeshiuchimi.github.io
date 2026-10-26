@@ -1910,6 +1910,7 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
  try{const raw=localStorage.getItem(GUIDE_KEY);if(raw!==null&&raw!==""&&Number.isFinite(Number(raw)))level=Math.min(100,Math.max(0,Math.round(Number(raw))))}catch(e){}
  const guide=new Audio();guide.preload="auto";guide.loop=false;guide.setAttribute("playsinline","");
  let ctx=null,gainNode=null,routed=false,controllable=true,guideError=false;
+ const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
  const active=()=>Object.prototype.hasOwnProperty.call(GUIDE_SOURCES,mode);
  const target=()=>active()&&controllable&&!guideError?level/100:0;
 
@@ -1918,6 +1919,7 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   try{
    const AC=window.AudioContext||window.webkitAudioContext;
    if(!AC||location.protocol==="file:")throw 0; // file:// ではWeb Audioに音源を渡せないため音量プロパティで代替
+   try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){} // iPhoneの消音スイッチ中もガイドを鳴らす（iOS 17以降）
    ctx=new AC();
    const node=ctx.createMediaElementSource(guide);
    gainNode=ctx.createGain();gainNode.gain.value=target();
@@ -1955,7 +1957,7 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
  guide.addEventListener("error",()=>{if(!guide.getAttribute("src"))return;guideError=true;applyGain();$("status").textContent="ガイド音源を読み込めません。music/ に "+GUIDE_SOURCES[mode].split("/").pop()+" を配置してください。";refreshUI()});
  function loadGuide(){
   guide.pause();guideError=false;
-  if(active()){guide.src=GUIDE_SOURCES[mode];guide.load();guide.currentTime=audio.currentTime||0}
+  if(active()){guide.src=GUIDE_SOURCES[mode];guide.load();try{guide.currentTime=audio.currentTime||0}catch(e){}}
   else{guide.removeAttribute("src");guide.load()}
   applyGain();
  }
@@ -1975,6 +1977,7 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   document.querySelectorAll("[data-guide]").forEach(b=>{const on2=Number(b.dataset.guide)===level;b.classList.toggle("on",on2);b.setAttribute("aria-pressed",String(on2))});
   $("guideNote").textContent=!active()?"原曲モードではガイドを使いません。カラオケ・男声・女声モードで有効です。"
    :!controllable?"この端末ではガイド音量を調整できないため、ガイドを止めています。"
+   :(IOS&&!navigator.audioSession)?"iPhoneの消音（マナーモード）中はガイドが鳴りません。消音を解除してください。"
    :({"instrumental":"0%で完全カラオケ。伴奏の音量は変わりません。","male":"女性パートの歌声をガイドとして重ねます。","female":"男性パートの歌声をガイドとして重ねます。"})[mode];
  }
  function setLevel(v){
@@ -1989,5 +1992,19 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
  selectMode=function(m){const before=mode;baseSelectMode(m);if(mode!==before)loadGuide();refreshUI();if(active())$("status").textContent+="（ガイド "+level+"%）"};
  window.NyaGuide={get level(){return level},setLevel,guide,get drift(){return guide.paused?null:guide.currentTime-audio.currentTime},get routed(){return routed},get gain(){return routed?gainNode.gain.value:guide.volume},get ctxState(){return ctx?ctx.state:String(ctx)}};
  loadGuide();refreshUI();
+ if(new URLSearchParams(location.search).get("debug")==="1"){
+  const box=document.createElement("pre");box.id="guideDebug";
+  box.style.cssText="white-space:pre-wrap;font-size:11px;line-height:1.5;margin:8px 0 0;padding:8px;border-radius:8px;background:#0008;color:#fff;text-align:left";
+  $("guideBox").after(box);
+  const rs=["なし","メタデータ","現在位置","先読み","十分"];
+  setInterval(()=>{
+   const e=guide.error;
+   box.textContent=["端末: "+(IOS?"iOS":"その他")+" / audioSession: "+(navigator.audioSession?navigator.audioSession.type:"非対応"),
+    "Web Audio: "+(routed?"接続済み ("+ctx.state+")":ctx===false?"使用不可→音量プロパティ":"未作成（画面操作待ち）"),
+    "ガイド音源: "+(guide.getAttribute("src")||"なし")+" / 読込: "+rs[guide.readyState]+(e?" / エラー"+e.code:""),
+    "伴奏: "+(audio.paused?"停止":"再生中")+" "+(audio.currentTime||0).toFixed(2)+"s / ガイド: "+(guide.paused?"停止":"再生中")+" "+(guide.currentTime||0).toFixed(2)+"s",
+    "音量: "+level+"% → 実効 "+(routed?gainNode.gain.value:guide.volume).toFixed(2)].join("\n");
+  },300);
+ }
 })();
 </script></body></html>
