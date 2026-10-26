@@ -1937,7 +1937,8 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   else if(controllable){try{guide.volume=g}catch(e){}}
  }
  function canPlayGuide(){return active()&&!guideError&&(routed||controllable)&&guide.getAttribute("src")}
- function hardSync(){if(!canPlayGuide())return;const t=audio.currentTime||0;if(Math.abs((guide.currentTime||0)-t)>0.004){try{guide.currentTime=t}catch(e){}}guide.playbackRate=1}
+ let seekLead=0.05; // 再生中に位置を合わせると、その処理時間ぶんガイドが遅れて着地するため少し先に合わせる（実測で自動調整）
+ function hardSync(){if(!canPlayGuide())return;const t=(audio.currentTime||0)+(guide.paused?0:seekLead);if(Math.abs((guide.currentTime||0)-t)>0.004){try{guide.currentTime=t}catch(e){}}guide.playbackRate=1}
  function syncPlay(){
   if(!canPlayGuide()||audio.paused||audio.ended||audio.seeking){if(!guide.paused)guide.pause();return}
   if(guide.paused){hardSync();const p=guide.play();if(p&&p.catch)p.catch(()=>{})}
@@ -1947,18 +1948,35 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
  audio.addEventListener("playing",()=>{hardSync();syncPlay()});
  for(const ev of ["pause","waiting","ended","seeking","emptied"])audio.addEventListener(ev,()=>{if(!guide.paused)guide.pause()});
  audio.addEventListener("seeked",()=>{hardSync();syncPlay()});
- // 小さなずれは再生速度の微調整で吸収し、大きなずれは位置を合わせ直す
+ // ずれの補正：再生位置の読み取り値は端末によって揺れるため直近の中央値で判定する。
+ // ふだんは再生速度の微調整（途切れない）で吸収し、位置の合わせ直し（一瞬途切れる）は
+ // 大きくずれたときだけ、しかも3秒以上の間隔を空けて行う。
+ const samples=[];let lastHard=0;
+ const stats={hard:0,rate:0,gWait:0,mWait:0,maxAbs:0};
+ guide.addEventListener("waiting",()=>stats.gWait++);
+ audio.addEventListener("waiting",()=>stats.mWait++);
+ let settleUntil=0,settleCount=0;
+ function resetSamples(){samples.length=0;lastHard=performance.now();settleUntil=lastHard+5000;settleCount=0} // 操作直後の数秒だけは細かく合わせ直す
+ audio.addEventListener("seeked",resetSamples);audio.addEventListener("playing",resetSamples);
  setInterval(()=>{
-  if(!canPlayGuide()||audio.paused||audio.seeking){return}
+  if(!canPlayGuide()||audio.paused||audio.seeking||guide.seeking){return}
   if(guide.paused){syncPlay();return}
-  const d=guide.currentTime-audio.currentTime;
-  if(Math.abs(d)>0.1)hardSync();
-  else if(Math.abs(d)>0.012)guide.playbackRate=Math.min(1.05,Math.max(0.95,1-d*1.5));
-  else if(guide.playbackRate!==1)guide.playbackRate=1;
- },200);
+  samples.push(guide.currentTime-audio.currentTime);if(samples.length>7)samples.shift();
+  if(samples.length<5)return;
+  const d=[...samples].sort((a,b)=>a-b)[samples.length>>1];
+  stats.maxAbs=Math.max(stats.maxAbs,Math.abs(d));
+  const now=performance.now();
+  if(now<settleUntil&&settleCount<2&&Math.abs(d)>0.035){if(settleCount>0)seekLead=Math.max(0,Math.min(0.3,seekLead-d));hardSync();stats.hard++;settleCount++;samples.length=0;return}
+  if(Math.abs(d)>0.3&&now-lastHard>3000){hardSync();stats.hard++;samples.length=0;lastHard=now;return}
+  let r=1;
+  if(Math.abs(d)>0.03)r=1-Math.max(-0.02,Math.min(0.02,d*0.5));
+  else if(guide.playbackRate!==1&&Math.abs(d)>0.008)r=guide.playbackRate; // 収束しきるまで速度を保つ
+  if(Math.abs(r-guide.playbackRate)>0.002){guide.playbackRate=r;stats.rate++}
+ },250);
  guide.addEventListener("error",()=>{if(!guide.getAttribute("src"))return;guideError=true;applyGain();$("status").textContent="ガイド音源を読み込めません。music/ に "+GUIDE_SOURCES[mode].split("/").pop()+" を配置してください。";refreshUI()});
  function loadGuide(){
   guide.pause();guideError=false;
+  if(typeof resetSamples==="function")resetSamples();
   if(active()){guide.src=GUIDE_SOURCES[mode];guide.load();try{guide.currentTime=audio.currentTime||0}catch(e){}}
   else{guide.removeAttribute("src");guide.load()}
   applyGain();
@@ -1992,7 +2010,7 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
  // 既存の音源切替にガイドの切替を追加（伴奏側の処理はそのまま）
  const baseSelectMode=selectMode;
  selectMode=function(m){const before=mode;baseSelectMode(m);if(mode!==before)loadGuide();refreshUI();if(active())$("status").textContent+="（ガイド "+level+"%）"};
- window.NyaGuide={get level(){return level},setLevel,guide,get drift(){return guide.paused?null:guide.currentTime-audio.currentTime},get routed(){return routed},get gain(){return routed?gainNode.gain.value:guide.volume},get ctxState(){return ctx?ctx.state:String(ctx)}};
+ window.NyaGuide={get level(){return level},setLevel,guide,get drift(){return guide.paused?null:guide.currentTime-audio.currentTime},get routed(){return routed},get gain(){return routed?gainNode.gain.value:guide.volume},get ctxState(){return ctx?ctx.state:String(ctx)},stats};
  loadGuide();refreshUI();
  if(new URLSearchParams(location.search).get("debug")==="1"){
   const box=document.createElement("pre");box.id="guideDebug";
@@ -2005,6 +2023,8 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
     "音量調整: "+(routed?"Web Audio ("+ctx.state+")":ctx===false?"音量プロパティ（"+(controllable?"有効":"無効")+"）":"未準備（画面操作待ち）"),
     "ガイド音源: "+(guide.getAttribute("src")||"なし")+" / 読込: "+rs[guide.readyState]+(e?" / エラー"+e.code:""),
     "伴奏: "+(audio.paused?"停止":"再生中")+" "+(audio.currentTime||0).toFixed(2)+"s / ガイド: "+(guide.paused?"停止":"再生中")+" "+(guide.currentTime||0).toFixed(2)+"s",
+    "補正: 先読み "+Math.round(seekLead*1000)+"ms / 位置合わせ "+stats.hard+"回 / 速度調整 "+stats.rate+"回 / 最大ずれ "+Math.round(stats.maxAbs*1000)+"ms / 速度 "+guide.playbackRate.toFixed(3),
+    "読込待ち: 伴奏 "+stats.mWait+"回 / ガイド "+stats.gWait+"回",
     "音量: "+level+"% → 実効 "+(routed?gainNode.gain.value:guide.volume).toFixed(2)].join("\n");
   },300);
  }
