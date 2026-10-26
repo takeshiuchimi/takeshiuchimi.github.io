@@ -1918,7 +1918,9 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   if(routed||ctx===false)return;
   try{
    const AC=window.AudioContext||window.webkitAudioContext;
-   if(!AC||location.protocol==="file:")throw 0; // file:// ではWeb Audioに音源を渡せないため音量プロパティで代替
+   // Web Audioを使うのは音量プロパティが効かないiPhone/iPadだけ。
+   // Android版Chromeなどでは、Web Audio経由のガイドが無音になる例があるため音量プロパティで直接調整する。
+   if(!IOS||!AC||location.protocol==="file:")throw 0; // file:// ではWeb Audioに音源を渡せないため音量プロパティで代替
    try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){} // iPhoneの消音スイッチ中もガイドを鳴らす（iOS 17以降）
    ctx=new AC();
    const node=ctx.createMediaElementSource(guide);
@@ -1931,7 +1933,7 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
  }
  function applyGain(){
   const g=target();
-  if(routed){gainNode.gain.setTargetAtTime(g,ctx.currentTime,0.03)}
+  if(routed){try{guide.volume=1}catch(e){}gainNode.gain.setTargetAtTime(g,ctx.currentTime,0.03)}
   else if(controllable){try{guide.volume=g}catch(e){}}
  }
  function canPlayGuide(){return active()&&!guideError&&(routed||controllable)&&guide.getAttribute("src")}
@@ -1950,7 +1952,7 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   if(!canPlayGuide()||audio.paused||audio.seeking){return}
   if(guide.paused){syncPlay();return}
   const d=guide.currentTime-audio.currentTime;
-  if(Math.abs(d)>0.25)hardSync();
+  if(Math.abs(d)>0.1)hardSync();
   else if(Math.abs(d)>0.012)guide.playbackRate=Math.min(1.05,Math.max(0.95,1-d*1.5));
   else if(guide.playbackRate!==1)guide.playbackRate=1;
  },200);
@@ -2000,7 +2002,7 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   setInterval(()=>{
    const e=guide.error;
    box.textContent=["端末: "+(IOS?"iOS":"その他")+" / audioSession: "+(navigator.audioSession?navigator.audioSession.type:"非対応"),
-    "Web Audio: "+(routed?"接続済み ("+ctx.state+")":ctx===false?"使用不可→音量プロパティ":"未作成（画面操作待ち）"),
+    "音量調整: "+(routed?"Web Audio ("+ctx.state+")":ctx===false?"音量プロパティ（"+(controllable?"有効":"無効")+"）":"未準備（画面操作待ち）"),
     "ガイド音源: "+(guide.getAttribute("src")||"なし")+" / 読込: "+rs[guide.readyState]+(e?" / エラー"+e.code:""),
     "伴奏: "+(audio.paused?"停止":"再生中")+" "+(audio.currentTime||0).toFixed(2)+"s / ガイド: "+(guide.paused?"停止":"再生中")+" "+(guide.currentTime||0).toFixed(2)+"s",
     "音量: "+level+"% → 実効 "+(routed?gainNode.gain.value:guide.volume).toFixed(2)].join("\n");
