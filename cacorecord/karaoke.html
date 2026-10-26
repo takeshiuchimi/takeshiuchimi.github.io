@@ -400,6 +400,39 @@ body[data-theme="light"] .karaoke-site-header .header-title{color:#3b2e22}
  .karaoke-site-header .header-actions a{font-size:0;padding:7px 6px}
  .karaoke-site-header .header-actions a::before{content:'♫ 戻る';font-size:11px}
 }
+</style><style id="guide-vocal-style">
+/* ガイドボーカル（伴奏は100%のまま、歌声だけを重ねる） */
+.guide{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:6px 10px;margin:9px 0 2px}
+.guide-label{font-size:13px;font-weight:700;color:#f5d58f;white-space:nowrap}
+.guide input[type=range]{width:100%;min-width:0;accent-color:#bf91ff}
+.guide output{font-variant-numeric:tabular-nums;font-size:13px;font-weight:700;color:#fff4da;min-width:3.3em;text-align:right}
+.guide-presets{display:flex;gap:5px}
+.guide-presets button{border:1px solid #e4d0a76e;border-radius:999px;background:transparent;color:#fff4da;padding:4px 9px;font-size:12px;font-variant-numeric:tabular-nums;cursor:pointer}
+.guide-presets button.on{background:#5b4686;border-color:#bf91ff;color:#fff}
+.guide-note{grid-column:1 / -1;font-size:11px;color:#d3c3a7;margin:0;min-height:0}
+.guide.is-off input,.guide.is-off output,.guide.is-off .guide-presets{opacity:.45}
+.full-guide{display:flex;align-items:center;justify-content:center;gap:9px;max-width:900px;margin:0 auto 8px}
+.full-guide label,.full-guide output{font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.full-guide output{min-width:3.3em;text-align:right}
+.full-guide input{flex:1;min-width:50px;max-width:420px;accent-color:#c9a3ff;touch-action:pan-x}
+.full-guide.is-off{opacity:.5}
+body[data-theme="light"] .guide-label{color:#6e4b25}
+body[data-theme="light"] .guide input[type=range]{accent-color:#7b55b5}
+body[data-theme="light"] .guide output{color:#3e352c}
+body[data-theme="light"] .guide-presets button{border-color:#c9b494;color:#3e352c}
+body[data-theme="light"] .guide-presets button.on{background:#7b55b5;border-color:#7b55b5;color:#fff}
+body[data-theme="light"] .guide-note{color:#5b4c3d}
+@media (max-width:900px) and (orientation:portrait){
+ .guide{grid-template-columns:auto minmax(0,1fr) auto;margin-top:10px}
+ .guide-presets{grid-column:1 / -1;justify-content:center}
+ .guide-presets button{flex:1;max-width:72px;padding:6px 0}
+}
+@media (max-width:900px) and (orientation:landscape) and (max-height:600px){
+ .guide{margin:3px 0 0;gap:4px 8px}.guide-label,.guide output{font-size:11px}
+ .guide-presets button{padding:2px 7px;font-size:11px}.guide-note{display:none}
+}
+@media(max-width:700px){.full-guide{gap:6px;margin-bottom:6px}.full-guide label,.full-guide output{font-size:11px}}
+@media(max-width:900px) and (orientation:landscape){.full-guide{margin-bottom:4px}}
 </style></head><body data-theme="dark"><div class="app">
 <header class="karaoke-site-header">
   <div class="header-inner">
@@ -425,12 +458,14 @@ body[data-theme="light"] .karaoke-site-header .header-title{color:#3b2e22}
 <div class="lyricbox"><button class="lyric" id="current" title="クリックでこの歌詞から再生"></button><button class="lyric next" id="next" title="クリックで次の歌詞から再生"></button></div>
 <div class="full-controls" id="fullControls" aria-label="全画面再生操作">
  <div class="full-modes"><button type="button" data-full-mode="original" class="chosen">原曲</button><button type="button" data-full-mode="instrumental">カラオケ</button><button type="button" data-full-mode="male">男声</button><button type="button" data-full-mode="female">女声</button></div>
+ <div class="full-guide" id="fullGuideBox"><label for="fullGuide">ガイド</label><input id="fullGuide" type="range" min="0" max="100" step="1" value="30" aria-label="全画面のガイドボーカル音量" aria-valuetext="30%"><output id="fullGuideValue" for="fullGuide">30%</output></div>
  <div class="full-transport"><button type="button" id="fullPlay" aria-label="再生・一時停止">▶ 再生</button><span id="fullElapsed">0:00</span><input id="fullSeek" type="range" min="0" max="296.784" step="0.01" value="0" aria-label="全画面の再生位置"><span id="fullDuration">4:57</span><button type="button" id="fullRepeat" aria-label="リピート切替">🔁 OFF</button></div>
 </div>
 </main>
 <section class="controls">
 <div class="modes" id="modes"><button class="btn active" data-mode="original">🎵 原曲</button><button class="btn" data-mode="instrumental">🎤 カラオケ</button><button class="btn" data-mode="male">🔵 男声のみ</button><button class="btn" data-mode="female">🔴 女声のみ</button></div>
 <div class="bar"><span class="time" id="elapsed">0:00</span><input type="range" id="seek" min="0" max="296.784" step=".01" value="0" aria-label="再生位置"><span class="time" id="duration">4:57</span></div>
+<div class="guide" id="guideBox"><label class="guide-label" for="guide">ガイドボーカル</label><input type="range" id="guide" min="0" max="100" step="1" value="30" aria-valuetext="30%"><output id="guideValue" for="guide">30%</output><div class="guide-presets" role="group" aria-label="ガイド音量の目安"><button type="button" data-guide="0" title="ガイドなし">0%</button><button type="button" data-guide="15" title="小さなガイド">15%</button><button type="button" data-guide="30" title="標準ガイド">30%</button><button type="button" data-guide="50" title="強めのガイド">50%</button><button type="button" data-guide="100" title="基準のボーカル音量">100%</button></div><p class="guide-note" id="guideNote"></p></div>
 <div class="buttons"><button class="btn primary" id="play">▶ 再生</button><button class="btn" id="repeat" aria-pressed="false">🔁 リピート OFF</button><button class="btn" id="fullscreen">⛶ 全画面</button><button class="btn" id="reset">↺ 最初から</button><button class="btn" id="karaoke-qr-open" type="button">▦ QRコード</button><a class="btn" href="song.html?track=6" id="karaoke-song-link">🎵 原曲プレーヤーへ</a></div>
 <div class="status" id="status">原曲・カラオケ・男声・女声の4音源を切り替えられます。</div>
 </section>
@@ -1864,4 +1899,95 @@ const fullPanelHeightObserver=new ResizeObserver(entries=>{
  }
 });
 fullPanelHeightObserver.observe(document.getElementById('fullControls'));
+</script><script>
+/* ガイドボーカル：伴奏側は既存の<audio>を100%のまま使い、歌声だけを別音源として重ねる。
+   音量はWeb AudioのGainNodeで調整し、伴奏側の再生位置に常に追従させる。 */
+(function(){
+ const GUIDE_SOURCES={instrumental:"music/shalom01_vocal.mp3",male:"music/shalom01_vocal_female.mp3",female:"music/shalom01_vocal_male.mp3"};
+ const GUIDE_KEY="caco_karaoke_guide_v1";
+ const $=id=>document.getElementById(id);
+ let level=30;
+ try{const raw=localStorage.getItem(GUIDE_KEY);if(raw!==null&&raw!==""&&Number.isFinite(Number(raw)))level=Math.min(100,Math.max(0,Math.round(Number(raw))))}catch(e){}
+ const guide=new Audio();guide.preload="auto";guide.loop=false;guide.setAttribute("playsinline","");
+ let ctx=null,gainNode=null,routed=false,controllable=true,guideError=false;
+ const active=()=>Object.prototype.hasOwnProperty.call(GUIDE_SOURCES,mode);
+ const target=()=>active()&&controllable&&!guideError?level/100:0;
+
+ function setupGraph(){
+  if(routed||ctx===false)return;
+  try{
+   const AC=window.AudioContext||window.webkitAudioContext;
+   if(!AC||location.protocol==="file:")throw 0; // file:// ではWeb Audioに音源を渡せないため音量プロパティで代替
+   ctx=new AC();
+   const node=ctx.createMediaElementSource(guide);
+   gainNode=ctx.createGain();gainNode.gain.value=target();
+   node.connect(gainNode);gainNode.connect(ctx.destination);routed=true;
+  }catch(e){
+   ctx=false;
+   try{guide.volume=0.5;controllable=Math.abs(guide.volume-0.5)<0.01}catch(err){controllable=false} // iPhoneは音量プロパティが効かない
+  }
+ }
+ function applyGain(){
+  const g=target();
+  if(routed){gainNode.gain.setTargetAtTime(g,ctx.currentTime,0.03)}
+  else if(controllable){try{guide.volume=g}catch(e){}}
+ }
+ function canPlayGuide(){return active()&&!guideError&&(routed||controllable)&&guide.getAttribute("src")}
+ function hardSync(){if(!canPlayGuide())return;const t=audio.currentTime||0;if(Math.abs((guide.currentTime||0)-t)>0.004){try{guide.currentTime=t}catch(e){}}guide.playbackRate=1}
+ function syncPlay(){
+  if(!canPlayGuide()||audio.paused||audio.ended||audio.seeking){if(!guide.paused)guide.pause();return}
+  if(guide.paused){hardSync();const p=guide.play();if(p&&p.catch)p.catch(()=>{})}
+ }
+ // 伴奏側の動きにガイドを合わせる（再生・停止・シーク・リピートの巻き戻し・読込待ち）
+ audio.addEventListener("play",syncPlay);
+ audio.addEventListener("playing",()=>{hardSync();syncPlay()});
+ for(const ev of ["pause","waiting","ended","seeking","emptied"])audio.addEventListener(ev,()=>{if(!guide.paused)guide.pause()});
+ audio.addEventListener("seeked",()=>{hardSync();syncPlay()});
+ // 小さなずれは再生速度の微調整で吸収し、大きなずれは位置を合わせ直す
+ setInterval(()=>{
+  if(!canPlayGuide()||audio.paused||audio.seeking){return}
+  if(guide.paused){syncPlay();return}
+  const d=guide.currentTime-audio.currentTime;
+  if(Math.abs(d)>0.25)hardSync();
+  else if(Math.abs(d)>0.012)guide.playbackRate=Math.min(1.05,Math.max(0.95,1-d*1.5));
+  else if(guide.playbackRate!==1)guide.playbackRate=1;
+ },200);
+ guide.addEventListener("error",()=>{if(!guide.getAttribute("src"))return;guideError=true;applyGain();$("status").textContent="ガイド音源を読み込めません。music/ に "+GUIDE_SOURCES[mode].split("/").pop()+" を配置してください。";refreshUI()});
+ function loadGuide(){
+  guide.pause();guideError=false;
+  if(active()){guide.src=GUIDE_SOURCES[mode];guide.load();guide.currentTime=audio.currentTime||0}
+  else{guide.removeAttribute("src");guide.load()}
+  applyGain();
+ }
+ // 操作のたびにWeb Audioを準備（スマホは操作の中でしか音声を開始できない）
+ function onGesture(){
+  setupGraph();
+  if(routed&&ctx.state!=="running")ctx.resume().catch(()=>{});
+  applyGain();syncPlay();
+ }
+ for(const ev of ["click","touchend","keydown"])document.addEventListener(ev,onGesture);
+ function refreshUI(){
+  for(const [r,o,box] of [["guide","guideValue","guideBox"],["fullGuide","fullGuideValue","fullGuideBox"]]){
+   const input=$(r);if(Number(input.value)!==level)input.value=level;
+   input.setAttribute("aria-valuetext",level+"%");$(o).textContent=level+"%";
+   $(box).classList.toggle("is-off",!active());
+  }
+  document.querySelectorAll("[data-guide]").forEach(b=>{const on2=Number(b.dataset.guide)===level;b.classList.toggle("on",on2);b.setAttribute("aria-pressed",String(on2))});
+  $("guideNote").textContent=!active()?"原曲モードではガイドを使いません。カラオケ・男声・女声モードで有効です。"
+   :!controllable?"この端末ではガイド音量を調整できないため、ガイドを止めています。"
+   :({"instrumental":"0%で完全カラオケ。伴奏の音量は変わりません。","male":"女性パートの歌声をガイドとして重ねます。","female":"男性パートの歌声をガイドとして重ねます。"})[mode];
+ }
+ function setLevel(v){
+  level=Math.min(100,Math.max(0,Math.round(Number(v)||0)));
+  try{localStorage.setItem(GUIDE_KEY,String(level))}catch(e){}
+  applyGain();refreshUI();
+ }
+ for(const id of ["guide","fullGuide"])$(id).addEventListener("input",e=>{setLevel(e.target.value);if(id==="fullGuide"&&typeof showFullControls==="function")showFullControls()});
+ document.querySelectorAll("[data-guide]").forEach(b=>b.addEventListener("click",()=>setLevel(b.dataset.guide)));
+ // 既存の音源切替にガイドの切替を追加（伴奏側の処理はそのまま）
+ const baseSelectMode=selectMode;
+ selectMode=function(m){const before=mode;baseSelectMode(m);if(mode!==before)loadGuide();refreshUI();if(active())$("status").textContent+="（ガイド "+level+"%）"};
+ window.NyaGuide={get level(){return level},setLevel,guide,get drift(){return guide.paused?null:guide.currentTime-audio.currentTime},get routed(){return routed},get gain(){return routed?gainNode.gain.value:guide.volume},get ctxState(){return ctx?ctx.state:String(ctx)}};
+ loadGuide();refreshUI();
+})();
 </script></body></html>
