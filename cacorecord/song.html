@@ -95,7 +95,139 @@ html[data-theme="light"] .shalom-line .card-line{color:#342a21!important}
 .nya-qr-dialog button{background:#dfbd80;color:#211b15;border:0;border-radius:9px;padding:9px 12px;font:inherit;cursor:pointer}
 .nya-qr-dialog .nya-qr-close{background:transparent;color:inherit;border:1px solid #a99779}
 html[data-theme="light"] .nya-qr-dialog,body[data-theme="light"] .nya-qr-dialog{background:#fff9ec;color:#332519}
-#song-to-karaoke{border:1px solid var(--gold);color:var(--gold);padding:9px 15px;border-radius:8px;text-decoration:none;font-size:12px}#qr-save{background:var(--gold);color:#211b12;border:0;border-radius:8px;padding:9px 12px;margin:0 5px 0 0;cursor:pointer}</style></head><body><main class="wrap"><div class="header-inner">
+#song-to-karaoke{border:1px solid var(--gold);color:var(--gold);padding:9px 15px;border-radius:8px;text-decoration:none;font-size:12px}#qr-save{background:var(--gold);color:#211b12;border:0;border-radius:8px;padding:9px 12px;margin:0 5px 0 0;cursor:pointer}
+/* v7.1 / 歌詞編集画面のみ2段カード化。既存の音源・同期・入力イベントは変更しない */
+#card-lyrics.shalom-editing .shalom-line {
+  display: grid;
+  grid-template-columns: minmax(65px,1fr) 40px minmax(118px,1.5fr);
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  row-gap: 10px;
+  align-items: center;
+  margin: 0 0 10px;
+  padding: 12px 10px;
+  border: 1px solid #d3bea0;
+  border-left: 4px solid #b7a078;
+  border-radius: 10px;
+  background: #fffaf1;
+  color: #342a21;
+  min-width: 0;
+}
+#card-lyrics.shalom-editing .shalom-line:has(.card-line.active){
+  background: #fff1cd;
+  border-color: #c99645;
+  border-left-color: #a66b24;
+}
+#card-lyrics.shalom-editing .shalom-line .card-line,
+#card-lyrics.shalom-editing .shalom-line.male .card-line,
+#card-lyrics.shalom-editing .shalom-line.female .card-line,
+#card-lyrics.shalom-editing .shalom-line.both .card-line {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  padding: 3px 0 11px;
+  border: 0;
+  border-bottom: 1px solid #e5d9c7;
+  border-radius: 0;
+  background: transparent;
+  color: #342a21 !important;
+  font-size: clamp(15px, 3.9vw, 19px) !important;
+  font-weight: 650;
+  line-height: 1.65;
+  letter-spacing: .01em;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  writing-mode: horizontal-tb;
+}
+#card-lyrics.shalom-editing .shalom-line .card-line.active { color: #302417 !important; }
+#card-lyrics.shalom-editing .shalom-line .card-line .parts {
+  display: inline;
+  min-width: 0;
+  flex: 1 1 auto;
+  writing-mode: horizontal-tb;
+}
+#card-lyrics.shalom-editing .shalom-line .duo-dot {
+  flex: 0 0 21px;
+  width: 21px;
+  height: 21px;
+}
+#card-lyrics.shalom-editing .shalom-line .sync-time {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+  min-width: 0;
+  height: 41px;
+  padding: 6px 7px;
+  font-size: 13px;
+  border-radius: 7px;
+  border: 1px solid #b9a88e;
+  color: #30271d;
+  background: #fff;
+}
+#card-lyrics.shalom-editing .shalom-line .sync-capture {
+  grid-column: 2;
+  grid-row: 2;
+  width: 40px;
+  min-width: 40px;
+  height: 41px;
+  padding: 0;
+  border-radius: 7px;
+  font-size: 19px;
+}
+#card-lyrics.shalom-editing .shalom-line .shalom-select {
+  display: block;
+  grid-column: 3;
+  grid-row: 2;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  height: 41px;
+  padding: 4px 6px;
+  font-size: 12px;
+  border-radius: 7px;
+  background: #fff;
+  border: 1px solid #b9a88e;
+  color: #30271d;
+}
+#card-lyrics.shalom-editing .sync-note {
+  color: #473829;
+  background: #fff5df;
+  border: 1px solid #dbc6a1;
+  border-radius: 8px;
+  padding: 9px 11px;
+  line-height: 1.6;
+  text-align: left;
+  font-size: 12px;
+}
+#card-lyrics.shalom-editing .sync-tools button {
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+@media (max-width: 380px) {
+  #card-lyrics.shalom-editing .shalom-line {
+    grid-template-columns: minmax(62px,1fr) 36px minmax(103px,1.35fr);
+    column-gap: 5px;
+    padding: 10px 7px;
+  }
+  #card-lyrics.shalom-editing .shalom-line .sync-capture {
+    min-width: 36px; width: 36px;
+  }
+  #card-lyrics.shalom-editing .shalom-line .shalom-select {
+    font-size: 11px;
+    padding: 3px 1px;
+  }
+  #card-lyrics.shalom-editing .shalom-line .card-line { font-size: 15px !important; }
+}
+/* 編集画面だけの色指定。ライト/ダークいずれもクリームカードに濃い文字 */
+html[data-theme="dark"] #card-lyrics.shalom-editing .shalom-line,
+html[data-theme="light"] #card-lyrics.shalom-editing .shalom-line { background: #fffaf1; }
+html[data-theme="dark"] #card-lyrics.shalom-editing .shalom-line:has(.card-line.active),
+html[data-theme="light"] #card-lyrics.shalom-editing .shalom-line:has(.card-line.active) { background: #fff1cd; }
+</style></head><body><main class="wrap"><div class="header-inner">
 <a aria-label="ニャーズゲームセンター" class="header-cat" href="https://takeshiuchimi.github.io/nya/index.html" id="nya-link" rel="noopener noreferrer" target="_blank">
 <svg aria-label="ニャーズ" role="img" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
 <ellipse cx="50" cy="88" fill="var(--cat-body)" rx="30" ry="26"></ellipse>
