@@ -227,6 +227,149 @@ html[data-theme="dark"] #card-lyrics.shalom-editing .shalom-line,
 html[data-theme="light"] #card-lyrics.shalom-editing .shalom-line { background: #fffaf1; }
 html[data-theme="dark"] #card-lyrics.shalom-editing .shalom-line:has(.card-line.active),
 html[data-theme="light"] #card-lyrics.shalom-editing .shalom-line:has(.card-line.active) { background: #fff1cd; }
+
+/* v7.2: 歌詞通常表示と2段編集表示のライト／ダーク共通テーマ。
+ * 歌詞カード内でのみ使用するCSS変数。既存の音声・同期・QRコードのJSには触れない。 */
+:root,
+html[data-theme="dark"] {
+  --lyrics-card-bg: #302a23;
+  --lyrics-card-text: #f4e8d5;
+  --lyrics-card-muted: #cdbda4;
+  --lyrics-line-hover: #41372b;
+  --lyrics-active-bg: #584629;
+  --lyrics-active-text: #fff8e9;
+  --lyrics-active-edge: #deb56d;
+  --lyrics-border: #63533e;
+  --lyrics-edit-bg: #383129;
+  --lyrics-edit-border: #766047;
+  --lyrics-divider: #675740;
+  --lyrics-input-bg: #221e1a;
+  --lyrics-input-text: #fff1dc;
+  --lyrics-input-border: #917d61;
+  --lyrics-tip-bg: #40362a;
+  --lyrics-tip-text: #f0e1c9;
+  --lyrics-dot-outline: #e5cfaa;
+}
+html[data-theme="light"] {
+  --lyrics-card-bg: #eee2ca;
+  --lyrics-card-text: #342a21;
+  --lyrics-card-muted: #806c56;
+  --lyrics-line-hover: #ead8b8;
+  --lyrics-active-bg: #fff1cd;
+  --lyrics-active-text: #302417;
+  --lyrics-active-edge: #ab7427;
+  --lyrics-border: #cfb994;
+  --lyrics-edit-bg: #fffaf1;
+  --lyrics-edit-border: #d3bea0;
+  --lyrics-divider: #e5d9c7;
+  --lyrics-input-bg: #ffffff;
+  --lyrics-input-text: #30271d;
+  --lyrics-input-border: #b9a88e;
+  --lyrics-tip-bg: #fff5df;
+  --lyrics-tip-text: #473829;
+  --lyrics-dot-outline: #796c60;
+}
+/* 歌詞カード本体：通常表示と編集表示で同じテーマ配色 */
+.card {
+  background: var(--lyrics-card-bg);
+  color: var(--lyrics-card-text);
+  box-shadow: inset 0 0 0 1px var(--lyrics-border);
+}
+.card h2, .card .stanza .who, .card small, .card .shalom-help {
+  color: var(--lyrics-card-muted);
+}
+.card .card-line,
+.card .shalom-line .card-line,
+.card .shalom-line.male .card-line,
+.card .shalom-line.female .card-line,
+.card .shalom-line.both .card-line {
+  color: var(--lyrics-card-text) !important;
+}
+.card .shalom-line .card-line:hover {
+  background: var(--lyrics-line-hover);
+}
+.card .shalom-line:has(.card-line.active) {
+  background: var(--lyrics-active-bg);
+  border-left-color: var(--lyrics-active-edge);
+}
+.card .shalom-line .card-line.active,
+.card .shalom-line.male .card-line.active,
+.card .shalom-line.female .card-line.active,
+.card .shalom-line.both .card-line.active {
+  color: var(--lyrics-active-text) !important;
+}
+.card .shalom-line .duo-dot {
+  border-color: var(--lyrics-dot-outline);
+}
+/* 2段編集カード：背景、歌詞、区切り、入力欄をすべてテーマに追従させる */
+#card-lyrics.shalom-editing .shalom-line,
+html[data-theme="dark"] #card-lyrics.shalom-editing .shalom-line,
+html[data-theme="light"] #card-lyrics.shalom-editing .shalom-line {
+  background: var(--lyrics-edit-bg);
+  border-color: var(--lyrics-edit-border);
+  border-left-color: var(--lyrics-edit-border);
+  color: var(--lyrics-card-text);
+}
+#card-lyrics.shalom-editing .shalom-line:has(.card-line.active),
+html[data-theme="dark"] #card-lyrics.shalom-editing .shalom-line:has(.card-line.active),
+html[data-theme="light"] #card-lyrics.shalom-editing .shalom-line:has(.card-line.active) {
+  background: var(--lyrics-active-bg);
+  border-color: var(--lyrics-active-edge);
+}
+#card-lyrics.shalom-editing .shalom-line .card-line,
+#card-lyrics.shalom-editing .shalom-line.male .card-line,
+#card-lyrics.shalom-editing .shalom-line.female .card-line,
+#card-lyrics.shalom-editing .shalom-line.both .card-line,
+html[data-theme="dark"] #card-lyrics.shalom-editing .shalom-line .card-line,
+html[data-theme="light"] #card-lyrics.shalom-editing .shalom-line .card-line {
+  color: var(--lyrics-card-text) !important;
+  border-bottom-color: var(--lyrics-divider);
+}
+#card-lyrics.shalom-editing .shalom-line .card-line.active,
+html[data-theme="dark"] #card-lyrics.shalom-editing .shalom-line .card-line.active,
+html[data-theme="light"] #card-lyrics.shalom-editing .shalom-line .card-line.active {
+  color: var(--lyrics-active-text) !important;
+}
+#card-lyrics.shalom-editing .shalom-line .sync-time,
+#card-lyrics.shalom-editing .shalom-line .shalom-select {
+  background: var(--lyrics-input-bg);
+  color: var(--lyrics-input-text);
+  border-color: var(--lyrics-input-border);
+  color-scheme: normal;
+}
+#card-lyrics.shalom-editing .sync-note {
+  background: var(--lyrics-tip-bg);
+  color: var(--lyrics-tip-text);
+  border-color: var(--lyrics-edit-border);
+}
+/* focusをダークでも確実に視認できるようにする */
+#card-lyrics.shalom-editing .sync-time:focus-visible,
+#card-lyrics.shalom-editing .shalom-select:focus-visible,
+#card-lyrics.shalom-editing .sync-capture:focus-visible {
+  outline: 2px solid var(--lyrics-active-edge);
+  outline-offset: 2px;
+}
+
+/* 320px級の狭い端末では3列を実幅に合わせて縮める */
+@media (max-width: 360px) {
+  #card-lyrics.shalom-editing .shalom-line {
+    grid-template-columns: minmax(0,1fr) 32px minmax(0,1.4fr);
+    column-gap: 4px;
+    padding: 10px 6px;
+  }
+  #card-lyrics.shalom-editing .shalom-line .sync-capture {
+    width: 32px;
+    min-width: 0;
+  }
+  #card-lyrics.shalom-editing .shalom-line .sync-time {
+    padding: 4px 3px;
+    font-size: 11px;
+  }
+  #card-lyrics.shalom-editing .shalom-line .shalom-select {
+    padding: 3px 1px;
+    font-size: 10px;
+  }
+}
 </style></head><body><main class="wrap"><div class="header-inner">
 <a aria-label="ニャーズゲームセンター" class="header-cat" href="https://takeshiuchimi.github.io/nya/index.html" id="nya-link" rel="noopener noreferrer" target="_blank">
 <svg aria-label="ニャーズ" role="img" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
