@@ -1,7 +1,7 @@
 {
   "id": "./song.html",
-  "name": "ニャープレーヤー",
-  "short_name": "ニャープレーヤー",
+  "name": "NyaPlay",
+  "short_name": "NyaPlay",
   "description": "Ca&co RECORDSの音楽プレーヤー。4～8曲を左右スワイプで切り替えられます。",
   "lang": "ja",
   "start_url": "./song.html",
