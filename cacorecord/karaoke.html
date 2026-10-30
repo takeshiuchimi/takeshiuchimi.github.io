@@ -588,7 +588,7 @@ body[data-theme="light"] #stage .lyric .dot{border-color:#fff;box-shadow:0 0 0 1
  color:var(--kara-muted);font:12px/1.5 system-ui,sans-serif}
 .nya-kara-part-legend>span{display:inline-flex;align-items:center;gap:6px}
 .nya-kara-legend-dot{width:15px;height:15px;border:1px solid #8883;border-radius:50%;display:inline-block}
-.nya-kara-legend-dot.male{background:#5faeff}.nya-kara-legend-dot.female{background:#ff7f95}.nya-kara-legend-dot.both{background:#bf91ff}
+.nya-kara-legend-dot.male{background:#4d9de0}.nya-kara-legend-dot.female{background:#e889b6}.nya-kara-legend-dot.both{background:#a68ce0}
 /* NyaPlayと同じ曲切替表示。ステージの後、操作の前へ配置 */
 .nya-kara-picker{order:0;flex:0 0 auto;width:min(calc(100% - 28px),760px);
  margin:12px auto 3px;border:0;background:transparent;padding:8px 4px 4px}
@@ -622,6 +622,10 @@ body[data-theme="light"] .nya-kara-picker{background:transparent;border:0}
  #stage .lyric .dot{width:17px;height:17px;flex-basis:17px}
 }
 @media(max-width:600px){.karaoke-site-header .header-inner h1{font-size:18px}}
+
+/* Final UI alignment, NyaPlay / NyaKara common song heading */
+.nya-kara-song-heading h1{font-family:Georgia,'Yu Mincho','Hiragino Mincho ProN',serif;font-size:clamp(25px,6vw,38px);font-weight:700;line-height:1.45;letter-spacing:.05em;margin:20px 0 3px;overflow-wrap:anywhere}
+.nya-kara-artist{font-family:Georgia,'Yu Mincho','Hiragino Mincho ProN',serif;font-size:clamp(13px,3.5vw,15px);font-weight:500;letter-spacing:.05em;line-height:1.7;margin-bottom:18px}
 </style></head><body data-theme="dark"><div class="app">
 <header class="karaoke-site-header"><div class="header-inner">
 <a aria-label="ニャーズゲームセンター" class="header-cat" href="https://takeshiuchimi.github.io/nya/index.html" id="nya-link" rel="noopener noreferrer" target="_blank">
@@ -1994,10 +1998,10 @@ window.NyaQR={render,save};
  $("nya-qr-close").onclick=()=>dialog.close();
  dialog.addEventListener("click",e=>{if(e.target===dialog)dialog.close()});
  $("nya-qr-copy").onclick=async()=>{try{await navigator.clipboard.writeText(currentUrl);$("nya-qr-copy").textContent="コピーしました"}catch(e){window.prompt("URLをコピー",currentUrl)}};
- $("nya-qr-save").onclick=()=>NyaQR.save(currentUrl,(currentUrl.includes("/karaoke")?"karaoke":"song")+"_track"+currentTrack+"_QR.png");
+ $("nya-qr-save").onclick=()=>NyaQR.save(currentUrl,currentTrack===0?"NyaKara_QR.png":"NyaKara_track"+currentTrack+"_QR.png");
  function openHome(){
    currentTrack=0; currentUrl=BASE+"karaoke.html";
-   $("nya-qr-heading").textContent="NyaKara 全曲｜QRコード";
+   $("nya-qr-heading").textContent="NyaKara（4〜9曲目）のQRコード";
    $("nya-qr-url").textContent=currentUrl;
    NyaQR.render(currentUrl,holder);
    if(!dialog.open)dialog.showModal();
@@ -2005,11 +2009,11 @@ window.NyaQR={render,save};
  window.NyaShare={open,openHome,publicUrl};
 })();
 </script><script>
-/* NyaKara: ?track=1...9, without a parameter the selector defaults to track 6. */
+/* NyaKara: ?track=1...9; no parameter enables the 4–9 picker (initially track 4). */
 const DEFAULT_LINES=[{"text": "朝の坂道　風が渡る", "time": 17.767, "vocal": "male", "split": 50}, {"text": "並木の影を　抜けてゆく", "time": 21.517, "vocal": "male", "split": 50}, {"text": "昨日と同じ　街なのに", "time": 25.606, "vocal": "male", "split": 50}, {"text": "今日は空まで　近くなる", "time": 29.112, "vocal": "male", "split": 50}, {"text": "陽のあたる道　並んで歩く", "time": 33.67, "vocal": "female", "split": 50}, {"text": "影の長さは　違っても", "time": 36.904, "vocal": "female", "split": 50}, {"text": "どちらが先でも　かまわない", "time": 40.725, "vocal": "female", "split": 50}, {"text": "同じ光を　まとってる", "time": 44.179, "vocal": "female", "split": 50}, {"text": "シャローム　シャローム", "time": 50.567, "vocal": "both", "split": 50}, {"text": "見上げた空は　どこまでも", "time": 54.475, "vocal": "both", "split": 50}, {"text": "シャローム　シャローム", "time": 58.177, "vocal": "both", "split": 50}, {"text": "今日も変わらず　そこにある", "time": 61.866, "vocal": "male-both", "split": 50}, {"text": "歩幅の違う　二人でも", "time": 66.314, "vocal": "female-both", "split": 50}, {"text": "同じ季節を　歩いてる", "time": 70.521, "vocal": "female", "split": 50}, {"text": "陽だまりの先に　また陽だまり", "time": 73.58, "vocal": "male-female", "split": 50}, {"text": "微笑み交わして　シャローム", "time": 77.852, "vocal": "both", "split": 50}, {"text": "窓辺のカップに　朝が映る", "time": 101.156, "vocal": "male", "split": 50}, {"text": "冷めないうちにと　声がする", "time": 104.925, "vocal": "male", "split": 50}, {"text": "受け取る理由を　探すより", "time": 108.841, "vocal": "male", "split": 50}, {"text": "ひと口飲めば　それでいい", "time": 112.475, "vocal": "male", "split": 50}, {"text": "花は誰にも　断らず咲いて", "time": 116.657, "vocal": "female", "split": 50}, {"text": "風は名前も　尋ねない", "time": 120.628, "vocal": "female", "split": 50}, {"text": "差し出すものを　持たぬ手に", "time": 124.184, "vocal": "female", "split": 50}, {"text": "今日も季節が　降りてくる", "time": 127.764, "vocal": "female", "split": 50}, {"text": "シャローム　シャローム", "time": 133.883, "vocal": "both", "split": 50}, {"text": "見上げた空は　どこまでも", "time": 137.718, "vocal": "both", "split": 50}, {"text": "シャローム　シャローム", "time": 141.691, "vocal": "both", "split": 50}, {"text": "今日も変わらず　そこにある", "time": 145.385, "vocal": "male-both", "split": 50}, {"text": "何も持たずに　来たはずが", "time": 149.567, "vocal": "female-both", "split": 50}, {"text": "両手いっぱい　受け取って", "time": 153.386, "vocal": "female", "split": 50}, {"text": "名前も知らない　贈りもの", "time": 157.052, "vocal": "male-female", "split": 50}, {"text": "分け合う喜び　シャローム", "time": 161.081, "vocal": "both", "split": 50}, {"text": "昨日の雨が　残る道", "time": 182.712, "vocal": "male", "split": 50}, {"text": "靴の先には　泥の跡", "time": 186.564, "vocal": "female", "split": 50}, {"text": "消せないものは　消せぬまま", "time": 190.318, "vocal": "male", "split": 50}, {"text": "それでも朝は　訪れる", "time": 193.714, "vocal": "female", "split": 50}, {"text": "明日の空は　まだ知らない", "time": 201.79, "vocal": "male-female", "split": 50}, {"text": "風がどちらへ　吹くのかも", "time": 205.966, "vocal": "male", "split": 50}, {"text": "波が静まる　その前から", "time": 209.473, "vocal": "female", "split": 50}, {"text": "心はすでに　凪いでいる", "time": 213.327, "vocal": "both", "split": 50}, {"text": "シャローム　シャローム", "time": 221.392, "vocal": "both", "split": 50}, {"text": "見上げた空は　どこまでも", "time": 225.037, "vocal": "both", "split": 50}, {"text": "シャローム　シャローム", "time": 228.997, "vocal": "both", "split": 50}, {"text": "今日も変わらず　そこにある", "time": 232.597, "vocal": "male-both", "split": 50}, {"text": "雨の名残を　踏みながら", "time": 236.889, "vocal": "female-both", "split": 50}, {"text": "まだ見ぬ明日へ　歩いてく", "time": 240.579, "vocal": "male-female", "split": 50}, {"text": "帰るところを　知っているから", "time": 244.347, "vocal": "male-female", "split": 50}, {"text": "穏やかな声で　シャローム", "time": 248.673, "vocal": "both", "split": 50}, {"text": "あなたに　シャローム", "time": 261.37, "vocal": "male-both", "split": 50}, {"text": "あなたにも　シャローム", "time": 265.248, "vocal": "male-both", "split": 50}, {"text": "シャローム", "time": 275.112, "vocal": "both", "split": 50}];
 const SOURCES={original:"music/shalom01.mp3",instrumental:"music/shalom01_instrumental.mp3",male:"music/shalom01_male.mp3",female:"music/shalom01_female.mp3"};
 const LABELS={"male":"男性","female":"女性","both":"二人","male-female":"青→赤","female-male":"赤→青","male-both":"青→紫","female-both":"赤→紫","both-male":"紫→青","both-female":"紫→赤"};
-const COLORS={male:"#5faeff",female:"#ff7f95",both:"#bf91ff"};
+const COLORS={male:"#4d9de0",female:"#e889b6",both:"#a68ce0"};
 const key="caco_karaoke_shalom_v1";let lines=JSON.parse(JSON.stringify(DEFAULT_LINES));try{const x=JSON.parse(localStorage.getItem(key));if(Array.isArray(x)&&x.length===51)lines=x}catch(e){}
 const $=id=>document.getElementById(id),audio=$("audio");let mode="original",currentIndex=-2,loop=false,fullSeekDragging=false;
 function save(){localStorage.setItem(key,JSON.stringify(lines))}
