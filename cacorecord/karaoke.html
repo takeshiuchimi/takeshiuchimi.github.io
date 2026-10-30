@@ -442,7 +442,7 @@ body[data-theme="light"] .guide-note{color:#5b4c3d}
 .nya-kara-picker-label span{white-space:nowrap;font-weight:800;color:#f5d58f}
 #nya-kara-select{min-width:0;flex:1;max-width:100%;font-size:15px;font-weight:650;border:1px solid #f5d58f75;border-radius:9px;padding:8px 10px;background:#182f37;color:#fff6df;cursor:pointer}
 .nya-kara-format{text-align:center;margin:5px auto 0;color:#e1d2b1;font-size:11px;line-height:1.35}
-.nya-ordinary-track .dot{display:none!important}
+/* すべての曲にパート色の丸を表示 */
 .nya-ordinary-track #guideBox,.nya-ordinary-track #fullGuideBox,.nya-ordinary-track #editor{display:none!important}
 .nya-ordinary-track [data-mode]:not([data-mode="original"]),.nya-ordinary-track [data-full-mode]:not([data-full-mode="original"]){display:none!important}
 .nya-ordinary-track [data-mode="original"]{cursor:default}
@@ -520,10 +520,112 @@ body[data-theme="light"] #status.nya-kara-error{color:#992c1b}
  .nya-kara-dots{margin-top:5px}
 }
 </style>
-</head><body data-theme="dark"><div class="app">
-<header class="karaoke-site-header">
-  <div class="header-inner">
-    <a class="header-cat" href="https://takeshiuchimi.github.io/nya/index.html" aria-label="ニャーズを開く" target="_blank" rel="noopener noreferrer"><svg aria-label="ニャーズ" role="img" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+<style id="nya-kara-nyaplay-alignment">
+
+/* NyaKara v9.3: NyaPlay とヘッダー・楽曲情報を統一。
+   全画面の音声／ガイド制御は既存のまま。 */
+:root{--kara-gold:#d9b777;--kara-line:#534735;--kara-panel:#25231f;--kara-ink:#f6ebd7;--kara-muted:#baa98e}
+body[data-theme="dark"]{--bg:#181714;--kara-gold:#d9b777;--kara-line:#534735;--kara-panel:#25231f;--kara-ink:#f6ebd7;--kara-muted:#baa98e;background:radial-gradient(ellipse at top,#403225 0,#181714 65%)}
+body[data-theme="light"]{--bg:#f6f1e7;--kara-gold:#80571c;--kara-line:#d9c9ad;--kara-panel:#fffaf1;--kara-ink:#30281f;--kara-muted:#756655;background:radial-gradient(ellipse at top,#fff9ee 0,#f6f1e7 65%)}
+/* 元のNyaPlayの2行ヘッダーと同じ比率・猫・余白・色 */
+.karaoke-site-header,body[data-theme="light"] .karaoke-site-header{
+ display:block;height:auto;min-height:0;padding:14px 14px 0;background:transparent;border:0;box-shadow:none
+}
+.karaoke-site-header .header-inner{
+ display:grid;grid-template-columns:38px minmax(0,1fr) auto;grid-template-rows:17px 27px;
+ column-gap:6px;align-items:center;max-width:480px;margin:0 auto;
+ padding:9px 12px;background:var(--kara-panel);border:1px solid var(--kara-line);border-radius:10px
+}
+.karaoke-site-header .header-cat{grid-row:1/3;grid-column:1;width:38px;height:44px;display:block;padding:0!important;border:0!important;background:transparent;line-height:0}
+.karaoke-site-header .header-cat svg{display:block;width:100%;height:100%}
+.karaoke-site-header .eyebrow{grid-column:2;grid-row:1;font:italic 10px/17px Georgia,serif;letter-spacing:1px;color:var(--kara-gold);white-space:nowrap}
+.karaoke-site-header .header-inner h1{grid-column:2;grid-row:2;margin:0;font:600 18px/27px Georgia,'Yu Mincho',serif;letter-spacing:1px;white-space:nowrap;text-align:left;color:var(--kara-ink)}
+.karaoke-site-header .header-actions{grid-column:3;grid-row:1/3;display:flex;align-items:center}
+.karaoke-site-header .theme-toggle.icon-btn,body[data-theme="light"] .karaoke-site-header .theme-toggle.icon-btn{
+ width:31px;height:31px;display:grid;place-items:center;font-size:18px;font-weight:400;line-height:1;
+ padding:0;border:1px solid var(--kara-line);border-radius:8px;background:var(--kara-panel);color:var(--kara-gold)
+}
+/* 曲名・アーティストはジャケットの上。表示位置・文字スタイルをNyaPlayへ揃える */
+.nya-kara-song-heading{width:min(calc(100% - 28px),670px);margin:0 auto;text-align:center;flex:0 0 auto}
+.nya-kara-song-heading h1{font-family:Georgia,'Yu Mincho','Hiragino Mincho ProN',serif;font-size:clamp(25px,6vw,38px);font-weight:700;line-height:1.45;letter-spacing:.05em;margin:20px 0 3px;color:var(--kara-ink);overflow-wrap:anywhere}
+.nya-kara-artist{text-align:center;font-family:Georgia,'Yu Mincho','Hiragino Mincho ProN',serif;font-size:13px;color:var(--kara-muted);margin-bottom:18px}
+/* ステージには画像＋歌詞2行だけ。曲名・歌手名・QR・テーマ表示を重複させない */
+#stage{flex:0 0 auto;width:min(calc(100% - 28px),760px);margin:0 auto;
+ height:clamp(350px,56vw,530px)!important;max-height:none!important;min-height:0!important;
+ border-radius:12px;align-items:flex-end;justify-content:center}
+#stage .topline{display:none!important}
+#stage:not(:fullscreen):not(.pseudo-fullscreen) .stage-share,
+#stage:not(:fullscreen):not(.pseudo-fullscreen) .stage-theme-toggle,
+#stage:not(:fullscreen):not(.pseudo-fullscreen) .stage-fullscreen{display:none!important}
+#stage .lyricbox,body[data-theme="light"] #stage .lyricbox{
+ width:calc(100% - 20px);max-width:710px;margin:0 10px clamp(17px,4vh,40px);
+ padding:clamp(14px,2.5vw,22px) clamp(10px,2vw,22px);border-radius:13px;
+ background:linear-gradient(180deg,rgba(8,22,28,.38),rgba(8,22,28,.55));
+ box-shadow:0 5px 20px rgba(0,0,0,.18);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)
+}
+body[data-theme="light"] #stage .lyricbox{
+ background:linear-gradient(180deg,rgba(255,250,239,.45),rgba(255,250,239,.62));
+ box-shadow:0 5px 20px rgba(34,24,18,.16)
+}
+#stage .lyric,#stage .lyric.next{
+ font-family:Georgia,'Yu Mincho','Hiragino Mincho ProN',serif;font-weight:700;
+ letter-spacing:.015em;line-height:1.6;display:flex;gap:11px;align-items:center;justify-content:center;
+ white-space:normal;overflow-wrap:anywhere;text-wrap:pretty;
+ color:#fffaf0;text-shadow:0 1px 4px #000c;
+}
+#stage .lyric{font-size:clamp(21px,3.4vw,37px);min-height:2.0em}
+#stage .lyric.next{font-size:clamp(18px,2.7vw,29px);min-height:1.9em;opacity:.72;font-weight:600}
+body[data-theme="light"] #stage .lyric{color:#28313a;text-shadow:none}
+body[data-theme="light"] #stage .lyric.next{color:#4a4843}
+/* NyaPlayシャロームと同じ丸：青 男声・赤 女声・紫 二人。2色丸は前後の担当。*/
+body.nya-ordinary-track #stage .lyric .dot,#stage .lyric .dot{
+ display:inline-block!important;flex:0 0 22px;width:22px;height:22px;border-radius:50%;
+ border:2px solid rgba(255,255,255,.75);box-shadow:0 1px 5px #0006;vertical-align:middle
+}
+body[data-theme="light"] #stage .lyric .dot{border-color:#fff;box-shadow:0 0 0 1px #796c60}
+.nya-kara-part-legend{display:flex;justify-content:center;align-items:center;gap:16px;
+ margin:13px auto 5px;min-height:22px;flex-wrap:wrap;
+ color:var(--kara-muted);font:12px/1.5 system-ui,sans-serif}
+.nya-kara-part-legend>span{display:inline-flex;align-items:center;gap:6px}
+.nya-kara-legend-dot{width:15px;height:15px;border:1px solid #8883;border-radius:50%;display:inline-block}
+.nya-kara-legend-dot.male{background:#5faeff}.nya-kara-legend-dot.female{background:#ff7f95}.nya-kara-legend-dot.both{background:#bf91ff}
+/* NyaPlayと同じ曲切替表示。ステージの後、操作の前へ配置 */
+.nya-kara-picker{order:0;flex:0 0 auto;width:min(calc(100% - 28px),760px);
+ margin:12px auto 3px;border:0;background:transparent;padding:8px 4px 4px}
+body[data-theme="light"] .nya-kara-picker{background:transparent;border:0}
+.nya-kara-picker-row>button{border-color:var(--kara-line);background:var(--kara-panel);color:var(--kara-gold)}
+.nya-kara-number{color:var(--kara-gold)}
+.nya-kara-swipe-hint{color:var(--kara-muted)}
+.nya-kara-dots{margin-top:8px}
+.nya-kara-dot.active{background:var(--kara-gold)}
+/* 全画面時は既存の下部操作パネルを維持し、ステージ寸法制限を解除 */
+#stage:fullscreen,#stage.pseudo-fullscreen{
+ width:100vw!important;height:100dvh!important;min-height:0!important;max-height:none!important;
+ margin:0!important;border-radius:0!important
+}
+#stage:fullscreen .lyricbox,#stage.pseudo-fullscreen .lyricbox{
+ width:min(95vw,1050px);max-width:none;margin-left:auto!important;margin-right:auto!important
+}
+@media(max-width:660px){
+ .karaoke-site-header{padding:10px 14px 0}
+ #stage{height:clamp(340px,92vw,450px)!important}
+ #stage .lyric{font-size:clamp(20px,5.7vw,26px)}
+ #stage .lyric.next{font-size:clamp(17px,4.6vw,22px)}
+ #stage .lyric .dot{flex-basis:20px;width:20px;height:20px}
+ .nya-kara-song-heading h1{margin-top:16px}
+ .nya-kara-artist{margin-bottom:12px}
+}
+@media(max-width:900px) and (orientation:landscape) and (max-height:600px){
+ #stage:not(:fullscreen):not(.pseudo-fullscreen){height:min(66dvh,340px)!important}
+ #stage .lyric{font-size:clamp(17px,2.9vw,24px)}
+ #stage .lyric.next{font-size:clamp(15px,2.3vw,20px)}
+ #stage .lyric .dot{width:17px;height:17px;flex-basis:17px}
+}
+@media(max-width:600px){.karaoke-site-header .header-inner h1{font-size:18px}}
+</style></head><body data-theme="dark"><div class="app">
+<header class="karaoke-site-header"><div class="header-inner">
+<a aria-label="ニャーズゲームセンター" class="header-cat" href="https://takeshiuchimi.github.io/nya/index.html" id="nya-link" rel="noopener noreferrer" target="_blank">
+<svg aria-label="ニャーズ" role="img" viewbox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
 <ellipse cx="50" cy="88" fill="var(--cat-body)" rx="30" ry="26"></ellipse>
 <path d="M22 92 Q10 100 16 112 Q24 116 28 104 Z" fill="var(--cat-body)"></path>
 <path d="M20 22 L34 46 L14 46 Z" fill="var(--cat-body)"></path><path d="M80 22 L86 46 L66 46 Z" fill="var(--cat-body)"></path>
@@ -532,14 +634,24 @@ body[data-theme="light"] #status.nya-kara-error{color:#992c1b}
 <path d="M45 60 Q50 64 55 60" fill="none" stroke="var(--cat-line)" stroke-linecap="round" stroke-width="2.2"></path>
 <line stroke="var(--cat-line)" stroke-width="1.4" x1="18" x2="34" y1="55" y2="57"></line><line stroke="var(--cat-line)" stroke-width="1.4" x1="18" x2="34" y1="61" y2="61"></line>
 <line stroke="var(--cat-line)" stroke-width="1.4" x1="82" x2="66" y1="55" y2="57"></line><line stroke="var(--cat-line)" stroke-width="1.4" x1="82" x2="66" y1="61" y2="61"></line>
-</svg></a>
-    <div class="header-labels">
-      <span class="header-eyebrow">TakeshiUchimiProject</span>
-      <span class="header-title">NyaKara</span>
-    </div>
-    <div class="header-actions"><button type="button" class="theme-toggle" id="themeToggle" aria-label="ライトモードに切替" aria-pressed="false">☀ ライト</button><a href="song.html">♫ NyaPlayへ</a></div>
-  </div>
-</header>
+</svg>
+</a>
+<div class="eyebrow" id="site-eyebrow">TakeshiUchimiProject</div>
+<h1>NyaKara</h1>
+<div class="header-actions"><button aria-label="ダークモード切替" class="theme-toggle icon-btn" id="themeToggle" title="表示モード切替" type="button">☀</button></div>
+</div></header>
+<div class="nya-kara-song-heading" aria-label="楽曲情報"><h1 id="kara-title">シャローム</h1><div class="nya-kara-artist" id="kara-artist">ジェットストリーム内海</div></div>
+
+
+<main class="stage" id="stage" data-scene="light"><div class="scene"></div><button type="button" id="stageThemeToggle" class="stage-theme-toggle" aria-label="ライトモードに切替" aria-pressed="false">☀</button><button type="button" id="karaoke-stage-qr" class="stage-share" aria-label="QRコードを表示">▦ QR</button><button type="button" id="stageFullscreen" class="stage-fullscreen" aria-label="全画面表示">⛶ 全画面</button>
+
+<div class="lyricbox"><button class="lyric" id="current" title="クリックでこの歌詞から再生"></button><button class="lyric next" id="next" title="クリックで次の歌詞から再生"></button></div>
+<div class="full-controls" id="fullControls" aria-label="全画面再生操作">
+ <div class="full-modes"><button type="button" data-full-mode="original" class="chosen">原曲</button><button type="button" data-full-mode="instrumental">カラオケ</button><button type="button" data-full-mode="male">男声</button><button type="button" data-full-mode="female">女声</button></div>
+ <div class="full-guide" id="fullGuideBox"><label for="fullGuide">ガイド</label><input id="fullGuide" type="range" min="0" max="100" step="1" value="30" aria-label="全画面のガイドボーカル音量" aria-valuetext="30%"><output id="fullGuideValue" for="fullGuide">30%</output></div>
+ <div class="full-transport"><button type="button" id="fullPlay" aria-label="再生・一時停止">▶ 再生</button><span id="fullElapsed">0:00</span><input id="fullSeek" type="range" min="0" max="296.784" step="0.01" value="0" aria-label="全画面の再生位置"><span id="fullDuration">4:57</span><button type="button" id="fullRepeat" aria-label="リピート切替">🔁 OFF</button></div>
+</div>
+</main>
 <nav class="nya-kara-picker" id="nya-kara-picker" aria-label="4曲目から9曲目を選択" hidden>
  <div class="nya-kara-picker-row">
   <button type="button" id="nya-kara-prev" aria-label="前の曲（4曲目から9曲目へ）">‹</button>
@@ -551,16 +663,7 @@ body[data-theme="light"] #status.nya-kara-error{color:#992c1b}
  </div>
  <div class="nya-kara-dots" id="nya-kara-dots" aria-label="曲を直接選択"></div>
 </nav>
-
-<main class="stage" id="stage" data-scene="light"><div class="scene"></div><button type="button" id="stageThemeToggle" class="stage-theme-toggle" aria-label="ライトモードに切替" aria-pressed="false">☀</button><button type="button" id="karaoke-stage-qr" class="stage-share" aria-label="QRコードを表示">▦ QR</button><button type="button" id="stageFullscreen" class="stage-fullscreen" aria-label="全画面表示">⛶ 全画面</button>
-<div class="topline"><h1>シャローム</h1><p>ジェットストリーム内海</p></div>
-<div class="lyricbox"><button class="lyric" id="current" title="クリックでこの歌詞から再生"></button><button class="lyric next" id="next" title="クリックで次の歌詞から再生"></button></div>
-<div class="full-controls" id="fullControls" aria-label="全画面再生操作">
- <div class="full-modes"><button type="button" data-full-mode="original" class="chosen">原曲</button><button type="button" data-full-mode="instrumental">カラオケ</button><button type="button" data-full-mode="male">男声</button><button type="button" data-full-mode="female">女声</button></div>
- <div class="full-guide" id="fullGuideBox"><label for="fullGuide">ガイド</label><input id="fullGuide" type="range" min="0" max="100" step="1" value="30" aria-label="全画面のガイドボーカル音量" aria-valuetext="30%"><output id="fullGuideValue" for="fullGuide">30%</output></div>
- <div class="full-transport"><button type="button" id="fullPlay" aria-label="再生・一時停止">▶ 再生</button><span id="fullElapsed">0:00</span><input id="fullSeek" type="range" min="0" max="296.784" step="0.01" value="0" aria-label="全画面の再生位置"><span id="fullDuration">4:57</span><button type="button" id="fullRepeat" aria-label="リピート切替">🔁 OFF</button></div>
-</div>
-</main>
+<div id="nya-kara-part-legend" class="nya-kara-part-legend" role="group" aria-label="歌唱パート"><span><i class="nya-kara-legend-dot male"></i>男声</span><span><i class="nya-kara-legend-dot female"></i>女声</span><span><i class="nya-kara-legend-dot both"></i>二人</span></div>
 <section class="controls">
 <div class="modes" id="modes"><button class="btn active" data-mode="original">🎵 原曲</button><button class="btn" data-mode="instrumental">🎤 カラオケ</button><button class="btn" data-mode="male">🔵 男声のみ</button><button class="btn" data-mode="female">🔴 女声のみ</button></div>
 <div class="bar"><span class="time" id="elapsed">0:00</span><input type="range" id="seek" min="0" max="296.784" step=".01" value="0" aria-label="再生位置"><span class="time" id="duration">4:57</span></div>
@@ -1912,10 +2015,10 @@ const $=id=>document.getElementById(id),audio=$("audio");let mode="original",cur
 function save(){localStorage.setItem(key,JSON.stringify(lines))}
 function clock(t){if(!Number.isFinite(t))return "--:--";return Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0")}
 function colors(v){const c=v.split("-");return c.length===1?COLORS[c[0]]:`linear-gradient(90deg,${COLORS[c[0]]} 50%,${COLORS[c[1]]} 50%)`}
-function label(i,cl){const item=lines[i],b=document.createElement("span");b.className="dot";b.style.background=colors(item.vocal);b.title=LABELS[item.vocal];const tx=document.createElement("span");const parts=item.vocal.split("-");if(parts.length===2){let split=Math.round(item.text.length*(item.split||50)/100);if(item.text.includes("　")&&item.split===50)split=item.text.indexOf("　")+1;const a=document.createElement("span"),z=document.createElement("span");a.textContent=item.text.slice(0,split);z.textContent=item.text.slice(split);a.style.color=COLORS[parts[0]];z.style.color=COLORS[parts[1]];tx.append(a,z)}else{tx.textContent=item.text}cl.replaceChildren(b,tx);cl.onclick=()=>jump(i)}
+function label(i,cl){const item=lines[i],b=document.createElement("span");b.className="dot";b.style.background=colors(item.vocal);b.title=LABELS[item.vocal];const tx=document.createElement("span");const parts=item.vocal.split("-");if(parts.length===2){let split=Math.round(item.text.length*(item.split||50)/100);if(item.text.includes("　")&&item.split===50)split=item.text.indexOf("　")+1;const a=document.createElement("span"),z=document.createElement("span");a.textContent=item.text.slice(0,split);z.textContent=item.text.slice(split);/* 歌詞は統一色で表示し、歌唱パートは丸の前後2色で表現 */tx.append(a,z)}else{tx.textContent=item.text}cl.replaceChildren(b,tx);cl.onclick=()=>jump(i)}
 function jump(i){audio.currentTime=lines[i].time;audio.play().catch(()=>{});update(true)}
 function indexAt(t){let i=-1;for(let k=0;k<lines.length;k++){if(t+0.04>=Number(lines[k].time))i=k;else break}return i}
-function update(force=false){const i=indexAt(audio.currentTime||0);$("elapsed").textContent=clock(audio.currentTime||0);if(!seekDragging)$("seek").value=audio.currentTime||0;if(!fullSeekDragging)$("fullSeek").value=audio.currentTime||0;$("fullElapsed").textContent=clock(audio.currentTime||0);if(i===currentIndex&&!force)return;currentIndex=i;const cur=i<0?null:i;const nxt=i+1<lines.length?i+1:null;for(const [id,j] of [["current",cur],["next",nxt]]){const e=$(id);if(j===null){e.textContent=id==="current"?"♪ 間奏 ♪":"　";e.onclick=null}else label(j,e)}$("stage").dataset.scene=i<0||i<16?"light":i<32?"grace":i<48?"peace":"outro";document.querySelectorAll(".editrow").forEach((el,j)=>el.classList.toggle("current",j===i))}
+function update(force=false){const i=indexAt(audio.currentTime||0);$("elapsed").textContent=clock(audio.currentTime||0);if(!seekDragging)$("seek").value=audio.currentTime||0;if(!fullSeekDragging)$("fullSeek").value=audio.currentTime||0;$("fullElapsed").textContent=clock(audio.currentTime||0);if(i===currentIndex&&!force)return;currentIndex=i;const cur=i<0?null:i;const nxt=i+1<lines.length?i+1:null;for(const [id,j] of [["current",cur],["next",nxt]]){const e=$(id);if(j===null){e.textContent="";e.onclick=null}else label(j,e)}$("stage").dataset.scene=i<0||i<16?"light":i<32?"grace":i<48?"peace":"outro";document.querySelectorAll(".editrow").forEach((el,j)=>el.classList.toggle("current",j===i))}
 function buildRows(){const root=$("rows");root.replaceChildren();lines.forEach((x,i)=>{const r=document.createElement("div");r.className="editrow";const n=document.createElement("span");n.textContent=String(i+1).padStart(2,"0");const title=document.createElement("button");title.textContent=x.text;title.onclick=()=>jump(i);const time=document.createElement("input");time.type="number";time.min=0;time.max=297;time.step=".001";time.value=x.time;time.title="開始秒数";time.onchange=()=>{x.time=Number(time.value);save();update(true)};const select=document.createElement("select");for(const [k,v] of Object.entries(LABELS)){const o=document.createElement("option");o.value=k;o.textContent=v;select.append(o)}select.value=x.vocal;select.onchange=()=>{x.vocal=select.value;save();update(true);buildRows()};const split=document.createElement("input");split.type="range";split.min=10;split.max=90;split.step=1;split.value=x.split||50;split.className="split";split.title="前半・後半の切り替え位置";split.disabled=!x.vocal.includes("-");split.oninput=()=>{x.split=Number(split.value);save();update(true)};r.append(n,title,time,select,split);root.append(r)})}
 let seekDragging=false;$("seek").addEventListener("input",e=>{seekDragging=true;$("elapsed").textContent=clock(+e.target.value)});$("seek").addEventListener("change",e=>{audio.currentTime=+e.target.value;seekDragging=false;update(true)});
 $("play").onclick=()=>{if(audio.paused)audio.play().catch(()=>{$("status").textContent="音源を再生できません。URLとネット接続を確認してください。"});else audio.pause()};
@@ -1986,7 +2089,7 @@ function setTheme(theme){
  const t=theme==="light"?"light":"dark";
  document.body.dataset.theme=t;
  const light=t==="light";
- $("themeToggle").textContent=light?"☾ ダーク":"☀ ライト";
+ $("themeToggle").textContent=light?"☾":"☀";
  $("stageThemeToggle").textContent=light?"☾":"☀";
  for(const id of ["themeToggle","stageThemeToggle"]){
    $(id).setAttribute("aria-label",light?"ダークモードに切替":"ライトモードに切替");
@@ -2150,6 +2253,7 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
  const TRACKS=JSON.parse(document.getElementById('nya-kara-all-tracks-data').textContent);
  const $=id=>document.getElementById(id);
  const BASE='https://takeshiuchimi.github.io/cacorecord/';
+ const NYA_KARA_VOCALS={"6":{"0":"male","1":"male","2":"male","3":"male","4":"female","5":"female","6":"female","7":"female","8":"both","9":"both","10":"both","11":"male-both","12":"female-both","13":"female","14":"male-female","15":"both","16":"male","17":"male","18":"male","19":"male","20":"female","21":"female","22":"female","23":"female","24":"both","25":"both","26":"both","27":"male-both","28":"female-both","29":"female","30":"male-female","31":"both","32":"male","33":"female","34":"male","35":"female","36":"male-female","37":"male","38":"female","39":"both","40":"both","41":"both","42":"both","43":"male-both","44":"female-both","45":"male-female","46":"male-female","47":"both","48":"male-both","49":"male-both","50":"both"},"7":{"0":"male","1":"male","2":"male","3":"male","4":"female","5":"female","6":"female","7":"female","8":"male","9":"male","10":"female","11":"female","12":"male","13":"female","14":"male","15":"female","16":"both","17":"both","18":"male","19":"male","20":"male","21":"male","22":"female","23":"female","24":"female","25":"female","26":"male","27":"female","28":"male","29":"female","30":"both","31":"both","32":"male","33":"female","34":"male","35":"female","36":"male","37":"female","38":"male","39":"female","40":"both","41":"both","42":"male","43":"female"},"8":{"0":"male","1":"male","2":"male","3":"male","4":"female","5":"female","6":"female","7":"female","8":"male","9":"male","10":"female","11":"female","12":"male","13":"female","14":"male","15":"female","16":"male","17":"male","18":"male","19":"male","20":"male","21":"male","22":"female","23":"female","24":"female","25":"female","26":"male","27":"female","28":"male","29":"female","30":"male","31":"male","32":"male","33":"female","34":"male","35":"male","36":"male","37":"female","38":"male","39":"female","40":"male","41":"male","42":"male-female","43":"male-both"},"9":{"0":"male","1":"male","2":"male","3":"male","4":"male","5":"male","6":"male","7":"male","8":"male","9":"male","10":"male","11":"male","12":"male","13":"male","14":"male","15":"male","16":"male","17":"male","18":"male","19":"male","20":"male","21":"male","22":"male","23":"male","24":"male","25":"male","26":"male","27":"male","28":"male","29":"male","30":"male","31":"male","32":"male","33":"male","34":"male","35":"male","36":"male","37":"male","38":"male","39":"male","40":"male","41":"male","42":"male","43":"male","44":"male","45":"male","46":"male","47":"male","48":"male","49":"male","50":"male","51":"male","52":"male","53":"male","54":"male","55":"male","56":"male","57":"male","58":"male","59":"male","60":"male","61":"male","62":"male","63":"male"},"5":{"0":"male","1":"male","2":"male","3":"male","4":"male","5":"male","6":"male","7":"male","8":"male","9":"male","10":"male","11":"male","12":"male","13":"male","14":"male","15":"male","16":"male","17":"male","18":"female","19":"female","20":"female","21":"female","22":"female","23":"female","24":"female","25":"female","26":"female","27":"male","28":"female","29":"male","30":"female","31":"male","32":"female","33":"male","34":"female","35":"male","36":"female","37":"male","38":"female","39":"male","40":"male","41":"male","42":"male","43":"male","44":"male","45":"male","46":"male","47":"male","48":"female","49":"male","50":"female"},"1":{"0":"female","1":"female","2":"female","3":"female","4":"female","5":"female","6":"female","7":"female","8":"female","9":"female","10":"female","11":"female","12":"female","13":"female","14":"female","15":"female","16":"female","17":"female","18":"female","19":"female","20":"female","21":"female","22":"female","23":"female"},"2":{"0":"female","1":"female","2":"female","3":"female","4":"female","5":"female","6":"female","7":"female","8":"female","9":"female","10":"female","11":"female","12":"female","13":"female","14":"female","15":"female","16":"female","17":"female","18":"female","19":"female","20":"female","21":"female","22":"female","23":"female"},"3":{"0":"female","1":"female","2":"female","3":"female","4":"female","5":"female","6":"female","7":"female","8":"female","9":"female","10":"female","11":"female","12":"female","13":"female","14":"female","15":"female","16":"female","17":"female","18":"female","19":"female","20":"female","21":"female","22":"female","23":"female","24":"female","25":"female","26":"female","27":"female","28":"female","29":"female","30":"female","31":"female","32":"female","33":"female","34":"female","35":"female","36":"female","37":"female","38":"female","39":"female"},"4":{"0":"male","1":"male","2":"male","3":"male","4":"male","5":"male","6":"male","7":"male","8":"male","9":"male","10":"male","11":"male","12":"male","13":"male","14":"male","15":"male","16":"male","17":"male","18":"male","19":"male","20":"male","21":"male","22":"male","23":"male","24":"male","25":"male","26":"male","27":"male","28":"male","29":"male","30":"male","31":"male","32":"male","33":"male","34":"male","35":"male","36":"male","37":"male","38":"male","39":"male"}};
  const HOME_MIN=4,HOME_MAX=9;
  const query=new URLSearchParams(location.search);
  const raw=query.get('track');
@@ -2200,7 +2304,7 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   window.NyaKaraCurrentTrack=n;window.NyaKaraCurrentTitle=record.title;
   SOURCES.original=record.src;
   lines=n===6?JSON.parse(JSON.stringify(DEFAULT_LINES)):
-    record.lyrics.map(x=>({time:Number(x.time),text:x.text,vocal:'both',split:50}));
+    record.lyrics.map((x,i)=>({time:Number(x.time),text:x.text.replace(/^[♧♡]\s*/,''),vocal:NYA_KARA_VOCALS[n]?.[i]||(n<=3?'female':'male'),split:50}));
   if(n===6){
    try{const saved=JSON.parse(localStorage.getItem(key));if(Array.isArray(saved)&&saved.length===51)lines=saved}catch(e){}
    buildRows();
@@ -2212,10 +2316,10 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   $('duration').textContent='--:--';$('fullDuration').textContent='--:--';
   $('seek').value=0;$('fullSeek').value=0;
   $('stage').dataset.scene='light';
-  document.querySelector('.topline h1').textContent=record.title;
-  document.querySelector('.topline p').textContent=record.artist;
-  document.title='NyaKara｜'+record.title;
-  document.querySelector('.karaoke-site-header a[href^="song.html"]').href=homeMode?'song.html':'song.html?track='+n;
+  $('kara-title').textContent=record.title;
+  $('kara-artist').textContent=n>=4?'ジェットストリーム内海':record.artist;
+  document.title='NyaKara';
+  // NyaPlayへの移動リンクは共有欄のものを維持する。
   $('karaoke-song-link').href='song.html?track='+n;
   $('karaoke-song-link').textContent='🎵 NyaPlayで開く';
   $('editor').open=false;
@@ -2233,6 +2337,14 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   $('nya-kara-track-url').href=currentTrackUrl(n);
   $('nya-kara-home-url').textContent=homeUrl;
   $('nya-kara-home-url').href=homeUrl;
+  // 同期歌詞の担当色をNyaPlayと一致させる。ステージ内には歌詞のみ表示。
+  const present=new Set(lines.flatMap(x=>String(x.vocal||'male').split('-')));
+  $('nya-kara-part-legend').replaceChildren(...[
+    ['male','男声'],['female','女声'],['both','二人']
+  ].filter(([v])=>present.has(v)).map(([v,name])=>{
+    const el=document.createElement('span');const dot=document.createElement('i');
+    dot.className='nya-kara-legend-dot '+v;el.append(dot,document.createTextNode(name));return el;
+  }));
   paintTrack(n,record);update(true);
  }
  function cycle(step){if(!homeMode)return;const next=HOME_MIN+(selected-HOME_MIN+step+(HOME_MAX-HOME_MIN+1))%(HOME_MAX-HOME_MIN+1);show(next)}
