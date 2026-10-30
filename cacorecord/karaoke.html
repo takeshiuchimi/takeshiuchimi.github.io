@@ -349,7 +349,7 @@ html[data-theme="light"] .nya-qr-dialog,body[data-theme="light"] .nya-qr-dialog{
 .stage-share{position:absolute;z-index:26;right:168px;top:12px;border:1px solid #fff8;border-radius:9px;background:rgba(10,24,29,.75);color:#fff6df;padding:9px 13px;font-size:13px;cursor:pointer}
 @media(max-width:600px){.stage-share{right:122px;top:8px;padding:7px 9px;font-size:12px}}
 @media(max-width:900px) and (orientation:landscape){.stage-share{top:6px;right:122px;padding:6px 9px;font-size:12px}}
-#karaoke-song-link{display:inline-flex;align-items:center;text-decoration:none}
+
 
 /* Ca&co レコードのヘッダーを忠実に採用（ヘッダー以外は変更しない） */
 .karaoke-site-header{height:auto;min-height:62px;padding:7px 12px;display:block}
@@ -684,7 +684,7 @@ body[data-theme="light"] .nya-kara-picker{background:transparent;border:0}
    <div class="nya-kara-share-actions"><button type="button" id="nya-kara-home-copy">URLをコピー</button><button type="button" id="nya-kara-home-qr">▦ QRコード</button></div>
   </div>
  </div>
- <div class="nya-kara-share-bottom"><a class="btn" id="karaoke-song-link" href="song.html?track=6">🎵 NyaPlayで開く</a></div>
+ 
 </section>
 <details class="editor" id="editor"><summary>⚙ 歌詞・同期・歌唱パートを編集</summary>
 <p><small>歌詞をクリックすると、その行の開始時刻にジャンプ。編集内容はこの端末に自動保存されます。JSONの書き出しで他端末にも移せます。</small></p>
@@ -2319,9 +2319,6 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   $('kara-title').textContent=record.title;
   $('kara-artist').textContent=n>=4?'ジェットストリーム内海':record.artist;
   document.title='NyaKara';
-  // NyaPlayへの移動リンクは共有欄のものを維持する。
-  $('karaoke-song-link').href='song.html?track='+n;
-  $('karaoke-song-link').textContent='🎵 NyaPlayで開く';
   $('editor').open=false;
   document.body.classList.toggle('nya-ordinary-track',n!==6);
   document.querySelector('[data-mode="original"]').textContent=n===6?'🎵 原曲':'🎵 楽曲再生';
