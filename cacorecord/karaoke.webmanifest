@@ -1,0 +1,28 @@
+{
+  "id": "./karaoke.html",
+  "name": "NyaKara",
+  "short_name": "NyaKara",
+  "description": "Ca&co RECORDSの歌唱・練習アプリ。4〜9曲目を切り替え、シャロームではガイドボーカルにも対応。",
+  "lang": "ja",
+  "start_url": "./karaoke.html",
+  "scope": "./karaoke.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0e1e24",
+  "theme_color": "#112b32",
+  "icons": [
+    {
+      "src": "./icons/nya-kara-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/nya-kara-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "prefer_related_applications": false
+}
