@@ -1,5 +1,5 @@
 /* Ca&coRD dedicated service worker — scope is ./index.html ONLY. */
-const CACHE_NAME='cacord-shell-v1';
+const CACHE_NAME='cacord-shell-v2';
 const URLS=['./index.html','./cacord.webmanifest','./icons/cacord-192.png','./icons/cacord-512.png','./icons/cacord-180.png'];
 const HOME=new URL('./index.html',self.location.href);
 self.addEventListener('install',e=>{
