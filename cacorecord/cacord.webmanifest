@@ -1,0 +1,27 @@
+{
+  "id": "./cacord-app",
+  "name": "Ca&coRD",
+  "short_name": "Ca&coRD",
+  "description": "Ca&coの初期3曲を聴けるレコードプレーヤー",
+  "lang": "ja",
+  "start_url": "./index.html?app=cacord",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F1E7D2",
+  "theme_color": "#F1E7D2",
+  "icons": [
+    {
+      "src": "./icons/cacord-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/cacord-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
