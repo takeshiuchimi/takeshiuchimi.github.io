@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#112b32">
 <meta name="description" content="NyaKara｜Ca&amp;co RECORDSの歌唱・練習アプリ">
-<link rel="manifest" href="./karaoke.webmanifest?v=20261102">
+<link rel="manifest" href="./karaoke.webmanifest?v=20261102-scope6">
 <link rel="icon" href="./icons/nya-kara-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="./icons/nya-kara-180.png" sizes="180x180">
 <style>
@@ -2449,6 +2449,28 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
   close.addEventListener('click',()=>dialog.close());
   dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
   refresh();
+})();
+</script>
+
+<script id="nya-kara-dedicated-sw-v6">
+/* NyaKara: independently scoped registration. No interference with Ca&coRD/NyaPlay. */
+(function () {
+  if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
+  window.addEventListener('load', async () => {
+    try {
+      await navigator.serviceWorker.register('./nya-kara-sw.js', {scope:'./karaoke.html'});
+      // Remove only the legacy NyaPlay root-level worker if present.
+      const rootScope = new URL('./', location.href).href;
+      const legacyWorkerPath = new URL('./sw.js', location.href).pathname;
+      for (const registration of await navigator.serviceWorker.getRegistrations()) {
+        if (registration.scope !== rootScope) continue;
+        const workers = [registration.active, registration.waiting, registration.installing].filter(Boolean);
+        if (workers.some(worker => new URL(worker.scriptURL).pathname === legacyWorkerPath)) {
+          await registration.unregister();
+        }
+      }
+    } catch (err) {console.warn('NyaKara: SW登録できません',err);}
+  },{once:true});
 })();
 </script>
 </body></html>

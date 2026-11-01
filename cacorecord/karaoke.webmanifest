@@ -2,7 +2,7 @@
   "id": "./karaoke.html",
   "name": "NyaKara",
   "short_name": "NyaKara",
-  "description": "Ca&co RECORDSの歌唱・練習アプリ。4〜9曲目を切り替え、シャロームではガイドボーカルにも対応。",
+  "description": "Ca&co RECORDSの歌唱・練習アプリ",
   "lang": "ja",
   "start_url": "./karaoke.html",
   "scope": "./karaoke.html",
