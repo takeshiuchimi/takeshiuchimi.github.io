@@ -2289,6 +2289,8 @@ fullPanelHeightObserver.observe(document.getElementById('fullControls'));
  const isCrowd13=x=>/^R！ T！ K！(?: HEY！)?$/.test(x.text.trim()) || /^(リアル！|タイム！|キネマティック！)$/.test(x.text.trim());
  NYA_KARA_VOCALS[13]=Object.fromEntries(TRACKS[12].lyrics.map((x,i)=>[i,isCrowd13(x)?'both':'male']));
   NYA_KARA_VOCALS[14]=Object.fromEntries(TRACKS[13].lyrics.map((x,i)=>[i,x.speaker==='female'?'female':x.speaker==='both'?'both':'male']));
+ // Track 15 is male solo throughout, despite the two people shown on the jacket.
+ NYA_KARA_VOCALS[15]=Object.fromEntries(TRACKS[14].lyrics.map((_,i)=>[i,'male']));
 const HOME_MIN=4,HOME_MAX=TRACKS.length;
  const query=new URLSearchParams(location.search);
  const raw=query.get('track');
