@@ -2359,12 +2359,14 @@ const out=$('card-lyrics');out.replaceChildren();rows=[];let prev=null,block=nul
 function highlight(){}
 function matchesTrackName(name){return name===tracks[idx].title||(idx===13&&name==='未定７')||(idx===14&&name==='未定８');}
 const baseTimes=tracks.map(t=>(t.lyrics||[]).map(l=>l.time));
-function load(n){
+function renderLyrics(){buildCard(tracks[idx].lyrics||[]);}
+function load(n,{render=true}={}){
   if(!Number.isInteger(n)||!tracks[n])return;
-  idx=n;audio.pause();audio.src=tracks[idx].src;audio.load();buildCard(tracks[idx].lyrics||[]);
+  idx=n;audio.pause();audio.src=tracks[idx].src;audio.load();
+  if(render)renderLyrics();
 }
 audio.volume=1;load(idx);
-window.NyaCore={tracks,baseTimes,get index(){return idx},get rows(){return rows},load};
+window.NyaCore={tracks,baseTimes,get index(){return idx},get rows(){return rows},load,renderLyrics};
 })();
 </script><script id="nya-pwa-install-script">
 /* PWA 補助処理: 既存のプレーヤーの audio やタッチ制御には触れない */
@@ -2791,7 +2793,9 @@ const pool=core.tracks.map((_,i)=>i).filter(i=>i>=3);
 let shuffle=false, repeat='off', editing=false, history=[], bag=[];
 let activeView='player',inlineKey='',inlineMeasureQueued=false;
 let playbackRequest=0,wantsPlayback=false,busy=false,spinnerShown=false,busyTimer=null;
+let pendingVisuals=false,coreVisualDirty=false,deferredPatch={};
 function refreshPlaybackButton(){
+  if(document.hidden){pendingVisuals=true;return;}
   const button=$('nya-ui-play');button.dataset.busy=String(spinnerShown);button.setAttribute('aria-busy',String(busy));
   const label=busy?'読み込み中（押すと停止）':ui.s.isPlaying?'一時停止':'再生';
   button.setAttribute('aria-label',label);button.title=label;
@@ -2839,7 +2843,8 @@ const names={male:'男',female:'女',both:'ふたり'};
 const parts={male:'m',female:'f',both:'both'};
 const baseTimes=core.baseTimes;
 function duration(){return Number.isFinite(audio.duration)?audio.duration:(core.tracks[core.index].duration||0);}
-function message(text){$('audio-error').textContent=text;}
+let pendingMessage='';
+function message(text){pendingMessage=text;if(!document.hidden)$('audio-error').textContent=text;}
 async function play(){
   const request=++playbackRequest,index=core.index;wantsPlayback=true;setBusy(true);message('');
   try{await audio.play();if(request===playbackRequest&&index===core.index)setBusy(false);}
@@ -2873,7 +2878,7 @@ function lyricState(){
   const vocal=maleSolo?'solo-male':voices.has('both')||(voices.has('male')&&voices.has('female'))?'duet':voices.has('female')?'solo-female':voices.has('male')?'solo-male':null;
   return {lyrics:{status:!lines.length?'none':synced?'synced':'unsynced',lines},vocal};
 }
-function refreshLyrics(){ui.update({...lyricState(),currentTime:audio.currentTime,editing});}
+function refreshLyrics(){if(document.hidden){pendingVisuals=true;return;}ui.update({...lyricState(),currentTime:audio.currentTime,editing});}
 function setEditing(next,{focus=true}={}){
   editing=!!next;
   editor.classList.toggle('shalom-editing',editing);
@@ -2891,20 +2896,27 @@ function randomNext(){
 }
 function load(index,shouldPlay){
   wantsPlayback=false;++playbackRequest;setBusy(false);
-  setEditing(false,{focus:false});
-  // Keep imported/reset time settings independent of edits to the previous visit.
   core.tracks[index].lyrics?.forEach((l,i)=>{l.time=baseTimes[index][i];});
-  core.load(index);
-  message('');
-  ui.update({index,selected:ui.s.view==='gallery'?index:null,currentTime:0,duration:duration(),isPlaying:false,...lyricState()});
+  // Start the audio request synchronously before any lyrics, layout or animation work.
+  core.load(index,{render:false});
+  if(shouldPlay)play();
+  else message('');
+  updateMediaMetadata();
+  if(document.hidden){
+    editing=false;coreVisualDirty=true;pendingVisuals=true;
+    ui.update({index,selected:ui.s.view==='gallery'?index:null,currentTime:0,duration:duration(),isPlaying:!audio.paused});
+    return;
+  }
+  core.renderLyrics();
+  setEditing(false,{focus:false});
+  ui.update({index,selected:ui.s.view==='gallery'?index:null,currentTime:0,duration:duration(),isPlaying:!audio.paused,...lyricState()});
   refreshDockTitle();
   document.dispatchEvent(new CustomEvent('nya-track-change',{detail:{index}}));
-  if(shouldPlay)play();
 }
 function skip(delta,automatic=false){
   const transport=window.NyaRouletteTransport;
   if(transport?.active()){
-    transport.stop();
+    if(!document.hidden)transport.stop();
     const next=transport.next(core.index,delta,automatic,repeat);
     if(next!=null)load(next,automatic||!audio.paused||wantsPlayback);
     return;
@@ -2936,7 +2948,21 @@ new MutationObserver(()=>{if(editing){editor.classList.add('shalom-editing');edi
 $('nya-ui-dock').append($('audio-error'));
 $('nya-ui-shared-dock').append($('nya-ui-dock'));
 const updateUI=ui.update.bind(ui);
-ui.update=patch=>{updateUI(patch);refreshInlineLyric();refreshPlaybackButton();};
+ui.update=patch=>{
+  if(document.hidden){
+    Object.assign(ui.s,patch);Object.assign(deferredPatch,patch);pendingVisuals=true;return;
+  }
+  updateUI(patch);refreshInlineLyric();refreshPlaybackButton();
+};
+function flushVisuals(){
+  if(document.hidden||(!pendingVisuals&&!coreVisualDirty))return;
+  if(coreVisualDirty){core.renderLyrics();coreVisualDirty=false;editing=false;editor.classList.remove('shalom-editing');editor.classList.add('sync-hidden');}
+  const patch={...deferredPatch,index:core.index,duration:duration(),currentTime:audio.currentTime,isPlaying:!audio.paused,editing,...lyricState()};
+  deferredPatch={};pendingVisuals=false;
+  ui.update(patch);message(pendingMessage);refreshDockTitle();
+  document.dispatchEvent(new CustomEvent('nya-track-change',{detail:{index:core.index}}));
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pendingVisuals=true;else flushVisuals();});
 ui.mount({
   onViewChange:view=>{activeView=view;refreshDockTitle();refreshInlineLyric();scheduleInlineMeasure();},
   onTrackSelect:(i,{play:shouldPlay})=>{if(!Number.isInteger(i)||!core.tracks[i])return;history=[];load(i,shouldPlay);resetBag();},
@@ -2963,6 +2989,47 @@ function refreshDockTitle(){
   $('nya-ui-dock').title=label;
 }
 refreshDockTitle();
+// Native media notification / lock-screen controls; no push notification permission.
+function updateMediaMetadata(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    const t=core.tracks[core.index];
+    if(typeof MediaMetadata!=='undefined')navigator.mediaSession.metadata=new MediaMetadata({
+      title:t.title,artist:core.index>=3?'ジェットストリーム内海':t.artist,album:'Ca&co RECORDS',
+      artwork:t.art?[{src:t.art,type:t.art.startsWith('data:image/webp')?'image/webp':'image/jpeg'}]:[]
+    });
+  }catch{}
+  updateMediaPosition(true);
+}
+let lastMediaPosition=-Infinity;
+function updateMediaPosition(force=false){
+  if(!('mediaSession' in navigator))return;
+  const session=navigator.mediaSession;
+  try{session.playbackState=audio.paused?'paused':'playing';}catch{}
+  const now=performance.now();
+  if(!force&&now-lastMediaPosition<1000)return;
+  const d=duration(),position=audio.currentTime;
+  if(!session.setPositionState||!Number.isFinite(d)||d<=0||!Number.isFinite(position))return;
+  try{session.setPositionState({duration:d,playbackRate:audio.playbackRate||1,position:Math.max(0,Math.min(d,position))});lastMediaPosition=now;}catch{}
+}
+function setupMediaSession(){
+  if(!('mediaSession' in navigator))return;
+  const handlers={
+    play:()=>audio.error?load(core.index,true):play(),
+    pause,
+    stop:()=>{pause();seek(0);},
+    nexttrack:()=>skip(1),
+    previoustrack:()=>skip(-1),
+    seekto:details=>{if(Number.isFinite(details.seekTime))seek(details.seekTime);}
+  };
+  for(const [action,handler] of Object.entries(handlers)){
+    try{navigator.mediaSession.setActionHandler(action,handler);}catch{}
+  }
+  ['play','playing','pause','ended','loadedmetadata','durationchange','seeked','ratechange','error'].forEach(ev=>audio.addEventListener(ev,()=>updateMediaPosition(true)));
+  audio.addEventListener('timeupdate',()=>updateMediaPosition());
+  updateMediaMetadata();
+}
+setupMediaSession();
 function refreshThemeButton(){
   const light=document.documentElement.dataset.theme==='light',button=$('nya-ui-theme-toggle');
   button.textContent=light?'☾':'☀';
@@ -2982,7 +3049,7 @@ audio.addEventListener('loadedmetadata',()=>ui.update({duration:duration()}));
 audio.addEventListener('durationchange',()=>ui.update({duration:duration()}));
 let lastProgressTime=audio.currentTime;
 audio.addEventListener('timeupdate',()=>{if(audio.currentTime>lastProgressTime&&!audio.paused)setBusy(false);lastProgressTime=audio.currentTime;ui.update({currentTime:audio.currentTime});});
-audio.addEventListener('seeked',()=>{ui.update({currentTime:audio.currentTime});if(!ui.isFollowPaused())ui.scrollToActive(true);});
+audio.addEventListener('seeked',()=>{ui.update({currentTime:audio.currentTime});if(!document.hidden&&!ui.isFollowPaused())ui.scrollToActive(true);});
 audio.addEventListener('ended',()=>{wantsPlayback=false;setBusy(false);ui.update({isPlaying:false,currentTime:audio.currentTime});if(repeat==='one'){seek(0);play();}else skip(1,true);});
 audio.addEventListener('error',()=>{wantsPlayback=false;++playbackRequest;setBusy(false);ui.update({isPlaying:false});message('音声を読み込めません。通信状況を確認して、もう一度再生してください。');});
 const install=$('nya-install'),installItem=document.querySelector('[data-action="install"]');
@@ -3429,7 +3496,7 @@ const tracks=core.tracks.map((t,i)=>({index:i,trackNumber:i+1,title:t.title,arti
 const theme=()=>document.documentElement.dataset.theme==='light'?'light':'dark';
 const active=()=>core.index>=3;
 function select(index){
- if(player.hidden||index===core.index)return;
+ if(document.hidden||player.hidden||index===core.index)return;
  selecting=true;
  try{ui.emit('onTrackSelect',index,{play:!audio.paused||!!ui.s.isLoading});}
  finally{selecting=false;}
@@ -3467,7 +3534,7 @@ document.addEventListener('nya-track-change',e=>{
  if(host.hidden)R.hide();
  else if(!R.getState().visible)R.show();
 });
-const syncPlaying=()=>R.setPlayingIndex(!audio.paused?core.index:null);
+const syncPlaying=()=>{if(!document.hidden)R.setPlayingIndex(!audio.paused?core.index:null);};
 ['play','playing','pause','ended','emptied','loadstart'].forEach(ev=>audio.addEventListener(ev,()=>setTimeout(syncPlaying,0)));
 syncPlaying();
 new MutationObserver(()=>R.setTheme(theme())).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
