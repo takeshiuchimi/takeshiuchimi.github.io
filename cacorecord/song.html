@@ -747,6 +747,17 @@ try{document.documentElement.dataset.theme=localStorage.getItem('nya-player-them
 .nya-portrait-guide button{min-height:44px;margin-top:4px;padding:0 22px;border:1px solid var(--nya-ui-line-strong);border-radius:24px;background:var(--nya-ui-surface);color:var(--nya-ui-text);cursor:pointer}
 html.nya-phone-landscape{overflow:hidden}
 </style>
+<style id="nya-listen-fixed-style">
+html.nya-listen-fixed,html.nya-listen-fixed body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.nya-listen-fixed #nya-ui-top{position:relative;top:0}
+html.nya-listen-fixed .nya-ui-main{position:fixed;top:var(--nya-fixed-top,180px);bottom:0;left:50%;transform:translateX(-50%);width:100%;min-height:0;overflow:hidden}
+html.nya-listen-fixed #nya-ui-player{height:100%;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding-top:0;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+html.nya-listen-fixed #nya-roulette-host{flex:0 0 auto;align-self:center}
+html.nya-listen-fixed #nya-ui-lyrics{flex:1 1 0;min-height:0;height:auto;align-self:center;overflow:hidden}
+html.nya-listen-fixed #nya-ui-lyrics .nya-ui-lyrics__head{flex:0 0 auto}
+html.nya-listen-fixed #nya-ui-lyrics-scroll{flex:1 1 0;min-height:0;height:auto;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y}
+html.nya-listen-fixed #nya-ui-lyrics .nya-ui-editor-slot{flex:1 1 0;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain}
+</style>
 </head><body class="nya-ui-body">
 <template id="nya-loading-template">
  <div class="nya-loading__card">
@@ -3835,6 +3846,24 @@ syncView();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){locked=false;lock();update();}});
  document.addEventListener('pointerup',lock,{passive:true});
  update();lock();
+})();
+</script>
+<script id="nya-listen-fixed-script">
+(()=>{
+ const root=document.documentElement,player=document.getElementById('nya-ui-player'),top=document.getElementById('nya-ui-top');
+ function sync(){
+  const fixed=!player.hidden&&window.NyaCore.index>=3;
+  const changed=root.classList.contains('nya-listen-fixed')!==fixed;
+  root.style.setProperty('--nya-fixed-top',`${top.getBoundingClientRect().height}px`);
+  root.classList.toggle('nya-listen-fixed',fixed);
+  if(fixed&&changed)window.scrollTo(0,0);
+ }
+ new MutationObserver(sync).observe(player,{attributes:true,attributeFilter:['hidden']});
+ new ResizeObserver(sync).observe(top);
+ document.addEventListener('nya-track-change',sync);
+ window.addEventListener('resize',sync);
+ window.visualViewport?.addEventListener('resize',sync);
+ sync();
 })();
 </script>
 </body></html>
