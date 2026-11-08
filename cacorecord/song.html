@@ -758,6 +758,17 @@ html.nya-listen-fixed #nya-ui-lyrics .nya-ui-lyrics__head{flex:0 0 auto}
 html.nya-listen-fixed #nya-ui-lyrics-scroll{flex:1 1 0;min-height:0;height:auto;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y}
 html.nya-listen-fixed #nya-ui-lyrics .nya-ui-editor-slot{flex:1 1 0;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain}
 </style>
+<style id="nya-three-lyrics-style">
+#nya-ui-inline-lyric{height:62px;padding-top:1px;padding-bottom:1px}
+#nya-ui-inline-window{height:60px;display:flex;flex-direction:column;justify-content:center}
+#nya-ui-inline-text,#nya-ui-inline-window .nya-inline-neighbour{flex:0 0 20px;height:20px;line-height:20px;font:inherit;color:inherit}
+#nya-ui-inline-window .nya-inline-neighbour{display:block;white-space:pre;text-align:center;overflow:hidden;text-overflow:ellipsis;min-height:20px}
+#nya-ui-inline-lyric .nya-ui-inline-note{align-self:center}
+.nya-lyrics-disclosure{align-self:center;flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:3px 16px;border:1px solid var(--nya-ui-line);border-radius:22px;background:var(--nya-ui-surface);color:var(--nya-ui-text-2);font:600 12px var(--nya-ui-font-sans);cursor:pointer}
+.nya-lyrics-disclosure svg{width:16px;height:16px;transition:transform 160ms}
+.nya-lyrics-disclosure[aria-expanded="true"] svg{transform:rotate(180deg)}
+#nya-ui-player #nya-ui-lyrics[hidden]{display:none!important}
+</style>
 </head><body class="nya-ui-body">
 <template id="nya-loading-template">
  <div class="nya-loading__card">
@@ -887,7 +898,7 @@ window.NyaLoading={
   </button>
   <button class="nya-ui-iconbtn" id="nya-ui-exit" type="button" aria-label="終了" title="終了"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 3v9M6.2 5.8a9 9 0 1 0 11.6 0"/></svg></button>
 </header><div id="nya-ui-shared-dock">      <div class="nya-ui-dock" id="nya-ui-dock" role="group" aria-label="再生操作">
-        <div class="nya-ui-inline-lyric" id="nya-ui-inline-lyric" hidden><span class="nya-ui-inline-note" aria-hidden="true">♪</span><div class="nya-ui-inline-window" id="nya-ui-inline-window"><span class="nya-ui-inline-text" id="nya-ui-inline-text"></span></div></div>
+        <div class="nya-ui-inline-lyric" id="nya-ui-inline-lyric" hidden><span class="nya-ui-inline-note" aria-hidden="true">♪</span><div class="nya-ui-inline-window" id="nya-ui-inline-window"><span class="nya-inline-neighbour" id="nya-inline-prev" aria-hidden="true"></span><span class="nya-ui-inline-text" id="nya-ui-inline-text" aria-current="true"></span><span class="nya-inline-neighbour" id="nya-inline-next" aria-hidden="true"></span></div></div>
         <div class="nya-ui-seek">
           <span class="nya-ui-seek__time" id="nya-ui-time-cur">0:00</span>
           <input class="nya-ui-range" id="nya-ui-seek" type="range" min="0" max="318" step="0.1" value="0" aria-label="再生位置" aria-valuetext="0分0秒 / 5分18秒">
@@ -2895,7 +2906,7 @@ function scheduleInlineMeasure(){
 }
 function refreshInlineLyric(){
   const row=$('nya-ui-inline-lyric'),lyrics=ui.s.lyrics;
-  row.hidden=activeView!=='gallery'||lyrics?.status!=='synced';
+  row.hidden=lyrics?.status!=='synced';
   row.dataset.playing=String(!!ui.s.isPlaying);
   if(row.hidden)return;
   let current=-1;const lines=lyrics.lines||[],time=ui.s.currentTime||0;
@@ -2904,6 +2915,8 @@ function refreshInlineLyric(){
   const key=`${core.index}:${current}:${text}`;
   if(key!==inlineKey){
     inlineKey=key;$('nya-ui-inline-text').textContent=text;
+    $('nya-inline-prev').textContent=current>0?lines[current-1].text:'';
+    $('nya-inline-next').textContent=lines[current+1]?.text||'';
     row.title=text;row.setAttribute('aria-label',`同期歌詞：${text}`);
     scheduleInlineMeasure();
   }
@@ -3864,6 +3877,22 @@ syncView();
  window.addEventListener('resize',sync);
  window.visualViewport?.addEventListener('resize',sync);
  sync();
+})();
+</script>
+<script id="nya-lyrics-disclosure-script">
+(()=>{
+ const card=document.getElementById('nya-ui-lyrics'),ui=window.NyaUI;
+ const button=document.createElement('button');button.type='button';button.id='nya-lyrics-disclosure';button.className='nya-lyrics-disclosure';
+ button.setAttribute('aria-controls',card.id);
+ button.innerHTML='<span></span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>';
+ card.before(button);
+ function setOpen(open){
+  card.hidden=!open;button.setAttribute('aria-expanded',String(open));button.querySelector('span').textContent=open?'歌詞を閉じる':'歌詞を開く';
+  if(open)requestAnimationFrame(()=>ui.scrollToActive(true));
+ }
+ button.addEventListener('click',()=>setOpen(card.hidden));
+ new MutationObserver(()=>{if(card.dataset.editing==='true')setOpen(true);}).observe(card,{attributes:true,attributeFilter:['data-editing']});
+ setOpen(false);
 })();
 </script>
 </body></html>
