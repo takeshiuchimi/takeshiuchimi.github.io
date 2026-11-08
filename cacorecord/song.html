@@ -731,6 +731,22 @@ try{document.documentElement.dataset.theme=localStorage.getItem('nya-player-them
 .nya-exit-dialog button{min-height:44px;padding:0 24px;background:var(--nya-ui-surface-2);color:var(--nya-ui-text);border:1px solid var(--nya-ui-line-strong);border-radius:24px;cursor:pointer}
 @media(max-width:359px){#nya-ui-header{padding-left:8px;padding-right:8px;gap:2px}#nya-ui-header .nya-ui-brand__name{font-size:17px}#nya-ui-header .nya-ui-brand__cat{width:24px}}
 </style>
+<script id="nya-phone-manifest">
+(()=>{
+ const phone=()=>matchMedia('(any-pointer: coarse)').matches&&Math.min(screen.width,screen.height)<=600&&!/iPad|Tablet/i.test(navigator.userAgent);
+ window.NyaIsPhone=phone;
+ if(phone())document.querySelector('link[rel="manifest"]').href='./manifest-phone.webmanifest?v=20261109';
+})();
+</script>
+<style id="nya-portrait-style">
+.nya-portrait-guide{position:fixed;inset:0;z-index:2000;background:var(--nya-ui-bg);color:var(--nya-ui-text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center}
+.nya-portrait-guide[hidden]{display:none!important}
+.nya-portrait-guide svg{width:44px;height:60px;color:var(--nya-ui-accent-text)}
+.nya-portrait-guide h2{margin:0;font-size:19px;font-family:var(--nya-ui-font-serif)}
+.nya-portrait-guide p{margin:0;color:var(--nya-ui-text-2);font-size:13px}
+.nya-portrait-guide button{min-height:44px;margin-top:4px;padding:0 22px;border:1px solid var(--nya-ui-line-strong);border-radius:24px;background:var(--nya-ui-surface);color:var(--nya-ui-text);cursor:pointer}
+html.nya-phone-landscape{overflow:hidden}
+</style>
 </head><body class="nya-ui-body">
 <template id="nya-loading-template">
  <div class="nya-loading__card">
@@ -3782,6 +3798,43 @@ syncView();
   exit.showModal();
  });
  document.getElementById('nya-exit-resume').addEventListener('click',()=>exit.close());
+})();
+</script>
+<section class="nya-portrait-guide" id="nya-portrait-guide" role="dialog" aria-modal="true" aria-labelledby="nya-portrait-title" hidden>
+<svg viewBox="0 0 44 60" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="2" width="28" height="54" rx="5"/><path d="M18 8h8M20 49h4"/></svg>
+<h2 id="nya-portrait-title">縦にしてお楽しみください</h2><p>NyaPlayは縦画面でお楽しみいただけます。</p><button type="button" id="nya-portrait-pause" hidden>再生を停止</button>
+</section>
+<script id="nya-portrait-script">
+(()=>{
+ const guide=document.getElementById('nya-portrait-guide'),audio=document.getElementById('audio'),pause=document.getElementById('nya-portrait-pause');
+ let locked=false,locking=false,previousFocus=null,regions=[];
+ const standalone=()=>matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true||!!document.fullscreenElement;
+ function update(){
+  const show=window.NyaIsPhone()&&innerWidth>innerHeight;
+  if(show&&guide.hidden){
+   previousFocus=document.activeElement;
+   regions=[...document.body.children].filter(n=>n!==guide&&!['SCRIPT','STYLE','LINK'].includes(n.tagName)).map(n=>[n,n.inert]);
+   regions.forEach(([n])=>n.inert=true);guide.hidden=false;guide.tabIndex=-1;guide.focus({preventScroll:true});
+  }else if(!show&&!guide.hidden){
+   guide.hidden=true;regions.forEach(([n,inert])=>n.inert=inert);regions=[];
+   if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});
+  }
+  document.documentElement.classList.toggle('nya-phone-landscape',show);
+  pause.hidden=audio.paused;
+ }
+ async function lock(){
+  if(!window.NyaIsPhone()||!standalone()||locked||locking||!screen.orientation?.lock)return;
+  locking=true;
+  try{await screen.orientation.lock('portrait');locked=true;}catch{}finally{locking=false;update();}
+ }
+ pause.addEventListener('click',()=>audio.pause());
+ ['play','pause','ended'].forEach(ev=>audio.addEventListener(ev,update));
+ window.addEventListener('resize',update);
+ screen.orientation?.addEventListener('change',update);
+ document.addEventListener('fullscreenchange',()=>{locked=false;lock();update();});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){locked=false;lock();update();}});
+ document.addEventListener('pointerup',lock,{passive:true});
+ update();lock();
 })();
 </script>
 </body></html>
