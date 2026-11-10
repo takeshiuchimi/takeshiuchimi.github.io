@@ -3895,4 +3895,61 @@ syncView();
  setOpen(false);
 })();
 </script>
+<style id="nya-art-focus-style">
+html.nya-listen-fixed #nya-ui-player{position:relative;isolation:isolate;padding-bottom:48px}
+#nya-art-focus[hidden]{display:none!important}
+#nya-art-focus{position:absolute;inset:0 0 48px;z-index:10;border:0;padding:0;background:var(--nya-ui-bg,#111);cursor:zoom-out;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+#nya-art-focus img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+html.nya-listen-fixed #nya-lyrics-disclosure{position:absolute;bottom:max(6px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:30;white-space:nowrap}
+html.nya-listen-fixed #nya-ui-lyrics:not([hidden]){position:absolute;inset:0 0 48px;z-index:20;width:100%;max-width:none;height:calc(100% - 48px);min-height:0;max-height:none;align-self:stretch;flex:none;border-radius:12px;background:rgba(12,15,20,.68);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);--nya-ui-text:#fff;--nya-ui-text-2:rgba(255,255,255,.8);--nya-ui-text-3:rgba(255,255,255,.57);--nya-ui-surface:rgba(20,24,30,.45);--nya-ui-surface-2:rgba(255,255,255,.08);--nya-ui-line:rgba(255,255,255,.16);--nya-ui-accent-text:#ffe1a1;color:#fff}
+html.nya-listen-fixed #nya-ui-lyrics .nya-ui-lyrics__scroll{background:transparent}
+html.nya-listen-fixed #nya-ui-lyrics .nya-ui-line{color:rgba(255,255,255,.65)}
+html.nya-listen-fixed #nya-ui-lyrics .nya-ui-line[data-dist="1"]{color:rgba(255,255,255,.85)}
+html.nya-listen-fixed #nya-ui-lyrics .nya-ui-line[aria-current="true"]{color:#ffe1a1;background:rgba(0,0,0,.2)}
+#nya-art-focus:focus-visible{outline:3px solid var(--nya-ui-accent-text);outline-offset:-3px}
+@media(prefers-reduced-motion:no-preference){#nya-art-focus:not([hidden]){animation:nya-art-reveal .32s ease-out} @keyframes nya-art-reveal{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}}
+</style>
+<script id="nya-art-focus-script">
+(()=>{
+ const $=id=>document.getElementById(id),ui=window.NyaUI,core=window.NyaCore,R=window.NyaRoulette;
+ const player=$('nya-ui-player'),host=$('nya-roulette-host'),audio=$('audio'),card=$('nya-ui-lyrics'),disclosure=$('nya-lyrics-disclosure');
+ const cover=document.createElement('button');cover.type='button';cover.id='nya-art-focus';cover.hidden=true;cover.setAttribute('aria-label','ジャケットを閉じてルーレットに戻る');cover.title='タップでルーレットに戻る';
+ const img=document.createElement('img');img.draggable=false;cover.append(img);host.before(cover);
+ const eligible=()=>!player.hidden&&core.index>=3;
+ function updateArt(){const t=core.tracks[core.index];if(t){if(img.getAttribute('src')!==t.art)img.src=t.art;img.alt=t.title+' — '+t.artist;}}
+ function expand(){if(!eligible())return;R.stopSpin();updateArt();cover.hidden=false;player.dataset.artExpanded='true';}
+ function collapse(){cover.hidden=true;delete player.dataset.artExpanded;}
+ cover.addEventListener('click',collapse);
+ audio.addEventListener('play',expand);
+ document.addEventListener('nya-track-change',()=>{updateArt();if(!eligible())collapse();});
+ new MutationObserver(()=>{if(!eligible())collapse();else if(!audio.paused)expand();}).observe(player,{attributes:true,attributeFilter:['hidden']});
+ // Keep the existing lyrics DOM, seek handlers, sync and editing intact.
+ new MutationObserver(()=>{if(!card.hidden&&eligible())expand();}).observe(card,{attributes:true,attributeFilter:['hidden']});
+ let down=null,last=null,lastDouble=0;
+ host.addEventListener('pointerdown',e=>{down={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),spinning:R.getState().spinning};},{capture:true,passive:true});
+ host.addEventListener('pointercancel',()=>{down=null;last=null;});
+ function doublePlay(target){
+  if(!eligible()||!cover.hidden)return;
+  const node=target.closest?.('.nya-roulette-card');if(!node)return;
+  const index=R.order()[Number(node.dataset.i)];if(!Number.isInteger(index))return;
+  lastDouble=performance.now();last=null;R.stopSpin();R.setSelectedIndex(index);
+  if(index!==core.index)ui.emit('onTrackSelect',index,{play:true});
+  else if(audio.paused&&!ui.s.isLoading)ui.emit('onPlayToggle');
+  expand();
+ }
+ host.addEventListener('pointerup',e=>{
+  const d=down;down=null;if(!d||d.id!==e.pointerId||d.spinning||performance.now()-d.t>450||Math.hypot(e.clientX-d.x,e.clientY-d.y)>10){last=null;return;}
+  const node=e.target.closest?.('.nya-roulette-card');if(!node){last=null;return;}
+  const now=performance.now();
+  if(last&&now-last.t<350&&last.node===node&&Math.hypot(e.clientX-last.x,e.clientY-last.y)<24)doublePlay(node);
+  else last={t:now,node,x:e.clientX,y:e.clientY};
+ });
+ host.addEventListener('dblclick',e=>{if(performance.now()-lastDouble<450)return;e.preventDefault();doublePlay(e.target);});
+ host.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(audio.paused)ui.emit('onPlayToggle');expand();}});
+ document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!eligible())return;if(!card.hidden){disclosure.click();disclosure.focus();}else if(!cover.hidden){collapse();host.querySelector('[tabindex]')?.focus();}});
+ window.NyaArtFocus={expand,collapse,isExpanded:()=>!cover.hidden};
+ updateArt();if(eligible()&&!audio.paused)expand();
+})();
+</script>
+
 </body></html>
