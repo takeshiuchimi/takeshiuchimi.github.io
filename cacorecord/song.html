@@ -2652,11 +2652,11 @@ const NyaUI = {
     return this.activeLine < 0 ? $('nya-ui-intro') : box.querySelector(`.nya-ui-line[data-i="${this.activeLine}"]`);
   },
   scrollToActive(instant){
-    const box = $('nya-ui-lyrics-scroll'), el = this.activeEl(); if(!el || this.s.editing || this.s.view!=='player' || this.s.lyrics.status!=='synced') return;
+    const box = $('nya-ui-lyrics-scroll'), el = this.activeEl(); if(!el || this.s.editing || $('nya-ui-lyrics').hidden || this.s.lyrics.status!=='synced') return;
     const elTop = el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
     const top = elTop - box.clientHeight*FOCAL + el.offsetHeight/2;
     this.programmatic = true;
-    box.scrollTo({top:Math.max(0,top), behavior:(instant||REDUCED.matches)?'auto':'smooth'});
+    box.scrollTo({top:Math.max(0,top), behavior:(instant||REDUCED.matches)?'instant':'smooth'});
     clearTimeout(this._progT); this._progT = setTimeout(()=>{this.programmatic=false;}, 600);
   },
 
@@ -2757,7 +2757,7 @@ const NyaUI = {
       if(this.s.view==='gallery'&&Math.abs(window.scrollY-savedScroll)>1)
         window.scrollTo({top:savedScroll,left:0,behavior:'instant'});
     });
-    if(!toGallery) this.syncLyrics(true);
+    if(!$('nya-ui-lyrics').hidden){window.NyaPositionLyrics?.();this.syncLyrics(true);}else if(!toGallery)this.syncLyrics(true);
     if(!toGallery)$('nya-ui-play').focus({preventScroll:true});
   },
 
@@ -3243,7 +3243,7 @@ function createInstance(o){
   }
   function revealCards(ready){
     cancelEntrance();
-    if(reduced()||!st.visible||st.destroyed)return;
+    if(reduced()||!st.visible||st.destroyed||(!document.getElementById('nya-ui-lyrics').hidden))return;
     const epoch=entranceEpoch;
     root.dataset.entrancePending='true';
     Promise.resolve(ready).then(()=>{
@@ -3632,6 +3632,7 @@ function placeTiles({shuffle=false}={}){
  cancelTilePlacement();
  delete grid.dataset.placementPending;
  if(window.NyaSkipNextTilePlacement){window.NyaSkipNextTilePlacement=false;gallery.getAnimations().forEach(a=>a.finish());return;}
+ if(!document.getElementById('nya-ui-lyrics').hidden){gallery.style.animation='none';gallery.getAnimations().forEach(a=>a.finish());return;}
  if(gallery.hidden||document.hidden||tileMotion.matches)return;
  const tiles=[...grid.children].filter(n=>!n.hidden&&(!shuffle||Number(n.dataset.i)!==core.index));
  const duration=1400,interval=tiles.length>1?(6000-duration)/(tiles.length-1):0;
@@ -3881,7 +3882,7 @@ syncView();
  card.before(button);
  function setOpen(open){
   card.hidden=!open;button.setAttribute('aria-expanded',String(open));button.querySelector('span').textContent=open?'歌詞を閉じる':'歌詞を開く';
-  if(open)requestAnimationFrame(()=>ui.scrollToActive(true));
+  if(open){ui.resumeFollow(true);ui.syncLyrics(true);requestAnimationFrame(()=>ui.scrollToActive(true));}
  }
  button.addEventListener('click',()=>setOpen(card.hidden));
  new MutationObserver(()=>{if(card.dataset.editing==='true')setOpen(true);}).observe(card,{attributes:true,attributeFilter:['data-editing']});
@@ -3911,39 +3912,77 @@ html.nya-listen-fixed #nya-ui-lyrics .nya-ui-line[aria-current="true"]{color:#ff
  const eligible=()=>!player.hidden&&core.index>=3;
  function updateArt(){const t=core.tracks[core.index];if(t){if(img.getAttribute('src')!==t.art)img.src=t.art;img.alt=t.title+' — '+t.artist;}}
  let origin='player',openedAt=0;
+ const modeButton=$('nya-ui-view-toggle');
+ function refreshFocusMode(){
+  const tiles=origin==='gallery'||!$('nya-ui-gallery').hidden;
+  modeButton.dataset.target=tiles?'player':'gallery';
+  modeButton.querySelector('use').setAttribute('href',tiles?'#nya-ui-i-disc':'#nya-ui-i-grid');
+  modeButton.querySelector('.nya-ui-iconbtn__label').textContent=tiles?'LISTEN':'COLLECTION';
+  modeButton.setAttribute('aria-label',tiles?'LISTENを表示':'COLLECTIONを表示');
+ }
+ modeButton.addEventListener('click',()=>{
+  if(origin==='gallery'&&!cover.hidden){collapse(false);refreshFocusMode();}
+ });
+
  function expand(){
   if(core.index<3)return;
   if(player.hidden){origin='gallery';ui.setView('player');}
   if(cover.hidden)openedAt=performance.now();
   R.stopSpin();R.setSelectedIndex(core.index);host.inert=true;host.style.visibility='hidden';updateArt();cover.hidden=false;player.dataset.artExpanded='true';
+  refreshFocusMode();
   const name=origin==='gallery'?'タイル':'ルーレット';cover.setAttribute('aria-label','ジャケットを閉じて'+name+'に戻る');cover.title='タップで'+name+'に戻る';
  }
 
  function collapse(restore=true){
   cover.hidden=true;delete player.dataset.artExpanded;host.inert=false;host.style.visibility='';
   if(!player.hidden&&core.index>=3)R.setSelectedIndex(core.index);
-  const back=origin;origin='player';
+  const back=origin;origin='player';refreshFocusMode();
   if(restore&&back==='gallery'&&!player.hidden){
    window.NyaSkipNextTilePlacement=true;$('nya-ui-gallery').style.animation='none';ui.setView('gallery');
   }
  }
- let swipe=null,suppressClickUntil=0;
- cover.style.touchAction='pan-y';
- cover.addEventListener('click',e=>{if(performance.now()<suppressClickUntil||(e.isTrusted&&performance.now()-openedAt<220)){e.preventDefault();return;}collapse();});
+ let swipe=null,suppressClickUntil=0,settling=false;
+ const previews=[document.createElement('img'),document.createElement('img')];
+ previews.forEach(n=>{n.alt='';n.draggable=false;n.style.position='absolute';n.style.inset='0';cover.append(n);});
+ const motion=matchMedia('(prefers-reduced-motion: reduce)');
+ function neighbour(delta){const order=R.order(),at=order.indexOf(core.index);return order[(at+delta+order.length)%order.length];}
+ function paintSlide(dx,animate=false){
+  const w=(cover.clientWidth||1)+16;
+  [img,...previews].forEach(n=>n.style.transition=animate&&!motion.matches?'transform 260ms cubic-bezier(.22,1,.36,1)':'none');
+  img.style.transform=`translateX(${dx}px)`;
+  previews[0].style.transform=`translateX(${dx-w}px)`;
+  previews[1].style.transform=`translateX(${dx+w}px)`;
+ }
+ function resetSlide(){settling=false;previews.forEach(n=>n.style.visibility='hidden');paintSlide(0);}
+ resetSlide();cover.style.touchAction='pan-y';
+ cover.addEventListener('click',e=>{if(settling||performance.now()<suppressClickUntil||(e.isTrusted&&performance.now()-openedAt<220)){e.preventDefault();return;}collapse();});
  cover.addEventListener('pointerdown',e=>{
-  if(e.pointerType==='mouse'&&e.button!==0)return;
-  swipe={id:e.pointerId,x:e.clientX,y:e.clientY};
-  try{cover.setPointerCapture(e.pointerId);}catch{}
+  if(settling||(e.pointerType==='mouse'&&e.button!==0))return;
+  swipe={id:e.pointerId,x:e.clientX,y:e.clientY,dx:0,active:false,vertical:false};
+  previews[0].src=core.tracks[neighbour(-1)].art;previews[1].src=core.tracks[neighbour(1)].art;
  });
- cover.addEventListener('pointerup',e=>{
-  const d=swipe;swipe=null;if(!d||d.id!==e.pointerId)return;
+ cover.addEventListener('pointermove',e=>{
+  const d=swipe;if(!d||d.id!==e.pointerId||d.vertical)return;
   const dx=e.clientX-d.x,dy=e.clientY-d.y;
-  if(Math.hypot(dx,dy)>10)suppressClickUntil=performance.now()+450;
-  if(Math.abs(dx)>=45&&Math.abs(dx)>Math.abs(dy)*1.3){
-   e.preventDefault();ui.emit('onSkipTrack',dx<0?1:-1);
+  if(!d.active){
+   if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){d.vertical=true;return;}
+   if(Math.abs(dx)<8)return;
+   d.active=true;try{cover.setPointerCapture(e.pointerId);}catch{}
+   previews.forEach(n=>n.style.visibility='visible');
   }
+  d.dx=Math.max(-cover.clientWidth,Math.min(cover.clientWidth,dx));paintSlide(d.dx);
  });
- cover.addEventListener('pointercancel',()=>{swipe=null;suppressClickUntil=performance.now()+450;});
+ function release(e,cancelled){
+  const d=swipe;if(!d||d.id!==e.pointerId)return;swipe=null;
+  if(d.active||Math.hypot(e.clientX-d.x,e.clientY-d.y)>10)suppressClickUntil=performance.now()+600;
+  if(!d.active)return;
+  const commit=!cancelled&&Math.abs(d.dx)>cover.clientWidth*.28;
+  const delta=d.dx<0?1:-1;settling=true;
+  paintSlide(commit?-delta*(cover.clientWidth+16):0,true);
+  setTimeout(()=>{if(commit&&!cover.hidden)ui.emit('onSkipTrack',delta);resetSlide();},motion.matches?0:270);
+ }
+ cover.addEventListener('pointerup',e=>release(e,false));
+ cover.addEventListener('pointercancel',e=>release(e,true));
  const explicitPlay=ui.h.onPlayToggle;
  ui.h.onPlayToggle=()=>{
   const starting=audio.paused&&!ui.s.isLoading;
@@ -3952,7 +3991,7 @@ html.nya-listen-fixed #nya-ui-lyrics .nya-ui-line[aria-current="true"]{color:#ff
  document.addEventListener('nya-track-change',()=>{updateArt();if(!eligible())collapse();});
  new MutationObserver(()=>{if(!eligible())collapse(false);}).observe(player,{attributes:true,attributeFilter:['hidden']});
  // Keep the existing lyrics DOM, seek handlers, sync and editing intact.
- new MutationObserver(()=>{if(!card.hidden&&eligible())expand();}).observe(card,{attributes:true,attributeFilter:['hidden']});
+ // Lyrics keep the current presentation and never force artwork expansion.
  let down=null,last=null,lastDouble=-1000,blockDoubleUntil=0;
  host.addEventListener('pointerdown',e=>{
   if(e.pointerType==='mouse'&&e.button!==0)return;
@@ -3985,14 +4024,33 @@ html.nya-listen-fixed #nya-ui-lyrics .nya-ui-line[aria-current="true"]{color:#ff
   e.preventDefault();playAndExpand(last?.index??R.order()[Number(node.dataset.i)]);
  });
  host.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(audio.paused)ui.emit('onPlayToggle');expand();}});
- document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!eligible())return;if(!card.hidden){disclosure.click();disclosure.focus();}else if(!cover.hidden){collapse();host.querySelector('[tabindex]')?.focus();}});
+ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!card.hidden){disclosure.click();disclosure.focus();}else if(!cover.hidden){collapse();host.querySelector('[tabindex]')?.focus();}});
  const playTile=ui.playTile;
  ui.playTile=function(i){playTile.call(this,i);expand();};
  const galleryButton=document.createElement('button');galleryButton.type='button';galleryButton.id='nya-gallery-lyrics';galleryButton.className='nya-lyrics-disclosure';galleryButton.textContent='歌詞を開く';galleryButton.setAttribute('aria-controls',card.id);galleryButton.setAttribute('aria-expanded','false');
  document.body.append(galleryButton);
  const syncGalleryButton=()=>{galleryButton.hidden=$('nya-ui-gallery').hidden;};
  new MutationObserver(syncGalleryButton).observe($('nya-ui-gallery'),{attributes:true,attributeFilter:['hidden']});syncGalleryButton();
- galleryButton.addEventListener('click',()=>{expand();if(card.hidden)disclosure.click();});
+ galleryButton.addEventListener('click',()=>disclosure.click());
+ const gallery=$('nya-ui-gallery');
+ function positionLyrics(){
+  const scroll=$('nya-ui-lyrics-scroll'),savedTop=scroll.scrollTop;
+  const inGallery=!gallery.hidden;
+  // One persistent viewport overlay shared by every presentation.
+  if(card.parentNode!==document.body)document.body.append(card);
+  card.classList.add('nya-gallery-overlay');
+  // Reparent the same lyrics without exposing the hidden parent's zero-height scroll state.
+  scroll.scrollTo({top:savedTop,behavior:'instant'});
+  if(!card.hidden&&!ui.isFollowPaused())ui.scrollToActive(true);
+  document.documentElement.style.setProperty('--nya-lyrics-top',`${$('nya-ui-top').getBoundingClientRect().bottom}px`);
+  galleryButton.textContent=card.hidden?'歌詞を開く':'歌詞を閉じる';
+  galleryButton.setAttribute('aria-expanded',String(!card.hidden));
+ }
+ new MutationObserver(positionLyrics).observe(gallery,{attributes:true,attributeFilter:['hidden']});
+ new MutationObserver(positionLyrics).observe(card,{attributes:true,attributeFilter:['hidden']});
+ new ResizeObserver(positionLyrics).observe($('nya-ui-top'));
+ window.NyaPositionLyrics=positionLyrics;
+ window.addEventListener('resize',positionLyrics);positionLyrics();
  const collapseOriginal=collapse;
  window.NyaArtFocus={expand,collapse:()=>collapseOriginal(),isExpanded:()=>!cover.hidden};
  updateArt();if(eligible()&&!audio.paused)expand();
@@ -4004,5 +4062,26 @@ html.nya-listen-fixed #nya-ui-lyrics .nya-ui-line[aria-current="true"]{color:#ff
 #nya-ui-gallery{padding-bottom:72px}
 #nya-gallery-lyrics[hidden]{display:none!important}
 #nya-gallery-lyrics{position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:35;box-shadow:0 3px 18px rgba(0,0,0,.2);min-height:40px;white-space:nowrap}
+</style>
+
+<style id="nya-context-lyrics-theme">
+#nya-ui-lyrics.nya-gallery-overlay:not([hidden]){position:fixed;inset:var(--nya-lyrics-top,150px) 8px 58px;z-index:32;width:auto;max-width:none;height:auto;min-height:0;max-height:none;margin:0;display:flex;flex-direction:column}
+#nya-ui-lyrics.nya-gallery-overlay .nya-ui-lyrics__scroll{min-height:0;overflow-y:auto}
+html #nya-ui-lyrics:not([hidden]){background:rgba(14,20,28,.76);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);--nya-ui-text:#fff;--nya-ui-text-2:#e1e6eb;--nya-ui-text-3:#b9c2cd;--nya-ui-surface:rgba(20,24,30,.45);--nya-ui-surface-2:rgba(255,255,255,.08);--nya-ui-line:rgba(255,255,255,.16);--nya-ui-accent-text:#ffe1a1;color:#fff}
+html #nya-ui-lyrics .nya-ui-lyrics__scroll{background:transparent}
+html #nya-ui-lyrics .nya-ui-line{color:#bcc6d2}
+html #nya-ui-lyrics .nya-ui-line[data-dist="1"]{color:#e1e6eb}
+html #nya-ui-lyrics .nya-ui-line[aria-current="true"]{color:#ffe1a1;background:rgba(0,0,0,.2)}
+html[data-theme="light"] #nya-ui-lyrics:not([hidden]){background:rgba(255,252,245,.82);--nya-ui-text:#202832;--nya-ui-text-2:#3e4b59;--nya-ui-text-3:#596573;--nya-ui-surface:rgba(255,255,255,.6);--nya-ui-surface-2:rgba(25,45,65,.06);--nya-ui-line:rgba(25,45,65,.15);--nya-ui-accent-text:#785017;color:#202832}
+html[data-theme="light"] #nya-ui-lyrics .nya-ui-line{color:#596573}
+html[data-theme="light"] #nya-ui-lyrics .nya-ui-line[data-dist="1"]{color:#3e4b59}
+html[data-theme="light"] #nya-ui-lyrics .nya-ui-line[aria-current="true"]{color:#785017;background:rgba(163,111,35,.12)}
+</style>
+
+<style id="nya-unified-lyrics-layout">
+html #nya-ui-lyrics.nya-gallery-overlay:not([hidden]){position:fixed!important;inset:var(--nya-lyrics-top,150px) 8px calc(58px + env(safe-area-inset-bottom,0px))!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;min-height:0!important;margin:0!important;z-index:32!important;border-radius:12px;display:flex;flex-direction:column;align-self:auto;flex:none}
+html #nya-ui-lyrics.nya-gallery-overlay .nya-ui-lyrics__scroll{flex:1;min-height:0;overflow-y:auto}
+html #nya-lyrics-disclosure,html.nya-listen-fixed #nya-lyrics-disclosure,html #nya-gallery-lyrics{position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:35;min-height:40px;white-space:nowrap;box-shadow:0 3px 18px rgba(0,0,0,.2)}
+html #nya-lyrics-disclosure svg{display:none}
 </style>
 </body></html>
