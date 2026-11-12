@@ -1092,7 +1092,7 @@ window.NyaLoading={
 <!-- ================= Settings / sub area ================= -->
 <dialog class="nya-ui-sheet nya-ui-share-sheet" id="nya-ui-sheet" aria-labelledby="nya-ui-sheet-title">
   <div class="nya-ui-sheet__inner">
-    <div class="nya-ui-sheet__head"><h2 class="nya-ui-sheet__title" id="nya-ui-sheet-title">NyaPlay</h2><button class="nya-ui-iconbtn" type="button" id="nya-ui-sheet-close" aria-label="閉じる"><svg aria-hidden="true"><use href="#nya-ui-i-close"/></svg></button></div>
+    <div class="nya-ui-sheet__head"><h2 class="nya-ui-sheet__title" id="nya-ui-sheet-title">NyaPlay <span id="nya-build" style="display:inline-block;font-family:var(--nya-ui-font-sans,sans-serif);font-size:11px;font-weight:400;letter-spacing:0;line-height:1.6;color:var(--nya-ui-text-2);vertical-align:middle">v52 · 2026/11/12 19:22</span></h2><button class="nya-ui-iconbtn" type="button" id="nya-ui-sheet-close" aria-label="閉じる"><svg aria-hidden="true"><use href="#nya-ui-i-close"/></svg></button></div>
     <div id="nya-ui-share-qr" class="nya-ui-share-qr" aria-label="NyaPlayトップページのQRコード"></div>
     <button class="nya-ui-btn nya-ui-share-copy" type="button" data-action="share"><svg aria-hidden="true"><use href="#nya-ui-i-share"/></svg>共有URLをコピー</button>
     <button class="nya-ui-btn nya-ui-btn--primary nya-ui-share-install" type="button" data-action="install"><svg aria-hidden="true"><use href="#nya-ui-i-install"/></svg>インストール</button>
@@ -3018,7 +3018,7 @@ window.NyaUI = NyaUI;
  document.addEventListener('resume',()=>record('page:resume'));
  const dialog=document.createElement('dialog');dialog.setAttribute('aria-label','再生診断');
  dialog.style.cssText='box-sizing:border-box;width:min(94vw,720px);max-height:85dvh;overflow:auto;background:var(--nya-ui-bg,#17130e);color:var(--nya-ui-text,#eee);border:1px solid #8d7448;border-radius:16px;padding:20px';
- const heading=document.createElement('h2');heading.textContent='再生診断（v51）';
+ const heading=document.createElement('h2');heading.textContent='再生診断（v52）';
  const help=document.createElement('p');help.textContent='画面オフで曲が止まったら、再生し直す前にこの記録をコピーしてください。記録はこの端末内だけに保存されます。';
  const output=document.createElement('textarea');output.readOnly=true;output.setAttribute('aria-label','再生記録');output.style.cssText='box-sizing:border-box;width:100%;height:36dvh;background:#17130e;color:#f3e9d7;font:12px monospace';
  const copy=document.createElement('button');copy.type='button';copy.className='nya-ui-btn';copy.textContent='記録をコピー';
@@ -3030,7 +3030,7 @@ window.NyaUI = NyaUI;
  open.onclick=()=>{document.getElementById('nya-ui-sheet').close();record('log:opened');output.value=JSON.stringify(rows,null,2);copy.textContent='記録をコピー';dialog.showModal();};
  document.querySelector('#nya-ui-sheet .nya-ui-sheet__inner').append(open);
  dialog.addEventListener('close',()=>document.getElementById('nya-ui-more').focus({preventScroll:true}));
- record('diagnostics:ready',{version:51,discarded:!!document.wasDiscarded});
+ record('diagnostics:ready',{version:52,discarded:!!document.wasDiscarded});
 })();
 </script><script id="nya-production-bridge">/* Production bridge: real audio and the existing lyric editor remain authoritative. */
 (()=>{
