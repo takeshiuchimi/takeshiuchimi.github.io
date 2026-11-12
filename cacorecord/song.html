@@ -2569,9 +2569,9 @@ function highlight(){}
 function matchesTrackName(name){return name===tracks[idx].title||tracks[idx].aliases.includes(name);}
 const baseTimes=tracks.map(t=>(t.lyrics||[]).map(l=>l.time));
 function renderLyrics(){buildCard(tracks[idx].lyrics||[]);}
-function load(n,{render=true}={}){
+function load(n,{render=true,source=null}={}){
   if(!Number.isInteger(n)||!tracks[n])return;
-  idx=n;audio.pause();audio.src=tracks[idx].src;audio.load();
+  idx=n;audio.pause();audio.src=source||tracks[idx].src;audio.load();
   if(render)renderLyrics();
 }
 audio.volume=1;load(idx);
@@ -3018,7 +3018,7 @@ window.NyaUI = NyaUI;
  document.addEventListener('resume',()=>record('page:resume'));
  const dialog=document.createElement('dialog');dialog.setAttribute('aria-label','再生診断');
  dialog.style.cssText='box-sizing:border-box;width:min(94vw,720px);max-height:85dvh;overflow:auto;background:var(--nya-ui-bg,#17130e);color:var(--nya-ui-text,#eee);border:1px solid #8d7448;border-radius:16px;padding:20px';
- const heading=document.createElement('h2');heading.textContent='再生診断（v50）';
+ const heading=document.createElement('h2');heading.textContent='再生診断（v51）';
  const help=document.createElement('p');help.textContent='画面オフで曲が止まったら、再生し直す前にこの記録をコピーしてください。記録はこの端末内だけに保存されます。';
  const output=document.createElement('textarea');output.readOnly=true;output.setAttribute('aria-label','再生記録');output.style.cssText='box-sizing:border-box;width:100%;height:36dvh;background:#17130e;color:#f3e9d7;font:12px monospace';
  const copy=document.createElement('button');copy.type='button';copy.className='nya-ui-btn';copy.textContent='記録をコピー';
@@ -3030,7 +3030,7 @@ window.NyaUI = NyaUI;
  open.onclick=()=>{document.getElementById('nya-ui-sheet').close();record('log:opened');output.value=JSON.stringify(rows,null,2);copy.textContent='記録をコピー';dialog.showModal();};
  document.querySelector('#nya-ui-sheet .nya-ui-sheet__inner').append(open);
  dialog.addEventListener('close',()=>document.getElementById('nya-ui-more').focus({preventScroll:true}));
- record('diagnostics:ready',{version:50,discarded:!!document.wasDiscarded});
+ record('diagnostics:ready',{version:51,discarded:!!document.wasDiscarded});
 })();
 </script><script id="nya-production-bridge">/* Production bridge: real audio and the existing lyric editor remain authoritative. */
 (()=>{
@@ -3114,13 +3114,61 @@ function setEditing(next,{focus=true}={}){
     else $('nya-lyrics-edit').focus({preventScroll:true});
   }
 }
+// Keep only the current downloaded source and one upcoming track.
+const nextAudio=(()=>{
+ let pending=null,cached=null,current=null,epoch=0,retryAfter=0;
+ const log=(e,d={})=>window.NyaDiagnostics?.record(e,d);
+ function target(){
+  if(repeat==='one')return core.index;
+  const transport=window.NyaRouletteTransport;
+  if(transport?.active())return transport.next(core.index,1,true,repeat);
+  return (window.NyaRoulette?.order()||pool)[0]??null;
+ }
+ function cancel(){++epoch;if(pending)pending.controller.abort();pending=null;}
+ function discard(){if(cached)URL.revokeObjectURL(cached.url);cached=null;}
+ function prepare(){
+  if(audio.paused||audio.ended||audio.readyState<3)return;
+  const index=target();
+  if(index==null||index===core.index){cancel();discard();return;}
+  if(cached?.index===index||pending?.index===index)return;
+  cancel();discard();if(Date.now()<retryAfter)return;
+  const token=epoch,controller=new AbortController();pending={index,controller};
+  log('preload:start',{target:index});
+  fetch(core.tracks[index].src,{signal:controller.signal}).then(async response=>{
+   if(!response.ok)throw new Error('HTTP '+response.status);
+   const blob=await response.blob();
+   if(!blob.size)throw new Error('Empty audio');
+   if(token!==epoch)return;
+   cached={index,url:URL.createObjectURL(blob)};retryAfter=0;
+   log('preload:ready',{target:index,bytes:blob.size});
+  }).catch(error=>{
+   if(token!==epoch)return;
+   retryAfter=Date.now()+30000;
+   log('preload:failed',{target:index,name:error.name,message:error.message});
+  }).finally(()=>{if(token===epoch)pending=null;});
+ }
+ function take(index){
+  cancel();const previous=current;current=null;
+  if(cached?.index===index){current=cached;cached=null;log('preload:used',{target:index});}
+  else{discard();log('preload:miss',{target:index});}
+  retryAfter=0;
+  // Caller changes the audio source synchronously before releasing the former blob.
+  return {src:current?.url||core.tracks[index].src,release:()=>{if(previous)URL.revokeObjectURL(previous.url);}};
+ }
+ audio.addEventListener('playing',prepare);
+ audio.addEventListener('timeupdate',prepare);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)prepare();});
+ return {take,prepare};
+})();
+
 function load(index,shouldPlay,stepDelta=0){
   window.NyaDiagnostics?.record('track:load',{target:index,shouldPlay});
   window.NyaRingSelection?.cancel();message('');
   wantsPlayback=false;++playbackRequest;setBusy(false);
   core.tracks[index].lyrics?.forEach((l,i)=>{l.time=baseTimes[index][i];});
   // Start the audio request synchronously before any lyrics, layout or animation work.
-  core.load(index,{render:false});
+  const prepared=nextAudio.take(index);
+  core.load(index,{render:false,source:prepared.src});prepared.release();
   if(shouldPlay)play();
   else message('');
   updateMediaMetadata();
@@ -3182,7 +3230,7 @@ function togglePlayback(){
  }
  if(audio.error)load(core.index,true);else if(wantsPlayback||!audio.paused)pause();else play();
 }
-window.NyaPlayback={select:selectTrack,toggle:togglePlayback,skip,setShuffleState:on=>{shuffle=on;ui.update({shuffle});},deferPatch:patch=>{if(!document.hidden)return false;Object.assign(ui.s,patch);Object.assign(deferredPatch,patch);pendingVisuals=true;return true;}};
+window.NyaPlayback={select:selectTrack,toggle:togglePlayback,skip,setShuffleState:on=>{shuffle=on;ui.update({shuffle});queueMicrotask(()=>nextAudio.prepare());},deferPatch:patch=>{if(!document.hidden)return false;Object.assign(ui.s,patch);Object.assign(deferredPatch,patch);pendingVisuals=true;return true;}};
 ui.mount({
   onStateUpdated:refreshPlaybackButton,
   onViewChange:()=>refreshDockTitle(),
@@ -3190,7 +3238,7 @@ ui.mount({
   onPlayToggle:togglePlayback,
   onSkipTrack:d=>skip(d),onSeek:seek,
   onShuffleToggle:on=>window.NyaShuffleLayout?.apply(on),
-  onRepeatModeChange:mode=>{repeat=mode;audio.loop=mode==='one';ui.update({repeatMode:mode});},
+  onRepeatModeChange:mode=>{repeat=mode;audio.loop=mode==='one';ui.update({repeatMode:mode});nextAudio.prepare();},
   onLyricLineSelect:()=>{if(audio.paused)play();},
   onShare:async()=>{
     try{await navigator.clipboard.writeText(homeUrl);ui.toast('NyaPlayのURLをコピーしました。');}
