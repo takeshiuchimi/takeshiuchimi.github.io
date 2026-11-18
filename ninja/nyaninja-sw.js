@@ -1,7 +1,7 @@
 
 'use strict';
 const CACHE_PREFIX='nyaninja-'+new URL(self.registration.scope).pathname+'-';
-const CACHE=CACHE_PREFIX+'3f99885081b0';
+const CACHE=CACHE_PREFIX+'937099e7a5d1';
 const FILES=['./','./index.html','./NyaNinja.html','./nyaninja.webmanifest','./icons/icon-180.png','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png'];
 const URLS=FILES.map(p=>new URL(p,self.registration.scope).href);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(URLS.map(url=>new Request(url,{cache:'reload'})))));});
