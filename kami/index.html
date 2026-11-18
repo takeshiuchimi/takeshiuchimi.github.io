@@ -40,9 +40,38 @@ async function init(){try{db=await new Promise((ok,no)=>{let r=indexedDB.open('N
 function shelf(){let g=$('grid');g.replaceChildren();for(let w of works){let b=document.createElement('button');b.className='tile';let im=document.createElement('img');im.src=w.pages[0].image;im.alt=w.title;let t=document.createElement('strong');t.textContent=w.title;let s=document.createElement('small');s.textContent=w.pages.length+'場面';b.append(im,t,s);b.onclick=()=>openBook(w);g.append(b)}}
 function sound(){if(muted)return;try{ctx??=new(window.AudioContext||window.webkitAudioContext)();ctx.resume();let n=ctx.createBuffer(1,ctx.sampleRate*.18,ctx.sampleRate),a=n.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*Math.sin(Math.PI*i/a.length)**2;let src=ctx.createBufferSource(),f=ctx.createBiquadFilter(),gain=ctx.createGain();f.type='highpass';f.frequency.value=1800;gain.gain.value=.17;src.buffer=n;src.connect(f);f.connect(gain);gain.connect(ctx.destination);src.start()}catch{}}
 function textSheets(text){const lines=[];for(const line of String(text??'').replace(/\r\n?/g,'\n').split('\n')){const chars=Array.from(line);if(!chars.length)lines.push('');else while(chars.length)lines.push(chars.splice(0,20).join(''));}const sheets=[];while(lines.length)sheets.push(lines.splice(0,6).join('\n'));return sheets.length?sheets:[''];}
-function openBook(w){document.body.classList.add('reading');book={...w,pages:w.pages.flatMap(p=>textSheets(p.text).map(text=>({...p,text})))};pos=Math.max(0,Math.min(book.pages.length-1,readProgress(w.id)));$('shelf').classList.add('hidden');$('reader').classList.remove('hidden');$('add').classList.add('hidden');$('name').textContent=w.title;opened=false;busy=false;$('stage').classList.remove('open');$('reader').classList.remove('picture');$('picture').textContent='絵だけ見る';for(const page of w.pages){const preload=new Image();preload.src=page.image;}render();window.scrollTo(0,0)}
+function openBook(w){stopDoorSound();document.body.classList.add('reading');book={...w,pages:w.pages.flatMap(p=>textSheets(p.text).map(text=>({...p,text})))};pos=Math.max(0,Math.min(book.pages.length-1,readProgress(w.id)));$('shelf').classList.add('hidden');$('reader').classList.remove('hidden');$('add').classList.add('hidden');$('name').textContent=w.title;opened=false;busy=false;$('stage').classList.remove('open');$('reader').classList.remove('picture');$('picture').textContent='絵だけ見る';for(const page of w.pages){const preload=new Image();preload.src=page.image;}render();window.scrollTo(0,0)}
 function render(direction=0){$('art').src=book.pages[pos].image;$('art').alt=book.title+' '+(pos+1)+'場面';$('art').className=direction?'slide'+(direction<0?' back':''):'';$('caption').textContent=opened?book.pages[pos].text:textSheets('扉を開いて、お話をはじめましょう。')[0];$('count').textContent=(pos+1)+' / '+book.pages.length;$('prev').disabled=!opened;$('next').disabled=!opened;$('next').textContent='次へ →';$('doors').textContent=opened?'扉を閉じる':'開演する'}
-function toggle(){if(busy)return;opened=!opened;$('stage').classList.toggle('open',opened);render()}
+// Wooden-door effects are separate from the paper shuffle.
+let doorSoundSources=[],doorLatchTimer=null;
+function stopDoorSound(){
+ clearTimeout(doorLatchTimer);doorLatchTimer=null;
+ for(const source of doorSoundSources){try{source.stop()}catch{}}
+ doorSoundSources=[];
+}
+function doorAudio(){
+ if(muted)return null;
+ try{ctx??=new(window.AudioContext||window.webkitAudioContext)();ctx.resume().catch(()=>{});return ctx}catch{return null}
+}
+function doorCreak(opening){
+ const ac=doorAudio();if(!ac)return;
+ const now=ac.currentTime,duration=.76;
+ const envelope=ac.createGain();envelope.gain.setValueAtTime(0,now);envelope.gain.linearRampToValueAtTime(.075,now+.09);envelope.gain.setValueAtTime(.055,now+.48);envelope.gain.linearRampToValueAtTime(0,now+duration);envelope.connect(ac.destination);
+ // Uneven hinge harmonics with gentle pitch drift and a woody noise bed.
+ const hinge=ac.createOscillator(),filter=ac.createBiquadFilter();hinge.type='sawtooth';filter.type='lowpass';filter.frequency.value=1700;
+ hinge.frequency.setValueAtTime(opening?190:250,now);hinge.frequency.exponentialRampToValueAtTime(opening?310:155,now+.4);hinge.frequency.exponentialRampToValueAtTime(opening?235:180,now+duration);
+ const wobble=ac.createOscillator(),depth=ac.createGain();wobble.frequency.value=23;depth.gain.value=13;wobble.connect(depth);depth.connect(hinge.frequency);
+ hinge.connect(filter);filter.connect(envelope);
+ const noise=ac.createBufferSource(),buffer=ac.createBuffer(1,Math.ceil(ac.sampleRate*duration),ac.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.2;
+ const band=ac.createBiquadFilter();band.type='bandpass';band.frequency.value=780;band.Q.value=2;noise.buffer=buffer;noise.connect(band);band.connect(envelope);
+ for(const source of [hinge,wobble,noise]){source.start(now);source.stop(now+duration);doorSoundSources.push(source)}
+}
+function doorLatch(){
+ const ac=doorAudio();if(!ac)return;const now=ac.currentTime;
+ const knock=ac.createOscillator(),gain=ac.createGain();knock.type='sine';knock.frequency.setValueAtTime(145,now);knock.frequency.exponentialRampToValueAtTime(52,now+.13);gain.gain.setValueAtTime(.24,now);gain.gain.exponentialRampToValueAtTime(.001,now+.22);knock.connect(gain);gain.connect(ac.destination);knock.start(now);knock.stop(now+.23);doorSoundSources.push(knock);
+ const click=ac.createBufferSource(),b=ac.createBuffer(1,Math.ceil(ac.sampleRate*.075),ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(ac.sampleRate*.012));click.buffer=b;const f=ac.createBiquadFilter(),g=ac.createGain();f.type='lowpass';f.frequency.value=1300;g.gain.value=.14;click.connect(f);f.connect(g);g.connect(ac.destination);click.start(now);doorSoundSources.push(click);
+}
+function toggle(){if(busy)return;stopDoorSound();opened=!opened;$('stage').classList.toggle('open',opened);doorCreak(opened);if(!opened)doorLatchTimer=setTimeout(()=>{doorLatchTimer=null;if(!opened&&!$('reader').classList.contains('hidden'))doorLatch()},800);render()}
 function makeSheet(dir){
  const sheet=$('art').cloneNode();sheet.removeAttribute('id');sheet.alt='';sheet.className='';sheet.setAttribute('aria-hidden','true');
  Object.assign(sheet.style,{position:'absolute',inset:'0',width:'100%',height:'100%',pointerEvents:'none',zIndex:'1',background:'#181612'});
@@ -60,7 +89,7 @@ function step(d){
  animation.finished.then(finish,finish);
 }
 
-$('prev').onclick=()=>step(-1);$('next').onclick=()=>step(1);$('doors').onclick=toggle;document.querySelectorAll('.door').forEach(x=>x.onclick=toggle);$('home').onclick=()=>{if(busy)return;document.body.classList.remove('reading');opened=false;$('stage').classList.remove('open');$('reader').classList.add('hidden');$('shelf').classList.remove('hidden');$('add').classList.remove('hidden')};$('sound').onclick=()=>{muted=!muted;$('sound').textContent='音：'+(muted?'切':'入')};$('picture').onclick=()=>{$('reader').classList.toggle('picture');$('picture').textContent=$('reader').classList.contains('picture')?'文章を戻す':'絵だけ見る'};const swipeScreen=$('screen');swipeScreen.style.touchAction='pan-y';
+$('prev').onclick=()=>step(-1);$('next').onclick=()=>step(1);$('doors').onclick=toggle;document.querySelectorAll('.door').forEach(x=>x.onclick=toggle);$('home').onclick=()=>{if(busy)return;stopDoorSound();document.body.classList.remove('reading');opened=false;$('stage').classList.remove('open');$('reader').classList.add('hidden');$('shelf').classList.remove('hidden');$('add').classList.remove('hidden')};$('sound').onclick=()=>{muted=!muted;if(muted)stopDoorSound();$('sound').textContent='音：'+(muted?'切':'入')};$('picture').onclick=()=>{$('reader').classList.toggle('picture');$('picture').textContent=$('reader').classList.contains('picture')?'文章を戻す':'絵だけ見る'};const swipeScreen=$('screen');swipeScreen.style.touchAction='pan-y';
 let drag=null;
 function clearDrag(){if(!drag)return;render();drag.preview?.remove();drag=null;busy=false;}
 swipeScreen.addEventListener('pointerdown',e=>{
