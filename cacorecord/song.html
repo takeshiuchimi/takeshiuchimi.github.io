@@ -1115,7 +1115,7 @@ window.NyaLoading={
 <!-- ================= Settings / sub area ================= -->
 <dialog class="nya-ui-sheet nya-ui-share-sheet" id="nya-ui-sheet" aria-labelledby="nya-ui-sheet-title">
   <div class="nya-ui-sheet__inner">
-    <div class="nya-ui-sheet__head"><h2 class="nya-ui-sheet__title" id="nya-ui-sheet-title">NyaPlay <span id="nya-build" style="display:inline-block;font-family:var(--nya-ui-font-sans,sans-serif);font-size:11px;font-weight:400;letter-spacing:0;line-height:1.6;color:var(--nya-ui-text-2);vertical-align:middle">v65 · 2026/11/16</span></h2><button class="nya-ui-iconbtn" type="button" id="nya-ui-sheet-close" aria-label="閉じる"><svg aria-hidden="true"><use href="#nya-ui-i-close"/></svg></button></div>
+    <div class="nya-ui-sheet__head"><h2 class="nya-ui-sheet__title" id="nya-ui-sheet-title">NyaPlay <span id="nya-build" style="display:inline-block;font-family:var(--nya-ui-font-sans,sans-serif);font-size:11px;font-weight:400;letter-spacing:0;line-height:1.6;color:var(--nya-ui-text-2);vertical-align:middle">v66 · 2026/11/20</span></h2><button class="nya-ui-iconbtn" type="button" id="nya-ui-sheet-close" aria-label="閉じる"><svg aria-hidden="true"><use href="#nya-ui-i-close"/></svg></button></div>
     <div id="nya-ui-share-qr" class="nya-ui-share-qr" aria-label="NyaPlayトップページのQRコード"></div>
     <button class="nya-ui-btn nya-ui-share-copy" type="button" data-action="share"><svg aria-hidden="true"><use href="#nya-ui-i-share"/></svg>共有URLをコピー</button>
     <button class="nya-ui-btn nya-ui-btn--primary nya-ui-share-install" type="button" data-action="install"><svg aria-hidden="true"><use href="#nya-ui-i-install"/></svg>インストール</button>
@@ -2695,7 +2695,13 @@ const NyaUI = {
     if('lyrics' in patch || 'vocal' in patch || ('index' in patch && patch.index!==prev.index)){
       this.renderLyrics();
     }
-    if('isPlaying' in patch){ this.renderPlay(); this.refreshTiles(); }
+    if('isPlaying' in patch){
+      this.renderPlay(); this.refreshTiles();
+      if(s.isPlaying!==prev.isPlaying){
+        if(s.isPlaying){ this.resumeFollow(true); this.scrollToActive(true); }
+        else if(this.followPausedUntil){ this.pauseFollow(); }
+      }
+    }
     if('duration' in patch || 'currentTime' in patch){ this.renderTime(); }
     if('currentTime' in patch || 'lyrics' in patch){ this.syncLyrics(); }
     if('shuffle' in patch || 'repeatMode' in patch){ this.renderModes(); }
@@ -2807,7 +2813,7 @@ const NyaUI = {
     return this.activeLine < 0 ? $('nya-ui-intro') : box.querySelector(`.nya-ui-line[data-i="${this.activeLine}"]`);
   },
   scrollToActive(instant){
-    const box = $('nya-ui-lyrics-scroll'), el = this.activeEl(); if(!el || this.s.editing || $('nya-ui-lyrics').hidden || this.s.lyrics.status!=='synced') return;
+    const box = $('nya-ui-lyrics-scroll'), el = this.activeEl(); if(!el || this.s.editing || (!this.s.isPlaying && this.followPausedUntil) || $('nya-ui-lyrics').hidden || this.s.lyrics.status!=='synced') return;
     const elTop = el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
     const top = elTop - box.clientHeight*FOCAL + el.offsetHeight/2;
     this.programmatic = true;
@@ -2816,19 +2822,21 @@ const NyaUI = {
   },
 
   /* 手動スクロール ⇄ 自動追従 */
-  isFollowPaused(){ return this.s.editing || Date.now() < this.followPausedUntil; },
+  isFollowPaused(){ return this.s.editing || !this.s.isPlaying || Date.now() < this.followPausedUntil; },
   pauseFollow(){
     if(this.s.lyrics.status!=='synced'||this.s.editing) return;
-    this.followPausedUntil = Date.now() + FOLLOW_PAUSE_MS;
+    this.followPausedUntil = this.s.isPlaying ? Date.now() + FOLLOW_PAUSE_MS : Infinity;
     const pill = $('nya-ui-resync'), timer = $('nya-ui-resync-timer');
     pill.dataset.show='true'; pill.tabIndex=0;
     const st=$('nya-ui-syncstate'); st.dataset.mode='manual'; $('nya-ui-syncstate-text').textContent='手動スクロール中';
     // 7秒カウントダウンを細いバーで示す
     timer.style.transition='none'; timer.style.transform='scaleX(1)';
     void timer.offsetWidth;
-    if(!REDUCED.matches){ timer.style.transition=`transform ${FOLLOW_PAUSE_MS}ms linear`; timer.style.transform='scaleX(0)'; }
+    if(this.s.isPlaying&&!REDUCED.matches){ timer.style.transition=`transform ${FOLLOW_PAUSE_MS}ms linear`; timer.style.transform='scaleX(0)'; }
     clearTimeout(this.followTimer);
-    this.followTimer = setTimeout(()=>this.resumeFollow(), FOLLOW_PAUSE_MS);
+    this.followTimer = this.s.isPlaying ? setTimeout(()=>{
+      if(this.s.isPlaying)this.resumeFollow();else this.pauseFollow();
+    }, FOLLOW_PAUSE_MS) : null;
     this.updateResyncDir();
   },
   resumeFollow(silent){
