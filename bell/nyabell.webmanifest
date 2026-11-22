@@ -1,0 +1,32 @@
+{
+  "id": "./",
+  "name": "NyaBell（ニャーベル）",
+  "short_name": "NyaBell",
+  "lang": "ja",
+  "description": "24文字を数字で届ける、ニャーベル。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#15110d",
+  "background_color": "#15110d",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
