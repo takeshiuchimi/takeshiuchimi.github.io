@@ -1,6 +1,6 @@
 'use strict';
 const PREFIX='nyabell-'+new URL(self.registration.scope).pathname+'-';
-const CACHE=PREFIX+'49625d0c3bf9';
+const CACHE=PREFIX+'55cf5afce840';
 const ASSETS=['./','./index.html','./nyabell.webmanifest','./icons/icon-180.png','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png'].map(p=>new URL(p,self.registration.scope).href);
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:'reload'})))));});
 self.addEventListener('message',e=>{if(e.data&&e.data.type==='SKIP_WAITING')self.skipWaiting();});
